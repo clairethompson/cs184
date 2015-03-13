@@ -1,4 +1,4 @@
-OBJS = point.o normal.o color.o vector.o BRDF.o light.o camera.o matrix.o shape.o main.o tests.o
+OBJS = point.o normal.o color.o vector.o BRDF.o light.o camera.o matrix.o transformation.o shape.o main.o tests.o
 CC = g++
 DEBUG = -g
 CFLAGS = -Wall -c $(DEBUG)
@@ -30,6 +30,9 @@ camera.o: camera.h camera.cpp
 
 matrix.o: matrix.h matrix.cpp
 	$(CC) $(CFLAGS) matrix.cpp
+
+transformation.o: transformation.h transformation.cpp
+	$(CC) $(CFLAGS) transformation.cpp
 
 shape.o: shape.h shape.cpp
 	$(CC) $(CFLAGS) shape.cpp

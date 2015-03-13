@@ -4,6 +4,7 @@
 #include "point.h"
 #include "BRDF.h"
 #include "normal.h"
+#include "matrix.h"
 
 class Shape {
   int sphere; // 1 if the shape is a sphere, 0 if shape is a triangle
@@ -12,6 +13,7 @@ class Shape {
   float radius;
   Point a, b, c; // Points for if a triangle
   Normal n;
+  Matrix m;
 
 public: 
   Shape(Point center, float radius, Point a, Point b, Point c, BRDF f, int type);
