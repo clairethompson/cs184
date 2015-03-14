@@ -1,11 +1,16 @@
 OBJS = point.o normal.o color.o vector.o BRDF.o light.o camera.o matrix.o transformation.o shape.o main.o tests.o
+
+# Basics Compiling Stuff
 CC = g++
 DEBUG = -g
 CFLAGS = -Wall -c $(DEBUG)
 LFLAGS = -Wall $(DEBUG)
 
+LDOPTS = -L./ -lfreeimage
+
+
 all: $(OBJS) 
-	$(CC) $(LFLAGS) $(OBJS) -o main
+	$(CC) $(LFLAGS) $(LDOPTS) $(OBJS) -o raytracer
 
 point.o: point.h point.cpp
 	$(CC) $(CFLAGS) point.cpp
@@ -48,4 +53,4 @@ check:
 	./main test
 
 clean:
-	\rm *.o 
+	\rm *.o raytracer

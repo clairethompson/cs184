@@ -1,6 +1,8 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <stdint.h>
+#include "FreeImage.h"
 
 #include "point.h"
 #include "color.h"
@@ -25,6 +27,10 @@
 #define ROTATE "xfr"
 #define SCALE "xfs"
 
+#define WIDTH 1000
+#define HEIGHT 500
+#define BPP 24
+
 /* Globals */
 Camera camera = Camera();
 std::vector<Light> lights;
@@ -39,6 +45,13 @@ int main(int argc, char const *argv[])
   count = 0;
 
   BRDF f = BRDF();
+
+  /* Set up image output -- using FreeImage Library */
+  FreeImage_Initialise();
+  FIBITMAP * bitmap = FreeImage_Allocate(WIDTH, HEIGHT, BPP);
+  RGBQUAD color;
+  if (!bitmap)
+    exit(1);
 
   /* Parse all inputs */
   while (count != argc) {
@@ -122,6 +135,24 @@ int main(int argc, char const *argv[])
     }
     count += 1;
   }
+
+  /* Shade each pixel */
+  for (int x = 0; x < WIDTH; x++) {
+    for (int y = 0; y < HEIGHT; y++) {
+      //TODO: Rays? Shading?
+      
+      color.rgbRed = 0.0;
+      color.rgbGreen = 0.0;
+      color.rgbBlue = 0.0;
+      FreeImage_SetPixelColor(bitmap, x, y, &color);
+    }
+  }
+
+  /* Save bitmap to PNG format */
+  if (FreeImage_Save(FIF_PNG, bitmap, "test.png", 0)) {
+    fprintf(stdout, "%s\n", "Image successfully saved!");
+  }
+  FreeImage_DeInitialise();
 
   return 0;
 }
