@@ -31,6 +31,10 @@ public:
 	/* Add vector and V1, returning V */
 	Vector operator+(Vector v1);
 
+
+	/* Add vector and point, returning V */
+	Vector operator+(Point p);
+
 	/* Subtract v1 from vector, returning V */
 	Vector operator-(Vector v1);
 

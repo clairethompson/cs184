@@ -5,9 +5,10 @@ class Tests {
 public: 
   Tests();
   void checkAll();
-  int vector();
-  int normal();
-  int color();
+  bool vector();
+  bool normal();
+  bool color();
+  bool ellipsoid();
 
 };
 

@@ -5,18 +5,21 @@
 #include "vector.h"
 #include "point.h"
 #include "normal.h"
+#include "ellipsoid.h"
 
 Tests::Tests() {};
 
 void Tests::checkAll() {
   std::cout << "Running tests\n";
   std::cout << "Vector tests: ";
-  (this->vector() == 1) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
+  (this->vector()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
   std::cout << "Normal tests: ";
-  (this->normal() == 1) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
+  (this->normal()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
+  std::cout << "Ellipsoid tests: ";
+  (this->ellipsoid()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
 };
 
-int Tests::vector() {
+bool Tests::vector() {
   int pass = 1;
   /* TEMP vectors change value throughout the test. Other vectors maintain their values. */
   Point p1 = Point(4.0, 0.0, 0.0);
@@ -87,7 +90,7 @@ int Tests::vector() {
   return pass;
 };
 
-int Tests::normal() {
+bool Tests::normal() {
   int pass = 1;
   /* TEMP vectors change value throughout the test. Other vectors maintain their values. */
   Normal a = Normal(0.0, 4.0, 0.0);
@@ -121,6 +124,11 @@ int Tests::normal() {
   return pass;
 };
 
-int Tests::color() {
+bool Tests::color() {
+};
+
+bool Tests::ellipsoid() {
 
 };
+
+

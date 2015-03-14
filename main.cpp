@@ -13,6 +13,7 @@
 #include "shape.h"
 #include "BRDF.h"
 #include "tests.h"
+#include "ellipsoid.h"
 
 
 #define CAMERA "cam"
@@ -32,7 +33,7 @@
 /* Globals */
 Camera camera = Camera();
 std::vector<Light> lights;
-std::vector<Shape> shapes;
+std::vector<Shape *> shapes;
 float WIDTH = 1000;
 float HEIGHT = 500;
 
@@ -77,8 +78,8 @@ int main(int argc, char const *argv[])
       float rad = std::stof(argv[count + 4]);
       Point center = Point(cx, cy, cz);
       
-      Shape sphere = Shape(center, rad, Point(), Point(), Point(), f, 1);
-      shapes.push_back(sphere);
+      Ellipsoid sphere = Ellipsoid(center, rad, f);
+      shapes.push_back(&sphere);
 
       count += 4;
     } else if (strcmp(argv[count], TRIANGLE) == 0) {
@@ -86,8 +87,11 @@ int main(int argc, char const *argv[])
       Point b = Point(std::stof(argv[count+4]), std::stof(argv[count+5]), std::stof(argv[count+6]));
       Point c = Point(std::stof(argv[count+7]), std::stof(argv[count+8]), std::stof(argv[count+9]));
 
-      Shape tri = Shape(Point(), 0.0, a, b, c, f, 0);
-      shapes.push_back(tri);
+      // Shape tri = Shape(Point(), 0.0, a, b, c, f, 0);
+
+      //TODO: implement triangle class fo dis shit
+
+      // shapes.push_back(tri);
       
       count += 9;
     } else if (strcmp(argv[count], OBJ_FILE) == 0) {

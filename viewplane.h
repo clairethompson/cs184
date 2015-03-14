@@ -14,4 +14,5 @@ public:
   float getHeight();
   float getWidth();
 };
+
 #endif

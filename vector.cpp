@@ -9,7 +9,7 @@ Vector::Vector(float a,  float b,  float c) {
 			z = c;
 }
 
-Vector::Vector( Point a,  Point b) {
+Vector::Vector(Point a,  Point b) {
 			x = a.x - b.x;
 			y = a.y - b.y;
 			z = a.z - b.z;
@@ -56,6 +56,15 @@ Vector Vector::operator+(Vector v1) {
 	v.x = v1.x + this->x;
 	v.y = v1.y + this->y;
 	v.z = v1.z + this->z;
+	return v;
+}
+
+/* Add vector and point, returning V */
+Vector Vector::operator+(Point p) {
+	Vector v; 
+	v.x = p.x + this->x;
+	v.y = p.y + this->y;
+	v.z = p.z + this->z;
 	return v;
 }
 
