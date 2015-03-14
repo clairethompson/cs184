@@ -1,4 +1,4 @@
-OBJS = point.o normal.o color.o vector.o BRDF.o light.o camera.o matrix.o transformation.o shape.o main.o tests.o
+OBJS = point.o normal.o color.o vector.o BRDF.o light.o viewplane.o camera.o matrix.o transformation.o shape.o main.o tests.o
 
 # Basics Compiling Stuff
 CC = g++
@@ -29,6 +29,9 @@ BRDF.o: BRDF.h BRDF.cpp
 
 light.o: light.h light.cpp
 	$(CC) $(CFLAGS) light.cpp
+
+viewplane.o: viewplane.h viewplane.cpp
+	$(CC) $(CFLAGS) viewplane.cpp
 
 camera.o: camera.h camera.cpp
 	$(CC) $(CFLAGS) camera.cpp

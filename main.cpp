@@ -27,14 +27,14 @@
 #define ROTATE "xfr"
 #define SCALE "xfs"
 
-#define WIDTH 1000
-#define HEIGHT 500
 #define BPP 24
 
 /* Globals */
 Camera camera = Camera();
 std::vector<Light> lights;
 std::vector<Shape> shapes;
+float WIDTH = 1000;
+float HEIGHT = 500;
 
 
 int main(int argc, char const *argv[])
@@ -136,6 +136,8 @@ int main(int argc, char const *argv[])
     count += 1;
   }
 
+  WIDTH = camera.getWidth();
+  HEIGHT = camera.getHeight();
   /* Shade each pixel */
   for (int x = 0; x < WIDTH; x++) {
     for (int y = 0; y < HEIGHT; y++) {

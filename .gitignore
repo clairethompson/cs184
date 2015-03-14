@@ -1,2 +1,7 @@
 main
 *.o
+/FreeImage/*
+/FreeImage
+FreeImage*
+libfreeimage.a
+raytracer

@@ -1,11 +1,17 @@
-#ifndef VIEWPLANE.H
-#define #VIEWPLANE.H
+#ifndef VIEWPLANE_H
+#define VIEWPLANE_H
+
+#include "point.h"
 
 class ViewPlane {
-public:
   float width, height;
+  Point ll, lr, ul, ur;
 
+public:
   /* Init ViewPlane */
-  ViewPlane(camera c);
-
+  ViewPlane(Point ll, Point lr, Point ul, Point ur);
+  ViewPlane();
+  float getHeight();
+  float getWidth();
+};
 #endif

@@ -1,17 +1,19 @@
 #include "camera.h"
-#include "point.h"
 
 Camera::Camera(Point e, Point llp, Point lrp, Point ulp, Point urp) {
   this->eye = e;
-  this->ll = llp;
-  this->lr = lrp;
-  this->ul = ulp;
-  this->ur = urp;
+  this->vp = ViewPlane(llp, lrp, ulp, urp);
 }
+
 Camera::Camera() {
   this->eye = Point();
-  this->ll = Point();
-  this->lr = Point();
-  this->ul = Point();
-  this->ur = Point();
+  this->vp = ViewPlane(Point(), Point(), Point(), Point());
+}
+
+float Camera::getHeight() {
+  return this->vp.getHeight();
+}
+
+float Camera::getWidth() {
+  return this->vp.getWidth();
 }
