@@ -40,7 +40,6 @@ float HEIGHT = 500;
 
 int main(int argc, char const *argv[])
 {
-
   int count;
 
   count = 0;

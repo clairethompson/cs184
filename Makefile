@@ -51,15 +51,15 @@ transformation.o: transformation.h transformation.cpp
 ellipsoid.o: ellipsoid.h ellipsoid.cpp shape.h
 	$(CC) $(CFLAGS) ellipsoid.cpp
 
-tests.o: tests.cpp
-	$(CC) $(CFLAGS) tests.cpp
-
 main.o: point.o vector.o main.cpp
 	$(CC) $(CFLAGS) main.cpp
 
+tests.o: tests.h tests.cpp
+	$(CC) $(CFLAGS) tests.cpp
+
 check:
 	make
-	./main test
+	./raytracer test
 
 clean:
 	\rm *.o raytracer

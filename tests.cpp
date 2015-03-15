@@ -1,26 +1,31 @@
 // #include "stdafx.h"
 #include <iostream>
-#include "math.h"
+#include <math.h>
 #include "tests.h"
 #include "vector.h"
 #include "point.h"
 #include "normal.h"
 #include "ellipsoid.h"
+#include "ray.h"
+#include "localgeo.h"
 
 Tests::Tests() {};
 
 void Tests::checkAll() {
+
   std::cout << "Running tests\n";
   std::cout << "Vector tests: ";
   (this->vector()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
+  
   std::cout << "Normal tests: ";
   (this->normal()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
+  
   std::cout << "Ellipsoid tests: ";
   (this->ellipsoid()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
 };
 
 bool Tests::vector() {
-  int pass = 1;
+  bool pass = 1;
   /* TEMP vectors change value throughout the test. Other vectors maintain their values. */
   Point p1 = Point(4.0, 0.0, 0.0);
   Point p2 = Point();
@@ -91,7 +96,7 @@ bool Tests::vector() {
 };
 
 bool Tests::normal() {
-  int pass = 1;
+  bool pass = 1;
   /* TEMP vectors change value throughout the test. Other vectors maintain their values. */
   Normal a = Normal(0.0, 4.0, 0.0);
   Normal b = Normal(-4.0, 0.0, 0.0);
@@ -125,10 +130,49 @@ bool Tests::normal() {
 };
 
 bool Tests::color() {
+  return 1;
 };
 
 bool Tests::ellipsoid() {
+  bool pass = 1;
+  Point c = Point();
+  Point start = Point(0, 0, 4);
+  Point origin = Point(0, 0, 0);
+  Vector dir = Vector(0, 0, -1);
+  BRDF f = BRDF();
+  Ellipsoid e = Ellipsoid(c, 1.0, f);
+  Ray r = Ray(start, dir, 0.0, 20);
+  Ray r2 = Ray(origin, dir, -4.0, 20);
+  LocalGeo temp = LocalGeo();
+  Point p = Point();
+  Normal n = Normal();
 
+  if(e.intersection(r, &temp)) {
+    p = temp.getPoint();
+    n = temp.getNormal();
+    if (p.x != 0.0 || p.y != 0.0 || p.z != 1.0 || n.x != 0.0 || n.y != 0.0 || n.z != 1.0 ) {
+      pass = 0;
+      std::cout << "\n\tSimple intersection\n";
+    }
+  } else {
+    pass = 0;
+    std::cout << "\n\tSimple intersection\n";
+  }
+
+  if (e.intersection(r2, &temp)) {
+    p = temp.getPoint();
+    n = temp.getNormal();
+    if (p.x != 0.0 || p.y != 0.0 || p.z != -1.0 || n.x != 0.0 || n.y != 0.0 || n.z != -1.0 ) {
+      pass = 0;
+      std::cout << "\n\tIntersection from inside sphere\n";
+    }
+  } else {
+    pass = 0;
+    std::cout << "\n\tIntersection from inside sphere\n";
+  }
+
+
+  return pass;
 };
 
 

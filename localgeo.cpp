@@ -16,3 +16,11 @@ void LocalGeo::setPoint(Point hitP) {
 void LocalGeo::setNormal(Normal hitN) {
   this->n = hitN;
 }
+
+Point LocalGeo::getPoint() {
+  return this->p;
+}
+
+Normal LocalGeo::getNormal() {
+  return this->n;
+}
