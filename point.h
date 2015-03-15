@@ -8,6 +8,11 @@ class Point {
   public:
     Point (float a, float b, float c);
   	Point ();
+
+  	/* Getter Functions */
+  	float getX();
+  	float getY();
+  	float getZ();
 };
 
 #endif

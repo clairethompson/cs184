@@ -13,6 +13,9 @@ public:
   Camera();
   float getHeight();
   float getWidth();
+  float getFocalLength();
+  Point getEye();
+	ViewPlane getViewPlane();
 };
 
 #endif

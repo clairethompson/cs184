@@ -17,10 +17,5 @@ void LocalGeo::setNormal(Normal hitN) {
   this->n = hitN;
 }
 
-Point LocalGeo::getPoint() {
-  return this->p;
-}
-
-Normal LocalGeo::getNormal() {
-  return this->n;
-}
+Point LocalGeo::getPoint() { return this->p; }
+Normal LocalGeo::getNormal() { return this->n; }

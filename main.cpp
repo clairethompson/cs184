@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <stdint.h>
+#include <float.h>
+#include <cmath>
 #include "FreeImage.h"
 
 #include "point.h"
@@ -14,6 +16,7 @@
 #include "BRDF.h"
 #include "tests.h"
 #include "ellipsoid.h"
+#include "ray.h"
 
 
 #define CAMERA "cam"
@@ -29,6 +32,13 @@
 #define SCALE "xfs"
 
 #define BPP 24
+// Raytracer recursive depth limit
+#define MAX_DEPTH 1
+
+
+/* RayTracer Methods */
+Color PhongShading(Light l, BRDF b, LocalGeo g);
+Color RayTrace(Ray r, int depth);
 
 /* Globals */
 Camera camera = Camera();
@@ -141,14 +151,30 @@ int main(int argc, char const *argv[])
 
   WIDTH = camera.getWidth();
   HEIGHT = camera.getHeight();
+  //Used to map pixels to image plane
+  float r = camera.getWidth() / 2.0;
+  float l = -1.0 * r;
+  float t = camera.getHeight() / 2.0;
+  float b = -1.0 * t;
+
   /* Shade each pixel */
   for (int x = 0; x < WIDTH; x++) {
     for (int y = 0; y < HEIGHT; y++) {
       //TODO: Rays? Shading?
+      //Calculate the coordinate of pixel's position on image plane
+      float u = l + (r - l)*(x + 0.5)/WIDTH;
+      float v = b + (t - b)*(y + 0.5)/HEIGHT;
+      //TODO: Figure out focal distance from eye to plane
+      float d = 0.0;
+      //TODO: Figure out which axes -d, u, v coordinate to in XYZ
+      //-dw + uu + vv
+      Vector r_dir (-d, u, v);
+      Ray r (camera.getEye(), r_dir, 0.0, 0.0);
       
-      color.rgbRed = 0.0;
-      color.rgbGreen = 0.0;
-      color.rgbBlue = 0.0;
+      Color fin = RayTrace(r, 0);
+      color.rgbRed = fin.getR();
+      color.rgbGreen = fin.getG();
+      color.rgbBlue = fin.getB();
       FreeImage_SetPixelColor(bitmap, x, y, &color);
     }
   }
@@ -160,4 +186,72 @@ int main(int argc, char const *argv[])
   FreeImage_DeInitialise();
 
   return 0;
+}
+
+/* Return Color C of raytrace */
+Color RayTrace(Ray r, int depth) {
+  float ray_obj_dist;
+  int i, j, k;
+  Shape hitobject;
+
+  float dist_max = FLT_MAX;
+  std::vector<int>::size_type num_obj = shapes.size();
+  std::vector<int>::size_type num_lights = lights.size();
+  LocalGeo g;
+  //Look through objects
+  for (i = 0; i < num_obj; i++)
+  {
+    //ray_obj_dist = set distance of nearest intersection of ray & shapes[i]
+    if (ray_obj_dist < dist_max) {
+      dist_max = ray_obj_dist;
+      hitobject = shapes[i];
+    }
+  }
+
+  if (!hitobject) {
+    //Set position var PT to nearest inersection point of R & I_S
+    Color c (0.0,0.0,0.0); //Set color to black
+    for (j = 0; j < num_lights; j++) {
+      for (k = 0; k < num_obj; k++) {
+        //If OBJ blocks light coming from light source to PT
+          //Attenuate intesnsity by transmittivity
+      }
+      //Calc perceived color of obj at pt due to this light source
+      Color block_color = PhongShading(lights[j], shapes[k]->getBRDF(), g);
+      //Add to c
+      c = c + block_color;
+    }
+    //Check recursive depth
+    if (depth < MAX_DEPTH) {
+      //Generate 2 rays: reflection  and refraction
+      //Ray reflection();
+      //Ray refraction()
+      //c = c + RayTrace(reflection, depth+1) * intersect_shape.;
+      //c = c + RayTrace(refraction, depth+1) * intersect_shape.;
+
+    } else {
+      //Set total color C to background color
+    }
+    return c;
+  }
+}
+
+/* Phong Shade the colors */
+Color PhongShading(Light l, BRDF b, LocalGeo g) {
+  Vector normal (g.getNormal().getX(), g.getNormal().getX(), g.getNormal().getZ());
+  Vector view;
+
+  //TODO: Change light XYZ vals if Point or Directonal Light
+  Vector light (l.getPoint().getX(), l.getPoint().getY(), l.getPoint().getZ());
+  light.normalize();
+
+  //Diffuse Color
+  float diffuseColor = fmaxf(light.dot(normal), 0.0);
+
+  //Specular Color
+  Vector reflect = (normal * (2.0 * light.dot(normal))) - light;
+  reflect.normalize();
+  float specularColor = pow(fmax(view.dot(reflect), 0.0), b.getSP());
+
+  return ((b.getKS() * specularColor) + (b.getKD() * diffuseColor) + b.getKA()) * l.getIntensity();
 }

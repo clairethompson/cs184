@@ -9,6 +9,13 @@ class BRDF {
   public:
     BRDF(Color a, Color d, Color s, float sp, Color r);
     BRDF();
+
+    /* Getter Functions */
+    Color getKA();
+    Color getKD();
+    Color getKS();
+    Color getKR();
+    float getSP();
 };
 
 #endif
