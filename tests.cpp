@@ -129,23 +129,26 @@ bool Tests::normal() {
   return pass;
 };
 
-bool Tests::color() {
-  return 1;
-};
-
 bool Tests::ellipsoid() {
   bool pass = 1;
-  Point c = Point();
+
+  BRDF f = BRDF(); // not static
+  Point a = Point(0, 1, 0);
   Point start = Point(0, 0, 4);
   Point origin = Point(0, 0, 0);
   Vector dir = Vector(0, 0, -1);
-  BRDF f = BRDF();
-  Ellipsoid e = Ellipsoid(c, 1.0, f);
+  Ellipsoid e = Ellipsoid(origin, 1.0, f);
   Ray r = Ray(start, dir, 0.0, 20);
   Ray r2 = Ray(origin, dir, -4.0, 20);
-  LocalGeo temp = LocalGeo();
-  Point p = Point();
-  Normal n = Normal();
+  LocalGeo temp = LocalGeo(); // not static
+  Point p = Point(); // not static
+  Normal n = Normal(); // not static
+
+  n = e.getNormalAtPoint(a);
+  if(n.x != 0.0 || n.y != 1.0 || n.z != 0.0) {
+    pass = 0;
+    std::cout << "\t\nGet Normal at Point";
+  }
 
   if(e.intersection(r, &temp)) {
     p = temp.getPoint();

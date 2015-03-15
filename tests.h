@@ -7,9 +7,7 @@ public:
   void checkAll();
   bool vector();
   bool normal();
-  bool color();
   bool ellipsoid();
-
 };
 
 #endif

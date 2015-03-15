@@ -192,7 +192,7 @@ int main(int argc, char const *argv[])
 Color RayTrace(Ray r, int depth) {
   float ray_obj_dist;
   int i, j, k;
-  Shape hitobject;
+  Shape* hitobject;
 
   float dist_max = FLT_MAX;
   std::vector<int>::size_type num_obj = shapes.size();
