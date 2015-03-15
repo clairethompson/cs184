@@ -13,6 +13,8 @@ public:
   LocalGeo(Point p, Normal n);
   void setPoint(Point hitP);
   void setNormal(Normal hitN);
+  Point getPoint();
+  Normal getNormal();
 };
 
 #endif

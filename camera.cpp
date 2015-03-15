@@ -17,3 +17,16 @@ float Camera::getHeight() {
 float Camera::getWidth() {
   return this->vp.getWidth();
 }
+
+/* Return focal distance */
+float Camera::getFocalLength() {
+	return 0.0;
+}
+
+Point Camera::getEye() {
+	return this->eye;
+}
+
+ViewPlane Camera::getViewPlane() {
+	return this->vp;
+}

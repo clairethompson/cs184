@@ -18,6 +18,11 @@ Normal::Normal() {
   this->z = 0.0;
 }
 
+/* Getter Functions*/
+float Normal::getX() { return this->x; }
+float Normal::getY() { return this->y; }
+float Normal::getZ() { return this->z; }
+
 /* Add two normals */
 Normal Normal::operator+(Normal n1) {
   Normal n(this->x + n1.x, this->y + n1.y, this->z + n1.z);
