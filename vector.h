@@ -13,6 +13,9 @@ public:
 	Vector(float a, float b, float c);
 	Vector(Point a, Point b);
 
+	float getX() {return this->x;}
+	float getY() {return this->y;}
+	float getZ() {return this->z;}
 	/* Returns the vector length of V */
 	float getLength();
 

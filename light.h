@@ -8,6 +8,7 @@ class Light {
   Point p;
   Color intensity;
   float falloff;
+  int type;
 public:
   Light(float r, float g, float b);
   Light(float x, float y, float z, float r, float g, float b, float falloff);
@@ -15,7 +16,7 @@ public:
   Color getIntensity();
   Point getPoint();
   float getFalloff();
-
+  int getType();
 };
 
 #endif

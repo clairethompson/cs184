@@ -158,23 +158,7 @@ int main(int argc, char const *argv[])
   // HEIGHT = camera.getHeight();
   WIDTH = 1000;
   HEIGHT = 500;
-  fprintf(stdout, "Width:%f Height:%f\n", WIDTH, HEIGHT);
-  //Used to map pixels to image plane
-  if (WIDTH < 1 || HEIGHT < 1) 
-    fprintf(stderr, "%s\n", "FUCK");
-  float r = WIDTH / 2.0;
-  //float r = 1000/2.0;
-  float l = -1.0 * r;
-  float t = HEIGHT / 2.0;
-  //float t = 500/2.0;
-  float b = -1.0 * t;
-  fprintf(stdout, "R:%f\tL:%f\tT:%f\tB:%f\n", r, l, t, b);
 
-  //Vector camera_position (camera.getEye().getX(), camera.getEye().getY(), camera.getEye().getZ());
-  Vector camera_u (camera.getViewPlane().getLL(), camera.getViewPlane().getUL());
-  camera_u.normalize();
-
-  fprintf(stdout, "WIDTH: %f, HEIGHT: %f\n", WIDTH, HEIGHT );
   /* Shade each pixel */
   for (int i = 0; i < WIDTH; i++) {
     //fprintf(stdout, "In LOOP 1\n");
@@ -182,21 +166,22 @@ int main(int argc, char const *argv[])
       //fprintf(stdout, "IN LOOP\n");
       //TODO: Rays? Shading?
       //Calculate the coordinate of pixel's position on image plane
-      float u = l + (r - l)*(i + 0.5)/WIDTH;
-      float v = b + (t - b)*(j + 0.5)/HEIGHT;
-      //TODO: Figure out focal distance from eye to plane
-      //float d = 0.0;
-      Point q (u, v, 0.0);
-      Vector camera_w (q, camera.getEye());
-      camera_w.normalize();
-      float d = camera_w.getLength();
-      Vector camera_v = camera_w.cross(camera_u);
-      camera_v.normalize();
-      //TODO: Figure out which axes -d, u, v coordinate to in XYZ
-      //-dw + uu + vv
-      Vector r_dir = camera_w * -d + camera_u * u + camera_v * v;
-      Ray r (camera.getEye(), r_dir, 0.0, 0.0);
-      //fprintf(stdout, "%s\n", "calling color RayTrace..");
+      float u = (i + 0.5)/WIDTH;
+      float v = (j + 0.5)/HEIGHT;
+
+      Vector ll (camera.getViewPlane().getLL().getX(), camera.getViewPlane().getLL().getY(), camera.getViewPlane().getLL().getZ());
+      Vector lr (camera.getViewPlane().getLR().getX(), camera.getViewPlane().getLR().getY(), camera.getViewPlane().getLR().getZ());
+      Vector ul (camera.getViewPlane().getUL().getX(), camera.getViewPlane().getUL().getY(), camera.getViewPlane().getUL().getZ());
+      Vector ur (camera.getViewPlane().getUR().getX(), camera.getViewPlane().getUR().getY(), camera.getViewPlane().getUR().getZ());
+      // Point on plane = u(v * LL + (1-v)UL) + (1 - u)(v*LR + (1-v)UR)
+      //Vector temp = (ul * (1 - v) + (ll * v)) * u + ((lr * v) + ur * (1-v)) * (1-u);
+      Vector temp = (lr * v + ur * (1 - v)) * u + (ll * v + ul * (1-v)) * (1-u);
+      Point p (temp.getX(), temp.getY(), temp.getZ());
+
+      Vector r_dir (p, camera.getEye());
+      //R(t) = E + t(P-E)
+      Ray r (camera.getEye(), r_dir, -1000.0, 1000.0);
+
       Color fin = RayTrace(r, 0);
       //Color fin (255.0, 0.0, 0.0);
       color.rgbRed = fmaxf(fin.getR() * 255, 0);
@@ -218,10 +203,7 @@ int main(int argc, char const *argv[])
 
 /* Return Color C of raytrace */
 Color RayTrace(Ray r, int depth) {
-  int i, j, k;
   Shape * hitobject;
-
-
   float dist_max = FLT_MAX;
   float ray_obj_dist = 0.0;
   std::vector<int>::size_type num_obj = shapes.size();
@@ -231,11 +213,11 @@ Color RayTrace(Ray r, int depth) {
 
   // Loop through objects to check if intersection exists (HIT_CHECK)
   // If HIT_CHECK, then check if its closer & update HITOBJECT
-  for (i = 0; i < num_obj; i++)
+  for (int i = 0; i < num_obj; i++)
   {
     hit_check = shapes[i]->intersection(r, &g);
     if (hit_check) {  
-      Vector ray_obj_vect (g.getPoint(), r.getStart());
+      Vector ray_obj_vect (r.getStart(), g.getPoint());
       ray_obj_dist = ray_obj_vect.getLength();
       if (ray_obj_dist < dist_max) {
         dist_max = ray_obj_dist;
@@ -244,44 +226,33 @@ Color RayTrace(Ray r, int depth) {
     }
   }
 
-  if (!hitobject) {
+  if (dist_max != FLT_MAX) {
     //Set position var PT to nearest inersection point of R & I_S
-    Vector light, norm, reflection, refraction;
+    Vector light, norm;
 
-    norm  = Vector(g.getNormal().getX(), g.getNormal().getX(), g.getNormal().getZ());
+    norm = Vector(g.getNormal().getX(), g.getNormal().getX(), g.getNormal().getZ());
     Color c (0.0,0.0,0.0); //Set color to black
-    for (j = 0; j < num_lights; j++) {
-      // TODO: FIGURE OUT SHADOW RAYS? IF THIS IS WHAT ITS FOR
-      // for (k = 0; k < num_obj; k++) {
-      //   //If OBJ blocks light coming from light source to PT
-      //     //Attenuate intensity by transmittivity
-      // }
-
-      // Light Vector Calculation; Falloff = 0 for DL, > 0 for PL
-      if (lights[j].getFalloff() > 0.0) {
-        Vector light (lights[j].getPoint(), g.getPoint());
-      } else {
-        Vector light (-lights[j].getPoint().getX(), -lights[j].getPoint().getY(), -lights[j].getPoint().getZ());
+    for (int j = 0; j < num_lights; j++) {
+      // TODO: FIGURE OUT SHADOW RAYS? 
+      // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
+      if (lights[j].getType() == -1) {
+        light = Vector (lights[j].getPoint(), g.getPoint());
+      } else if (lights[j].getType() == -2) {
+        light = Vector (-lights[j].getPoint().getX(), -lights[j].getPoint().getY(), -lights[j].getPoint().getZ());
       }
         
       light.normalize();
       //Calc perceived color of obj at pt due to this light source
-      Color block_color = PhongShading(norm, light, lights[j].getIntensity(), shapes[k]->getBRDF(), g);
-      c = c + block_color;
+      Color result = PhongShading(norm, light, lights[j].getIntensity(), hitobject->getBRDF(), g);
+      c = c + result;
     }
     //Check recursive depth
-    if (depth < MAX_DEPTH) {
-      //Generate 2 rays: reflection  and refraction (optional)
-      //Ray reflection();
-      
-      
-      Ray reflection (camera.getEye(), reflect(norm, light), 0, 0);
+    if (depth < MAX_DEPTH) {      
+      Ray reflection (camera.getEye(), reflect(norm, light), 1000, 1000);
       c = c + RayTrace(reflection, depth+1) * hitobject->getBRDF().getKR();
-      //c = c + RayTrace(refraction, depth+1) * intersect_shape.;
-
     } else {
       //Set total color C to background color
-      fprintf(stdout, "%s\n", "Total color to backgroudn?");
+      c = Color(0.0,0.0,0.0);
     }
     return c;
   }
@@ -296,6 +267,7 @@ Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo 
   Vector reflect = (normal * (2.0 * light.dot(normal))) - light;
   reflect.normalize();
   Vector view (g.getPoint(), camera.getEye());
+  view.normalize();
   float specularColor = pow(fmax(view.dot(reflect), 0.0), b.getSP());
 
   return ((b.getKS() * specularColor) + (b.getKD() * diffuseColor) + b.getKA()) * light_c;
