@@ -206,6 +206,7 @@ Color RayTrace(Ray r, int depth) {
   std::vector<int>::size_type num_lights = lights.size();
   LocalGeo g;
   bool hit_check;
+  Color c (0.0,0.0,0.0); //Set color to black
 
   // Loop through objects to check if intersection exists (HIT_CHECK)
   // If HIT_CHECK, then check if its closer & update HITOBJECT
@@ -227,7 +228,7 @@ Color RayTrace(Ray r, int depth) {
     Vector light, norm;
 
     norm = Vector(g.getNormal().getX(), g.getNormal().getY(), g.getNormal().getZ());
-    Color c (0.0,0.0,0.0); //Set color to black
+
     for (int j = 0; j < num_lights; j++) {
       // TODO: FIGURE OUT SHADOW RAYS? 
       // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
@@ -250,8 +251,8 @@ Color RayTrace(Ray r, int depth) {
       //Set total color C to background color
       c = Color(0.0,0.0,0.0);
     }
-    return c;
   }
+  return c;
 }
 
 /* Phong Shade the colors */
