@@ -13,6 +13,7 @@ public:
   float getValue(int a, int b);
   void setValue(int a, int b, float c);
   Matrix operator*(Matrix m);
+  bool operator==(Matrix m);
   float determinant();
   Matrix invert();
   Matrix transpose();

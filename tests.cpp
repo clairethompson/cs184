@@ -7,6 +7,7 @@
 #include "normal.h"
 #include "ellipsoid.h"
 #include "triangle.h"
+#include "matrix.h"
 #include "ray.h"
 #include "localgeo.h"
 
@@ -27,6 +28,9 @@ void Tests::checkAll() {
 
   std::cout << "Triangle tests: ";
   (this->triangle()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
+
+  std::cout << "Matrix tests: ";
+  (this->matrix()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
 };
 
 bool Tests::vector() {
@@ -220,6 +224,60 @@ bool Tests::triangle() {
     pass = 0;
     std::cout << "\n\tSimple intersection\n";
   }
+
+  return pass;
+};
+
+bool Tests::matrix() {
+  bool pass = 1;
+
+  Point a = Point(1.0, 2.0, 3.0);
+  Point b = Point(4.0, 5.0, 6.0);
+  Point c = Point(7.0, 8.0, 9.0);
+  Point c1 = Point(7.0, 8.0, 10.0);
+
+  Point d = Point(102, 126, 150);
+  Point e = Point(30, 36, 42);
+  Point f = Point(66, 81, 96);
+
+  Point g = Point(-2.0/3.0f, -4.0/3.0f, 1);
+  Point h = Point(-2.0/3.0f, 11.0/3.0f, -2);
+  Point i = Point(1, -2, 1);
+
+  Point j = Point(1.0, 4.0, 7.0);
+  Point k = Point(2.0, 5.0, 8.0);
+  Point l = Point(3.0, 6.0, 9.0);
+
+  Matrix id = Matrix();
+  Matrix m1 = Matrix(a, b, c);
+  Matrix m1det = Matrix(a, b, c1);
+  Matrix m1detinv = Matrix(g, h, i);
+  Matrix m2 = Matrix(c, a, b);
+  Matrix m3 = Matrix(j, k, l);
+  Matrix m1m2 = Matrix(d, e, f);
+  Matrix temp = Matrix();
+
+  if (!(id == temp)) {
+    pass = 0;
+    std::cout << "\n\t== fail";
+  }
+
+  temp = m1 * m2;
+  if (!(temp == m1m2)) {
+    pass = 0;
+    std::cout << "\n\tMatrix multiply";
+  }
+
+  if (m1det.determinant() != -3.0) {
+    pass = 0; std::cout<< "\n\tdeterminant";
+  }
+
+  temp = m1det.invert();
+  if (!(temp == m1detinv)) {
+    pass = 0;
+    std::cout << "\n\tinvert";
+  }
+
 
   return pass;
 };

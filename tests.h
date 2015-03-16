@@ -9,6 +9,7 @@ public:
   bool normal();
   bool ellipsoid();
   bool triangle();
+  bool matrix();
 };
 
 #endif
