@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include "vector.h"
+#include <math.h>
 
 Matrix::Matrix() {
     this->mat[0][0] = 1.0;
@@ -77,9 +78,9 @@ Matrix::Matrix(float a, float b, float c, int type) {
     float theta = r.getLength();
     r.normalize();
 
-    Point p1 = Point(0,.0 r.z, -r.y)
-    Point p2 = Point(-r.z, 0.0, r.x)
-    Point p3 = Point(r.y, -r.x, 0.0)
+    Point p1 = Point(0.0, r.z, -r.y);
+    Point p2 = Point(-r.z, 0.0, r.x);
+    Point p3 = Point(r.y, -r.x, 0.0);
     Matrix rx = Matrix(p1, p2, p3);
 
     Point p4 = Point(r.x*r.x, r.y*r.x, r.z*r.x);
