@@ -22,4 +22,5 @@ Light::Light(float x, float y, float z, float r, float g, float b) {
 
 Color Light::getIntensity() { return this->intensity; }
 Point Light::getPoint() { return this->p; }
+float Light::getFalloff() { return this->falloff; }
 

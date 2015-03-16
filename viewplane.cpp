@@ -1,5 +1,6 @@
 #include "ViewPlane.h"
 #include "vector.h"
+#include <iostream>
 
 ViewPlane::ViewPlane(Point ll, Point lr, Point ul, Point ur) {
   this->ll = ll;
@@ -36,3 +37,8 @@ float ViewPlane::getHeight() {
 float ViewPlane::getWidth() {
   return this->width;
 }
+
+Point ViewPlane::getLL() { return this->ll; }
+Point ViewPlane::getLR() { return this->lr; }
+Point ViewPlane::getUL() { return this->ul; }
+Point ViewPlane::getUR() { return this->ur; }

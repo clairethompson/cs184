@@ -13,6 +13,10 @@ public:
   ViewPlane();
   float getHeight();
   float getWidth();
+  Point getLL();
+  Point getLR();
+  Point getUL();
+  Point getUR();
 };
 
 #endif
