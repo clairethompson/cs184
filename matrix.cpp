@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include "vector.h"
+#include <iostream>
 #include <math.h>
 
 Matrix::Matrix() {
@@ -144,198 +145,199 @@ void Matrix::setValue(int a, int b, float c) {
 Matrix Matrix::operator*(Matrix m1) {
     Matrix m2 = Matrix();
 
-    m2.setValue(0, 0, (this->mat[0][0] * m1.getValue(0, 0)));
-    m2.setValue(0, 1, (this->mat[0][1] * m1.getValue(0, 1)));
-    m2.setValue(0, 2, (this->mat[0][2] * m1.getValue(0, 2)));
-    m2.setValue(0, 3, (this->mat[0][3] * m1.getValue(0, 3)));
-    m2.setValue(1, 0, (this->mat[1][0] * m1.getValue(1, 0)));
-    m2.setValue(1, 1, (this->mat[1][1] * m1.getValue(1, 1)));
-    m2.setValue(1, 2, (this->mat[1][2] * m1.getValue(1, 2)));
-    m2.setValue(1, 3, (this->mat[1][3] * m1.getValue(1, 3)));
-    m2.setValue(2, 0, (this->mat[2][0] * m1.getValue(2, 0)));
-    m2.setValue(2, 1, (this->mat[2][1] * m1.getValue(2, 1)));
-    m2.setValue(2, 2, (this->mat[2][2] * m1.getValue(2, 2)));
-    m2.setValue(2, 3, (this->mat[2][3] * m1.getValue(2, 3)));
-    m2.setValue(3, 0, (this->mat[3][0] * m1.getValue(3, 0)));
-    m2.setValue(3, 1, (this->mat[3][1] * m1.getValue(3, 1)));
-    m2.setValue(3, 2, (this->mat[3][2] * m1.getValue(3, 2)));
-    m2.setValue(3, 3, (this->mat[3][3] * m1.getValue(3, 3)));
-
-    return m2;
+    m2.setValue(0, 0, (this->mat[0][0] * m1.getValue(0, 0) + this->mat[1][0] * m1.getValue(0, 1) + this->mat[2][0] * m1.getValue(0, 2) + this->mat[3][0] * m1.getValue(0, 3)));
+    m2.setValue(1, 0, (this->mat[0][0] * m1.getValue(1, 0) + this->mat[1][0] * m1.getValue(1, 1) + this->mat[2][0] * m1.getValue(1, 2) + this->mat[3][0] * m1.getValue(1, 3)));
+    m2.setValue(2, 0, (this->mat[0][0] * m1.getValue(2, 0) + this->mat[1][0] * m1.getValue(2, 1) + this->mat[2][0] * m1.getValue(2, 2) + this->mat[3][0] * m1.getValue(2, 3)));
+    m2.setValue(3, 0, (this->mat[0][0] * m1.getValue(3, 0) + this->mat[1][0] * m1.getValue(3, 1) + this->mat[2][0] * m1.getValue(3, 2) + this->mat[3][0] * m1.getValue(3, 3)));
+    m2.setValue(0, 1, (this->mat[0][1] * m1.getValue(0, 0) + this->mat[1][1] * m1.getValue(0, 1) + this->mat[2][1] * m1.getValue(0, 2) + this->mat[3][1] * m1.getValue(0, 3)));
+    m2.setValue(1, 1, (this->mat[0][1] * m1.getValue(1, 0) + this->mat[1][1] * m1.getValue(1, 1) + this->mat[2][1] * m1.getValue(1, 2) + this->mat[3][1] * m1.getValue(1, 3)));
+    m2.setValue(2, 1, (this->mat[0][1] * m1.getValue(2, 0) + this->mat[1][1] * m1.getValue(2, 1) + this->mat[2][1] * m1.getValue(2, 2) + this->mat[3][1] * m1.getValue(2, 3)));
+    m2.setValue(3, 1, (this->mat[0][1] * m1.getValue(3, 0) + this->mat[1][1] * m1.getValue(3, 1) + this->mat[2][1] * m1.getValue(3, 2) + this->mat[3][1] * m1.getValue(3, 3)));
+    m2.setValue(0, 2, (this->mat[0][2] * m1.getValue(0, 0) + this->mat[1][2] * m1.getValue(0, 1) + this->mat[2][2] * m1.getValue(0, 2) + this->mat[3][2] * m1.getValue(0, 3)));
+    m2.setValue(1, 2, (this->mat[0][2] * m1.getValue(1, 0) + this->mat[1][2] * m1.getValue(1, 1) + this->mat[2][2] * m1.getValue(1, 2) + this->mat[3][2] * m1.getValue(1, 3)));
+    m2.setValue(2, 2, (this->mat[0][2] * m1.getValue(2, 0) + this->mat[1][2] * m1.getValue(2, 1) + this->mat[2][2] * m1.getValue(2, 2) + this->mat[3][2] * m1.getValue(2, 3)));
+    m2.setValue(3, 2, (this->mat[0][2] * m1.getValue(3, 0) + this->mat[1][2] * m1.getValue(3, 1) + this->mat[2][2] * m1.getValue(3, 2) + this->mat[3][2] * m1.getValue(3, 3)));
+    m2.setValue(0, 3, (this->mat[0][3] * m1.getValue(0, 0) + this->mat[1][3] * m1.getValue(0, 1) + this->mat[2][3] * m1.getValue(0, 2) + this->mat[3][3] * m1.getValue(0, 3)));
+    m2.setValue(1, 3, (this->mat[0][3] * m1.getValue(1, 0) + this->mat[1][3] * m1.getValue(1, 1) + this->mat[2][3] * m1.getValue(1, 2) + this->mat[3][3] * m1.getValue(1, 3)));
+    m2.setValue(2, 3, (this->mat[0][3] * m1.getValue(2, 0) + this->mat[1][3] * m1.getValue(2, 1) + this->mat[2][3] * m1.getValue(2, 2) + this->mat[3][3] * m1.getValue(2, 3)));
+    m2.setValue(3, 3, (this->mat[0][3] * m1.getValue(3, 0) + this->mat[1][3] * m1.getValue(3, 1) + this->mat[2][3] * m1.getValue(3, 2) + this->mat[3][3] * m1.getValue(3, 3)));
+  
+  return m2;
 };
 
 float Matrix::determinant() {
-    float det = this->mat[0][0]*this->mat[1][1]*this->mat[2][2]*this->mat[3][3]
-        + this->mat[0][0]*this->mat[1][2]*this->mat[2][3]*this->mat[3][1]
-        + this->mat[0][0]*this->mat[1][3]*this->mat[2][1]*this->mat[3][2]
+    float det =
+          this->mat[0][0]*this->mat[1][1]*this->mat[2][2]*this->mat[3][3]
+        + this->mat[0][0]*this->mat[2][1]*this->mat[3][2]*this->mat[1][3]
+        + this->mat[0][0]*this->mat[3][1]*this->mat[1][2]*this->mat[2][3]
 
-        + this->mat[0][1]*this->mat[1][0]*this->mat[2][3]*this->mat[3][2]
-        + this->mat[0][1]*this->mat[1][2]*this->mat[2][0]*this->mat[3][3]
-        + this->mat[0][1]*this->mat[1][3]*this->mat[2][2]*this->mat[3][0]
+        + this->mat[1][0]*this->mat[0][1]*this->mat[3][2]*this->mat[2][3]
+        + this->mat[1][0]*this->mat[2][1]*this->mat[0][2]*this->mat[3][3]
+        + this->mat[1][0]*this->mat[3][1]*this->mat[2][2]*this->mat[0][3]
 
-        + this->mat[0][2]*this->mat[1][0]*this->mat[2][1]*this->mat[3][3]
-        + this->mat[0][2]*this->mat[1][1]*this->mat[2][3]*this->mat[3][0]
-        + this->mat[0][2]*this->mat[1][3]*this->mat[2][0]*this->mat[3][1]
+        + this->mat[2][0]*this->mat[0][1]*this->mat[1][2]*this->mat[3][3]
+        + this->mat[2][0]*this->mat[1][1]*this->mat[3][2]*this->mat[0][3]
+        + this->mat[2][0]*this->mat[3][1]*this->mat[0][2]*this->mat[1][3]
 
-        + this->mat[0][3]*this->mat[1][0]*this->mat[2][2]*this->mat[3][1]
-        + this->mat[0][3]*this->mat[1][1]*this->mat[2][0]*this->mat[3][2]
-        + this->mat[0][3]*this->mat[1][2]*this->mat[2][1]*this->mat[3][0]
+        + this->mat[3][0]*this->mat[0][1]*this->mat[2][2]*this->mat[1][3]
+        + this->mat[3][0]*this->mat[1][1]*this->mat[0][2]*this->mat[2][3]
+        + this->mat[3][0]*this->mat[2][1]*this->mat[1][2]*this->mat[0][3]
 
-        - this->mat[0][0]*this->mat[1][1]*this->mat[2][3]*this->mat[3][2]
-        - this->mat[0][0]*this->mat[1][2]*this->mat[2][1]*this->mat[3][3]
-        - this->mat[0][0]*this->mat[1][3]*this->mat[2][2]*this->mat[3][1]
+        - this->mat[0][0]*this->mat[1][1]*this->mat[3][2]*this->mat[2][3]
+        - this->mat[0][0]*this->mat[2][1]*this->mat[1][2]*this->mat[3][3]
+        - this->mat[0][0]*this->mat[3][1]*this->mat[2][2]*this->mat[1][3]
 
-        - this->mat[0][1]*this->mat[1][0]*this->mat[2][2]*this->mat[3][3]
-        - this->mat[0][1]*this->mat[1][2]*this->mat[2][3]*this->mat[3][0]
-        - this->mat[0][1]*this->mat[1][3]*this->mat[2][0]*this->mat[3][2]
+        - this->mat[1][0]*this->mat[0][1]*this->mat[2][2]*this->mat[3][3]
+        - this->mat[1][0]*this->mat[2][1]*this->mat[3][2]*this->mat[0][3]
+        - this->mat[1][0]*this->mat[3][1]*this->mat[0][2]*this->mat[2][3]
 
-        - this->mat[0][2]*this->mat[1][0]*this->mat[2][3]*this->mat[3][1]
-        - this->mat[0][2]*this->mat[1][1]*this->mat[2][0]*this->mat[3][3]
-        - this->mat[0][2]*this->mat[1][3]*this->mat[2][1]*this->mat[3][0]
+        - this->mat[2][0]*this->mat[0][1]*this->mat[3][2]*this->mat[1][3]
+        - this->mat[2][0]*this->mat[1][1]*this->mat[0][2]*this->mat[3][3]
+        - this->mat[2][0]*this->mat[3][1]*this->mat[1][2]*this->mat[0][3]
 
-        - this->mat[0][3]*this->mat[1][0]*this->mat[2][1]*this->mat[3][2]
-        - this->mat[0][3]*this->mat[1][1]*this->mat[2][2]*this->mat[3][0]
-        - this->mat[0][3]*this->mat[1][2]*this->mat[2][0]*this->mat[3][1];
+        - this->mat[3][0]*this->mat[0][1]*this->mat[1][2]*this->mat[2][3]
+        - this->mat[3][0]*this->mat[1][1]*this->mat[2][2]*this->mat[0][3]
+        - this->mat[3][0]*this->mat[2][1]*this->mat[0][2]*this->mat[1][3];
 
     return det;
 }
 
 
 Matrix Matrix::invert() {
-    if (determinant() != 0) {
+  float det = determinant();
+  if (det != 0) {
 
-        float b00 = this->mat[1][1]*this->mat[2][2]*this->mat[3][3]
-                    + this->mat[1][2]*this->mat[2][3]*this->mat[3][1]
-                    + this->mat[1][3]*this->mat[2][1]*this->mat[3][2]
-                    - this->mat[1][1]*this->mat[2][3]*this->mat[3][2]
-                    - this->mat[1][2]*this->mat[2][1]*this->mat[3][3]
-                    - this->mat[1][3]*this->mat[2][2]*this->mat[3][1];
+    float b00 =   this->mat[1][1]*this->mat[2][2]*this->mat[3][3]
+                + this->mat[2][1]*this->mat[3][2]*this->mat[1][3]
+                + this->mat[3][1]*this->mat[1][2]*this->mat[2][3]
+                - this->mat[1][1]*this->mat[3][2]*this->mat[2][3]
+                - this->mat[2][1]*this->mat[1][2]*this->mat[3][3]
+                - this->mat[3][1]*this->mat[2][2]*this->mat[1][3];
 
-        float b01 = this->mat[0][1]*this->mat[2][3]*this->mat[3][2]
-                    + this->mat[0][2]*this->mat[2][1]*this->mat[3][3]
-                    + this->mat[0][3]*this->mat[2][2]*this->mat[3][1]
-                    - this->mat[0][1]*this->mat[2][2]*this->mat[3][3]
-                    - this->mat[0][2]*this->mat[2][3]*this->mat[3][1]
-                    - this->mat[0][3]*this->mat[2][1]*this->mat[3][2];
+    float b01 =   this->mat[1][0]*this->mat[3][2]*this->mat[2][3]
+                + this->mat[2][0]*this->mat[1][2]*this->mat[3][3]
+                + this->mat[3][0]*this->mat[2][2]*this->mat[1][3]
+                - this->mat[1][0]*this->mat[2][2]*this->mat[3][3]
+                - this->mat[2][0]*this->mat[3][2]*this->mat[1][3]
+                - this->mat[3][0]*this->mat[1][2]*this->mat[2][3];
 
-        float b02 = this->mat[0][1]*this->mat[1][2]*this->mat[3][3]
-                    + this->mat[0][2]*this->mat[1][3]*this->mat[3][1]
-                    + this->mat[0][3]*this->mat[1][1]*this->mat[3][2]
-                    - this->mat[0][1]*this->mat[1][3]*this->mat[3][2]
-                    - this->mat[0][2]*this->mat[1][1]*this->mat[3][3]
-                    - this->mat[0][3]*this->mat[1][2]*this->mat[3][1];
+    float b02 =   this->mat[1][0]*this->mat[2][1]*this->mat[3][3]
+                + this->mat[2][0]*this->mat[3][1]*this->mat[1][3]
+                + this->mat[3][0]*this->mat[1][1]*this->mat[2][3]
+                - this->mat[1][0]*this->mat[3][1]*this->mat[2][3]
+                - this->mat[2][0]*this->mat[1][1]*this->mat[3][3]
+                - this->mat[3][0]*this->mat[2][1]*this->mat[1][3];
 
-        float b03 = this->mat[0][1]*this->mat[1][3]*this->mat[2][2]
-                    + this->mat[0][2]*this->mat[1][1]*this->mat[2][3]
-                    + this->mat[0][3]*this->mat[1][2]*this->mat[2][1]
-                    - this->mat[0][1]*this->mat[1][2]*this->mat[2][3]
-                    - this->mat[0][2]*this->mat[1][3]*this->mat[2][1]
-                    - this->mat[0][3]*this->mat[1][1]*this->mat[2][2];
+    float b03 =   this->mat[1][0]*this->mat[3][1]*this->mat[2][2]
+                + this->mat[2][0]*this->mat[1][1]*this->mat[3][2]
+                + this->mat[3][0]*this->mat[2][1]*this->mat[1][2]
+                - this->mat[1][0]*this->mat[2][1]*this->mat[3][2]
+                - this->mat[2][0]*this->mat[3][1]*this->mat[1][2]
+                - this->mat[3][0]*this->mat[1][1]*this->mat[2][2];
 
-        float b10 = this->mat[1][0]*this->mat[2][3]*this->mat[3][2]
-                    + this->mat[1][2]*this->mat[2][0]*this->mat[3][3]
-                    + this->mat[1][3]*this->mat[2][2]*this->mat[3][0]
-                    - this->mat[1][0]*this->mat[2][2]*this->mat[3][3]
-                    - this->mat[1][2]*this->mat[2][3]*this->mat[3][0]
-                    - this->mat[1][3]*this->mat[2][0]*this->mat[3][2];
+    float b10 =   this->mat[0][1]*this->mat[3][2]*this->mat[2][3]
+                + this->mat[2][1]*this->mat[0][2]*this->mat[3][3]
+                + this->mat[3][1]*this->mat[2][2]*this->mat[0][3]
+                - this->mat[0][1]*this->mat[2][2]*this->mat[3][3]
+                - this->mat[2][1]*this->mat[3][2]*this->mat[0][3]
+                - this->mat[3][1]*this->mat[0][2]*this->mat[2][3];
 
-        float b11 = this->mat[0][0]*this->mat[2][2]*this->mat[3][3]
-                    + this->mat[0][2]*this->mat[2][3]*this->mat[3][0]
-                    + this->mat[0][3]*this->mat[2][0]*this->mat[3][2]
-                    - this->mat[0][0]*this->mat[2][3]*this->mat[3][2]
-                    - this->mat[0][2]*this->mat[2][0]*this->mat[3][3]
-                    - this->mat[0][3]*this->mat[2][2]*this->mat[3][0];
+    float b11 =   this->mat[0][0]*this->mat[2][2]*this->mat[3][3]
+                + this->mat[2][0]*this->mat[3][2]*this->mat[0][3]
+                + this->mat[3][0]*this->mat[0][2]*this->mat[2][3]
+                - this->mat[0][0]*this->mat[3][2]*this->mat[2][3]
+                - this->mat[2][0]*this->mat[0][2]*this->mat[3][3]
+                - this->mat[3][0]*this->mat[2][2]*this->mat[0][3];
 
+    float b12 =   this->mat[0][0]*this->mat[3][1]*this->mat[2][3]
+                + this->mat[2][0]*this->mat[0][1]*this->mat[3][3]
+                + this->mat[3][0]*this->mat[2][1]*this->mat[0][3]
+                - this->mat[0][0]*this->mat[2][1]*this->mat[3][3]
+                - this->mat[2][0]*this->mat[3][1]*this->mat[0][3]
+                - this->mat[3][0]*this->mat[0][1]*this->mat[2][3];
 
-        float b12 = this->mat[0][0]*this->mat[1][3]*this->mat[3][2]
-                    + this->mat[0][2]*this->mat[1][0]*this->mat[3][3]
-                    + this->mat[0][3]*this->mat[1][2]*this->mat[3][0]
-                    - this->mat[0][0]*this->mat[1][2]*this->mat[3][3]
-                    - this->mat[0][2]*this->mat[1][3]*this->mat[3][0]
-                    - this->mat[0][3]*this->mat[1][0]*this->mat[3][2];
+    float b13 =   this->mat[0][0]*this->mat[1][1]*this->mat[3][2]
+                + this->mat[1][0]*this->mat[3][1]*this->mat[0][2]
+                + this->mat[3][0]*this->mat[0][1]*this->mat[1][2]
+                - this->mat[0][0]*this->mat[3][1]*this->mat[1][2]
+                - this->mat[1][0]*this->mat[0][1]*this->mat[3][2]
+                - this->mat[3][0]*this->mat[2][1]*this->mat[0][2];
 
-        float b13 = this->mat[0][0]*this->mat[1][1]*this->mat[2][3]
-                    + this->mat[0][1]*this->mat[1][3]*this->mat[2][0]
-                    + this->mat[0][3]*this->mat[1][0]*this->mat[2][1]
-                    - this->mat[0][0]*this->mat[1][3]*this->mat[2][1]
-                    - this->mat[0][1]*this->mat[1][0]*this->mat[2][3]
-                    - this->mat[0][3]*this->mat[1][2]*this->mat[2][0];
+    float b20 =   this->mat[0][1]*this->mat[1][2]*this->mat[3][3]
+                + this->mat[1][1]*this->mat[3][2]*this->mat[0][3]
+                + this->mat[3][1]*this->mat[0][2]*this->mat[1][3]
+                - this->mat[0][1]*this->mat[3][2]*this->mat[1][3]
+                - this->mat[1][1]*this->mat[0][2]*this->mat[3][3]
+                - this->mat[3][1]*this->mat[1][2]*this->mat[0][3];
 
-        float b20 = this->mat[1][0]*this->mat[2][2]*this->mat[3][3]
-                    + this->mat[1][2]*this->mat[2][3]*this->mat[3][0]
-                    + this->mat[1][3]*this->mat[2][0]*this->mat[3][2]
-                    - this->mat[1][0]*this->mat[2][3]*this->mat[3][2]
-                    - this->mat[1][2]*this->mat[2][0]*this->mat[3][3]
-                    - this->mat[1][3]*this->mat[2][1]*this->mat[3][0];
+    float b21 =   this->mat[0][0]*this->mat[3][2]*this->mat[1][3]
+                + this->mat[1][0]*this->mat[0][2]*this->mat[3][3]
+                + this->mat[3][0]*this->mat[0][2]*this->mat[0][3]
+                - this->mat[0][0]*this->mat[1][2]*this->mat[3][3]
+                - this->mat[1][0]*this->mat[3][2]*this->mat[0][3]
+                - this->mat[3][0]*this->mat[0][2]*this->mat[1][3];
 
-        float b21 = this->mat[0][0]*this->mat[2][3]*this->mat[3][1]
-                    + this->mat[0][1]*this->mat[2][0]*this->mat[3][3]
-                    + this->mat[0][3]*this->mat[2][0]*this->mat[3][0]
-                    - this->mat[0][0]*this->mat[2][1]*this->mat[3][3]
-                    - this->mat[0][1]*this->mat[2][3]*this->mat[3][0]
-                    - this->mat[0][3]*this->mat[2][0]*this->mat[3][1];
+    float b22 =   this->mat[0][0]*this->mat[1][1]*this->mat[3][3]
+                + this->mat[1][0]*this->mat[3][1]*this->mat[0][3]
+                + this->mat[3][0]*this->mat[0][1]*this->mat[1][3]
+                - this->mat[0][0]*this->mat[3][1]*this->mat[1][3]
+                - this->mat[1][0]*this->mat[0][1]*this->mat[3][3]
+                - this->mat[3][0]*this->mat[1][1]*this->mat[0][3];
 
-        float b22 = this->mat[0][0]*this->mat[1][2]*this->mat[3][3]
-                    + this->mat[0][2]*this->mat[1][3]*this->mat[3][0]
-                    + this->mat[0][3]*this->mat[1][0]*this->mat[3][2]
-                    - this->mat[0][0]*this->mat[1][3]*this->mat[3][2]
-                    - this->mat[0][2]*this->mat[1][0]*this->mat[3][3]
-                    - this->mat[0][3]*this->mat[1][1]*this->mat[3][0];
+    float b23 =   this->mat[0][0]*this->mat[3][1]*this->mat[1][2]
+                + this->mat[1][0]*this->mat[0][1]*this->mat[3][2]
+                + this->mat[3][0]*this->mat[0][1]*this->mat[0][2]
+                - this->mat[0][0]*this->mat[1][1]*this->mat[3][2]
+                - this->mat[1][0]*this->mat[3][1]*this->mat[0][2]
+                - this->mat[3][0]*this->mat[0][1]*this->mat[1][2];
 
-        float b23 = this->mat[0][0]*this->mat[1][3]*this->mat[2][1]
-                    + this->mat[0][1]*this->mat[1][0]*this->mat[2][3]
-                    + this->mat[0][3]*this->mat[1][0]*this->mat[2][0]
-                    - this->mat[0][0]*this->mat[1][1]*this->mat[2][3]
-                    - this->mat[0][1]*this->mat[1][3]*this->mat[2][0]
-                    - this->mat[0][3]*this->mat[1][0]*this->mat[2][1];
+    float b30 =   this->mat[0][1]*this->mat[2][2]*this->mat[1][3]
+                + this->mat[1][1]*this->mat[0][2]*this->mat[2][3]
+                + this->mat[2][1]*this->mat[1][2]*this->mat[0][3]
+                - this->mat[0][1]*this->mat[1][2]*this->mat[2][3]
+                - this->mat[1][1]*this->mat[2][2]*this->mat[0][3]
+                - this->mat[2][1]*this->mat[0][2]*this->mat[1][3];
 
-        float b30 = this->mat[1][0]*this->mat[2][2]*this->mat[3][1]
-                    + this->mat[1][1]*this->mat[2][0]*this->mat[3][2]
-                    + this->mat[1][2]*this->mat[2][1]*this->mat[3][0]
-                    - this->mat[1][0]*this->mat[2][1]*this->mat[3][2]
-                    - this->mat[1][1]*this->mat[2][2]*this->mat[3][0]
-                    - this->mat[1][2]*this->mat[2][0]*this->mat[3][1];
+    float b31 =   this->mat[0][0]*this->mat[1][2]*this->mat[2][3]
+                + this->mat[1][0]*this->mat[2][2]*this->mat[0][3]
+                + this->mat[2][0]*this->mat[0][2]*this->mat[1][3]
+                - this->mat[0][0]*this->mat[2][2]*this->mat[1][3]
+                - this->mat[1][0]*this->mat[0][2]*this->mat[2][3]
+                - this->mat[2][0]*this->mat[1][2]*this->mat[0][3];
 
-        float b31 = this->mat[0][0]*this->mat[2][1]*this->mat[3][2]
-                    + this->mat[0][1]*this->mat[2][2]*this->mat[3][0]
-                    + this->mat[0][2]*this->mat[2][0]*this->mat[3][1]
-                    - this->mat[0][0]*this->mat[2][2]*this->mat[3][1]
-                    - this->mat[0][1]*this->mat[2][0]*this->mat[3][2]
-                    - this->mat[0][2]*this->mat[2][1]*this->mat[3][0];
+    float b32 =   this->mat[0][0]*this->mat[2][1]*this->mat[1][3]
+                + this->mat[1][0]*this->mat[0][1]*this->mat[2][3]
+                + this->mat[2][0]*this->mat[1][1]*this->mat[0][3]
+                - this->mat[0][0]*this->mat[1][1]*this->mat[2][3]
+                - this->mat[1][0]*this->mat[2][1]*this->mat[0][3]
+                - this->mat[2][0]*this->mat[0][1]*this->mat[1][3];
 
-        float b32 = this->mat[0][0]*this->mat[1][2]*this->mat[3][1]
-                    + this->mat[0][1]*this->mat[1][0]*this->mat[3][2]
-                    + this->mat[0][2]*this->mat[1][1]*this->mat[3][0]
-                    - this->mat[0][0]*this->mat[1][1]*this->mat[3][2]
-                    - this->mat[0][1]*this->mat[1][2]*this->mat[3][0]
-                    - this->mat[0][2]*this->mat[1][0]*this->mat[3][1];
+    float b33 =   this->mat[0][0]*this->mat[1][1]*this->mat[2][2]
+                + this->mat[1][0]*this->mat[2][1]*this->mat[0][2]
+                + this->mat[2][0]*this->mat[0][1]*this->mat[1][2]
+                - this->mat[0][0]*this->mat[2][1]*this->mat[1][2]
+                - this->mat[1][0]*this->mat[0][1]*this->mat[2][2]
+                - this->mat[2][0]*this->mat[1][1]*this->mat[0][2];
 
-        float b33 = this->mat[0][0]*this->mat[1][1]*this->mat[2][2]
-                    + this->mat[0][1]*this->mat[1][2]*this->mat[2][0]
-                    + this->mat[0][2]*this->mat[1][0]*this->mat[2][1]
-                    - this->mat[0][0]*this->mat[1][2]*this->mat[2][1]
-                    - this->mat[0][1]*this->mat[1][0]*this->mat[2][2]
-                    - this->mat[0][2]*this->mat[1][1]*this->mat[2][0];
+    Matrix inverted = Matrix();
+    inverted.setValue(0, 0, b00/det);
+    inverted.setValue(0, 1, b01/det);
+    inverted.setValue(0, 2, b02/det);
+    inverted.setValue(0, 3, b03/det);
+    inverted.setValue(1, 0, b10/det);
+    inverted.setValue(1, 1, b11/det);
+    inverted.setValue(1, 2, b12/det);
+    inverted.setValue(1, 3, b13/det);
+    inverted.setValue(2, 0, b20/det);
+    inverted.setValue(2, 1, b21/det);
+    inverted.setValue(2, 2, b22/det);
+    inverted.setValue(2, 3, b23/det);
+    inverted.setValue(3, 0, b30/det);
+    inverted.setValue(3, 1, b31/det);
+    inverted.setValue(3, 2, b32/det);
+    inverted.setValue(3, 3, b33/det);
 
-        Matrix inverted = Matrix();
-        inverted.setValue(0, 0, b00);
-        inverted.setValue(0, 1, b01);
-        inverted.setValue(0, 2, b02);
-        inverted.setValue(0, 3, b03);
-        inverted.setValue(1, 0, b10);
-        inverted.setValue(1, 1, b11);
-        inverted.setValue(1, 2, b12);
-        inverted.setValue(1, 3, b13);
-        inverted.setValue(2, 0, b20);
-        inverted.setValue(2, 1, b21);
-        inverted.setValue(2, 2, b22);
-        inverted.setValue(2, 3, b23);
-        inverted.setValue(3, 0, b30);
-        inverted.setValue(3, 1, b31);
-        inverted.setValue(3, 2, b32);
-        inverted.setValue(3, 3, b33);
-
-        return inverted;
+    return inverted;
 
     } else {
         // THROW ERROR
@@ -364,4 +366,25 @@ Matrix Matrix::transpose() {
     ret.setValue(1, 3, this->mat[3][1]);
     ret.setValue(2, 3, this->mat[3][2]);
     ret.setValue(3, 3, this->mat[3][3]);
+}
+
+bool Matrix::operator==(Matrix m) {
+  bool pass = 1;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if(this->mat[i][j] != m.getValue(i, j)) {
+        std::cout << "\n";
+        std::cout << "\n";
+        std::cout << i;
+        std::cout << "\n";
+        std::cout << j;
+        std::cout << "\n";
+        std::cout << this->mat[i][j];
+        std::cout << "\n";
+        std::cout << m.getValue(i, j);
+        pass = 0;
+      }
+    }
+  }
+  return pass;
 }

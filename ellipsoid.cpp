@@ -43,13 +43,13 @@ bool Ellipsoid::intersection(Ray r, LocalGeo* l) {
     float t2 = (-b - sqrt(det))/2*a;
     if (t1 * t2 < 0) { // ray starts inside of the sphere
       t = std::max(t1, t2);
-    } else if (!(r.inRange(t1)) && !(r.inRange(t2))) {
+    } else if (!(r.inRange(t1)) && !(r.inRange(t2))) { // both t out of range
       return 0;
     } else if (!r.inRange(t1)) {
       t = t2;
     } else if (!r.inRange(t2)) {
       t = t1;
-    } else {
+    } else { // return closer t value
       t = std::min(t1, t2);      
     }
   }
