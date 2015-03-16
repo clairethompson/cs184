@@ -8,6 +8,7 @@ public:
   bool vector();
   bool normal();
   bool ellipsoid();
+  bool triangle();
 };
 
 #endif

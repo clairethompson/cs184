@@ -1,3 +1,4 @@
+#include "ellipsoid.h"
 #include "triangle.h"
 #include "matrix.h"
 #include "vector.h"
@@ -27,15 +28,15 @@ Triangle::Triangle() {
 /* Moller-Trumbore Algorithm
 see: http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm */
 bool Triangle::intersection(Ray r, LocalGeo* l) {
-  Vector V1 = this->a;  // Triangle vertices
-  Vector V2 = this->b;
-  Vector V3 = this->c;
+  Point v1 = this->a;  // Triangle vertices
+  Point v2 = this->b;
+  Point v3 = this->c;
   Point O = r.getStart(); // Ray origin
   Vector D = r.getDir();  //Ray direction
  
   //Find vectors for two edges sharing V1
-  Vector e1 = Vector(V2, V1);
-  Vector e2 = Vector(V3, V1);
+  Vector e1 = Vector(v2, v1);
+  Vector e2 = Vector(v3, v1);
 
   //Begin calculating determinant - also used to calculate u parameter
   Vector P = D.cross(e2);
@@ -46,7 +47,7 @@ bool Triangle::intersection(Ray r, LocalGeo* l) {
   float inv_det = 1 / det;
  
   //calculate distance from V1 to ray origin
-  Vector T = Vector(O, V1);
+  Vector T = Vector(O, v1);
  
   //Calculate u parameter and test bound
   float u = T.dot(P) * inv_det;
@@ -78,7 +79,8 @@ bool Triangle::intersection(Ray r, LocalGeo* l) {
 }
 
 Normal Triangle::getNormal() {
-  Vector e1 = Vector(V2, V1);
-  Vector e2 = Vector(V3, V1);
-  return e1.cros(e2);
+  Vector e1 = Vector(this->a, this->b);
+  Vector e2 = Vector(this->c, this->b);
+  Vector temp = e1.cross(e2);
+  return Normal(temp.x, temp.y, temp.z);
 }
