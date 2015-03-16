@@ -219,11 +219,8 @@ int main(int argc, char const *argv[])
 /* Return Color C of raytrace */
 Color RayTrace(Ray r, int depth) {
   int i, j, k;
-<<<<<<< HEAD
   Shape * hitobject;
-=======
-  Shape* hitobject;
->>>>>>> 23611fcb28cc6b8173476c5e79c331fa41a79a3f
+
 
   float dist_max = FLT_MAX;
   float ray_obj_dist = 0.0;
