@@ -169,8 +169,8 @@ int main(int argc, char const *argv[])
       Vector ul (camera.getViewPlane().getUL().getX(), camera.getViewPlane().getUL().getY(), camera.getViewPlane().getUL().getZ());
       Vector ur (camera.getViewPlane().getUR().getX(), camera.getViewPlane().getUR().getY(), camera.getViewPlane().getUR().getZ());
       // Point on plane = u(v * LL + (1-v)UL) + (1 - u)(v*LR + (1-v)UR)
-      Vector temp = (ul * (1 - v) + (ll * v)) * u + ((lr * v) + ur * (1-v)) * (1-u);
-      //Vector temp = (lr * v + ur * (1 - v)) * u + (ll * v + ul * (1-v)) * (1-u);
+      Vector temp = ((ur * v) + lr * (1 - v)) * u + ((ul * v) + ll * (1-v)) * (1-u);
+      // Vector temp = ((ll * v) + ul * (1 - v)) * u + ((lr * v) + ur * (1-v)) * (1-u);
       Point p (temp.getX(), temp.getY(), temp.getZ());
 
       Vector r_dir (p, camera.getEye());
