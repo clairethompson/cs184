@@ -19,3 +19,7 @@ Light::Light(float x, float y, float z, float r, float g, float b) {
 	this->intensity = Color(r, g, b);
 	this->falloff = 0.0;
 }
+
+Color Light::getIntensity() { return this->intensity; }
+Point Light::getPoint() { return this->p; }
+

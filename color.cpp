@@ -11,6 +11,10 @@ Color::Color() {
   this->b = 0;
 }
 
+float Color::getR() { return this->r; }
+float Color::getG() { return this->g; }
+float Color::getB() { return this->b; }
+
 /* Compute the dot product between c1 and c2 */
 float Color::dotProduct(Color c1, Color c2) {
 	return (c1.r*c2.r) + (c1.g*c2.g) + (c1.b*c2.b);

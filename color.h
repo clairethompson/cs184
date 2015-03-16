@@ -8,6 +8,11 @@ class Color
     Color(float r, float g, float b);
     Color();
 
+    /* Getter functions */
+    float getR();
+    float getG();
+    float getB();
+
     /* Compute the dot product between c1 and c2 */
     float dotProduct(Color c1, Color c2);
 

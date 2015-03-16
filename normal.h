@@ -9,6 +9,10 @@ public:
   Normal(float x, float y, float z);
   Normal();
 
+  float getX();
+  float getY();
+  float getZ();
+
   /* Add two normals */
   Normal operator+(Normal n1);
 
