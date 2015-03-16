@@ -130,7 +130,6 @@ Matrix::Matrix(float a, float b, float c, int type) {
     this->mat[3][3] = 1.0;
   } else {
     // THROW ERROR
-    exit(0);
   }
 };
 
@@ -166,7 +165,7 @@ Matrix Matrix::operator*(Matrix m1) {
 };
 
 float Matrix::determinant() {
-    det = this->mat[0][0]*this->mat[1][1]*this->mat[2][2]*this->mat[3][3]
+    float det = this->mat[0][0]*this->mat[1][1]*this->mat[2][2]*this->mat[3][3]
         + this->mat[0][0]*this->mat[1][2]*this->mat[2][3]*this->mat[3][1]
         + this->mat[0][0]*this->mat[1][3]*this->mat[2][1]*this->mat[3][2]
 
@@ -203,7 +202,7 @@ float Matrix::determinant() {
 
 
 Matrix Matrix::invert() {
-    if (this.determinant() != 0) {
+    if (determinant() != 0) {
 
         float b00 = this->mat[1][1]*this->mat[2][2]*this->mat[3][3]
                     + this->mat[1][2]*this->mat[2][3]*this->mat[3][1]
@@ -274,7 +273,7 @@ Matrix Matrix::invert() {
                     + this->mat[0][3]*this->mat[2][0]*this->mat[3][0]
                     - this->mat[0][0]*this->mat[2][1]*this->mat[3][3]
                     - this->mat[0][1]*this->mat[2][3]*this->mat[3][0]
-                    - this->mat[0][3]*this->mat[2][0]*this->mat[3][1]
+                    - this->mat[0][3]*this->mat[2][0]*this->mat[3][1];
 
         float b22 = this->mat[0][0]*this->mat[1][2]*this->mat[3][3]
                     + this->mat[0][2]*this->mat[1][3]*this->mat[3][0]
@@ -311,7 +310,7 @@ Matrix Matrix::invert() {
                     - this->mat[0][1]*this->mat[1][2]*this->mat[3][0]
                     - this->mat[0][2]*this->mat[1][0]*this->mat[3][1];
 
-        float b31 = this->mat[0][0]*this->mat[1][1]*this->mat[2][2]
+        float b33 = this->mat[0][0]*this->mat[1][1]*this->mat[2][2]
                     + this->mat[0][1]*this->mat[1][2]*this->mat[2][0]
                     + this->mat[0][2]*this->mat[1][0]*this->mat[2][1]
                     - this->mat[0][0]*this->mat[1][2]*this->mat[2][1]
@@ -340,7 +339,6 @@ Matrix Matrix::invert() {
 
     } else {
         // THROW ERROR
-        exit(0);
     }
 }
 
