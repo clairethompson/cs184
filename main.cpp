@@ -16,6 +16,7 @@
 #include "BRDF.h"
 #include "tests.h"
 #include "ellipsoid.h"
+#include "triangle.h"
 #include "ray.h"
 
 
@@ -103,14 +104,12 @@ int main(int argc, char const *argv[])
       Point b = Point(std::stof(argv[count+4]), std::stof(argv[count+5]), std::stof(argv[count+6]));
       Point c = Point(std::stof(argv[count+7]), std::stof(argv[count+8]), std::stof(argv[count+9]));
 
-      // Shape tri = Shape(Point(), 0.0, a, b, c, f, 0);
-
-      //TODO: implement triangle class fo dis shit
-
-      // shapes.push_back(tri);
+      Triangle tri = Triangle(a, b, c, f);
+      shapes.push_back(&tri);
       
       count += 9;
     } else if (strcmp(argv[count], OBJ_FILE) == 0) {
+      // TODO: obj file parsing
 
     } else if (strcmp(argv[count], POINT_LIGHT) == 0) {
 
@@ -144,15 +143,15 @@ int main(int argc, char const *argv[])
       fprintf(stdout, "%s\n", "BRDF");
     } else if (strcmp(argv[count], TRANSLATE) == 0) {
       Matrix trans = Matrix(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), 1);
-      // PUT THIS MATRIX INTO SOME SORT OF LIST
+      // TODO: PUT THIS MATRIX INTO SOME SORT OF LIST
       count += 3;
     } else if (strcmp(argv[count], ROTATE) == 0) {
       Matrix rot = Matrix(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), 2);
-      // PUT THIS MATRIX INTO SOME SORT OF LIST
+      // TODO: PUT THIS MATRIX INTO SOME SORT OF LIST
       count += 3;
     } else if (strcmp(argv[count], SCALE) == 0) {
       Matrix scale = Matrix(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), 3);
-      // PUT THIS MATRIX INTO SOME SORT OF LIST
+      // TODO: PUT THIS MATRIX INTO SOME SORT OF LIST
       count += 3;
     }
     count += 1;
@@ -267,7 +266,7 @@ Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo 
   view.normalize();
   float specularColor = pow(fmaxf(view.dot(reflect*-1.0), 0.0), b.getSP());
 
-  return ((b.getKS() * specularColor) + (b.getKD() * diffuseColor) + b.getKA()) * light_c;
+  return ((b.getKS() * specularColor) + (b.getKD() * diffuseColor)) * light_c;
 }
 
 
