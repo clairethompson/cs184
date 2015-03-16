@@ -90,25 +90,22 @@ Matrix::Matrix(float a, float b, float c, int type) {
 
     Matrix rxrx = rx*rx;
 
-    this->mat[0][0] = rrt[0][0] + sin(theta)*rx[0][0] - cos(theta)*rxrx[0][0];
-    this->mat[0][1] = rrt[0][1] + sin(theta)*rx[0][1] - cos(theta)*rxrx[0][1];
-    this->mat[0][2] = rrt[0][2] + sin(theta)*rx[0][2] - cos(theta)*rxrx[0][2];
-    this->mat[0][3] = rrt[0][3] + sin(theta)*rx[0][3] - cos(theta)*rxrx[0][3];
-
-    this->mat[1][0] = rrt[1][0] + sin(theta)*rx[1][0] - cos(theta)*rxrx[1][0];
-    this->mat[1][1] = rrt[1][1] + sin(theta)*rx[1][1] - cos(theta)*rxrx[1][1];
-    this->mat[1][2] = rrt[1][2] + sin(theta)*rx[1][2] - cos(theta)*rxrx[1][2];
-    this->mat[1][3] = rrt[1][3] + sin(theta)*rx[1][3] - cos(theta)*rxrx[1][3];
-
-    this->mat[2][0] = rrt[2][0] + sin(theta)*rx[2][0] - cos(theta)*rxrx[2][0];
-    this->mat[2][1] = rrt[2][1] + sin(theta)*rx[2][1] - cos(theta)*rxrx[2][1];
-    this->mat[2][2] = rrt[2][2] + sin(theta)*rx[2][2] - cos(theta)*rxrx[2][2];
-    this->mat[2][3] = rrt[2][3] + sin(theta)*rx[2][3] - cos(theta)*rxrx[2][3];
-
-    this->mat[3][0] = rrt[3][0] + sin(theta)*rx[3][0] - cos(theta)*rxrx[3][0];
-    this->mat[3][1] = rrt[3][1] + sin(theta)*rx[3][1] - cos(theta)*rxrx[3][1];
-    this->mat[3][2] = rrt[3][2] + sin(theta)*rx[3][2] - cos(theta)*rxrx[3][2];
-    this->mat[3][3] = rrt[3][3] + sin(theta)*rx[3][3] - cos(theta)*rxrx[3][3];
+    this->mat[0][0] = rrt.getValue(0, 0) + sin(theta)*rx.getValue(0, 0) - cos(theta)*rxrx.getValue(0, 0);
+    this->mat[0][1] = rrt.getValue(0, 1) + sin(theta)*rx.getValue(0, 1) - cos(theta)*rxrx.getValue(0, 1);
+    this->mat[0][2] = rrt.getValue(0, 2) + sin(theta)*rx.getValue(0, 2) - cos(theta)*rxrx.getValue(0, 2);
+    this->mat[0][3] = rrt.getValue(0, 3) + sin(theta)*rx.getValue(0, 3) - cos(theta)*rxrx.getValue(0, 3);
+    this->mat[1][0] = rrt.getValue(1, 0) + sin(theta)*rx.getValue(1, 0) - cos(theta)*rxrx.getValue(1, 0);
+    this->mat[1][1] = rrt.getValue(1, 1) + sin(theta)*rx.getValue(1, 1) - cos(theta)*rxrx.getValue(1, 1);
+    this->mat[1][2] = rrt.getValue(1, 2) + sin(theta)*rx.getValue(1, 2) - cos(theta)*rxrx.getValue(1, 2);
+    this->mat[1][3] = rrt.getValue(1, 3) + sin(theta)*rx.getValue(1, 3) - cos(theta)*rxrx.getValue(1, 3);
+    this->mat[2][0] = rrt.getValue(2, 0) + sin(theta)*rx.getValue(2, 0) - cos(theta)*rxrx.getValue(2, 0);
+    this->mat[2][1] = rrt.getValue(2, 1) + sin(theta)*rx.getValue(2, 1) - cos(theta)*rxrx.getValue(2, 1);
+    this->mat[2][2] = rrt.getValue(2, 2) + sin(theta)*rx.getValue(2, 2) - cos(theta)*rxrx.getValue(2, 2);
+    this->mat[2][3] = rrt.getValue(2, 3) + sin(theta)*rx.getValue(2, 3) - cos(theta)*rxrx.getValue(2, 3);
+    this->mat[3][0] = rrt.getValue(3, 0) + sin(theta)*rx.getValue(3, 0) - cos(theta)*rxrx.getValue(3, 0);
+    this->mat[3][1] = rrt.getValue(3, 1) + sin(theta)*rx.getValue(3, 1) - cos(theta)*rxrx.getValue(3, 1);
+    this->mat[3][2] = rrt.getValue(3, 2) + sin(theta)*rx.getValue(3, 2) - cos(theta)*rxrx.getValue(3, 2);
+    this->mat[3][3] = rrt.getValue(3, 3) + sin(theta)*rx.getValue(3, 3) - cos(theta)*rxrx.getValue(3, 3);
 
   } else if (type == 3) {
     /* Scaling Matrix */
