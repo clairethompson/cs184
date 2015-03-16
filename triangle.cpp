@@ -79,8 +79,8 @@ bool Triangle::intersection(Ray r, LocalGeo* l) {
 }
 
 Normal Triangle::getNormal() {
-  Vector e1 = Vector(this->a, this->b);
-  Vector e2 = Vector(this->c, this->b);
+  Vector e1 = Vector(this->b, this->a);
+  Vector e2 = Vector(this->c, this->a);
   Vector temp = e1.cross(e2);
   return Normal(temp.x, temp.y, temp.z);
 }
