@@ -54,13 +54,18 @@ bool Ellipsoid::intersection(Ray r, LocalGeo* l) {
     }
   }
 
-  Vector hitV = (dir * t) + start;
-  Point hit = Point(hitV.x, hitV.y, hitV.z);
-  Normal n = Normal((hit.x - cen.x)/rad, (hit.y - cen.y)/rad, (hit.z - cen.z)/rad);
+  Point p = r.getPointAtT(t);
+  Normal n = this->getNormalAtPoint(p);
 
-  l->setPoint(hit);
+  l->setPoint(p);
   l->setNormal(n);
 
   return 1;
+}
+
+/* Only works for spheres. 
+  TODO: implement for ellipsoid */
+Normal Ellipsoid::getNormalAtPoint(Point p) {
+  return Normal((p.x - this->center.x)/this->radius, (p.y - this->center.y)/this->radius, (p.z - this->center.z)/this->radius);
 }
 

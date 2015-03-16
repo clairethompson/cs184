@@ -6,6 +6,7 @@
 #include "point.h"
 #include "normal.h"
 #include "ellipsoid.h"
+#include "triangle.h"
 #include "ray.h"
 #include "localgeo.h"
 
@@ -14,6 +15,7 @@ Tests::Tests() {};
 void Tests::checkAll() {
 
   std::cout << "Running tests\n";
+  
   std::cout << "Vector tests: ";
   (this->vector()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
   
@@ -22,6 +24,9 @@ void Tests::checkAll() {
   
   std::cout << "Ellipsoid tests: ";
   (this->ellipsoid()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
+
+  std::cout << "Triangle tests: ";
+  (this->triangle()) ? std::cout << "OK\n" : std::cout << "\tFAIL\n";
 };
 
 bool Tests::vector() {
@@ -129,23 +134,26 @@ bool Tests::normal() {
   return pass;
 };
 
-bool Tests::color() {
-  return 1;
-};
-
 bool Tests::ellipsoid() {
   bool pass = 1;
-  Point c = Point();
+
+  BRDF f = BRDF(); // not static
+  Point a = Point(0, 1, 0);
   Point start = Point(0, 0, 4);
   Point origin = Point(0, 0, 0);
   Vector dir = Vector(0, 0, -1);
-  BRDF f = BRDF();
-  Ellipsoid e = Ellipsoid(c, 1.0, f);
+  Ellipsoid e = Ellipsoid(origin, 1.0, f);
   Ray r = Ray(start, dir, 0.0, 20);
   Ray r2 = Ray(origin, dir, -4.0, 20);
-  LocalGeo temp = LocalGeo();
-  Point p = Point();
-  Normal n = Normal();
+  LocalGeo temp = LocalGeo(); // not static
+  Point p = Point(); // not static
+  Normal n = Normal(); // not static
+
+  n = e.getNormalAtPoint(a);
+  if(n.x != 0.0 || n.y != 1.0 || n.z != 0.0) {
+    pass = 0;
+    std::cout << "\t\nGet Normal at Point";
+  }
 
   if(e.intersection(r, &temp)) {
     p = temp.getPoint();
@@ -171,6 +179,47 @@ bool Tests::ellipsoid() {
     std::cout << "\n\tIntersection from inside sphere\n";
   }
 
+
+  return pass;
+};
+
+bool Tests::triangle() {
+
+  bool pass = 1;
+
+  BRDF f = BRDF(); 
+  Point a = Point(1, 1, 0);
+  Point b = Point(-1, 1, 0);
+  Point c = Point(0, -1, 0);
+  Point start = Point(0, 0, 4);
+  Vector dir = Vector(0, 0, -1);
+  Triangle e = Triangle(a, b, c, f);
+  Ray r = Ray(start, dir, 0.0, 20);
+  // Ray r2 = Ray(origin, dir, -4.0, 20);
+  LocalGeo temp = LocalGeo(); // not static
+  Point p = Point(); // not static
+  Normal n = Normal(); // not static
+
+  n = e.getNormal();
+  if(n.x != 0.0 || n.y != 0.0 || n.z != -1.0) {
+    std::cout << n.x;
+    std::cout << n.y;
+    std::cout << n.z;
+    pass = 0;
+    std::cout << "\n\tGet Normal";
+  }
+
+  if(e.intersection(r, &temp)) {
+    p = temp.getPoint();
+    n = temp.getNormal();
+    if (p.x != 0.0 || p.y != 0.0 || p.z != 0.0 || n.x != 0.0 || n.y != 0.0 || n.z != -1.0 ) {
+      pass = 0;
+      std::cout << "\n\tSimple intersection\n";
+    }
+  } else {
+    pass = 0;
+    std::cout << "\n\tSimple intersection\n";
+  }
 
   return pass;
 };

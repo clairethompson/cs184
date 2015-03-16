@@ -1,4 +1,4 @@
-OBJS = point.o normal.o localgeo.o color.o vector.o ray.o BRDF.o light.o viewplane.o camera.o matrix.o transformation.o ellipsoid.o main.o tests.o
+OBJS = point.o normal.o localgeo.o color.o vector.o ray.o BRDF.o light.o viewplane.o camera.o matrix.o transformation.o ellipsoid.o triangle.o main.o tests.o
 
 # Basics Compiling Stuff
 CC = g++
@@ -50,6 +50,9 @@ transformation.o: transformation.h transformation.cpp
 
 ellipsoid.o: ellipsoid.h ellipsoid.cpp shape.h
 	$(CC) $(CFLAGS) ellipsoid.cpp
+
+triangle.o: triangle.h triangle.cpp shape.h
+	$(CC) $(CFLAGS) triangle.cpp
 
 main.o: point.o vector.o main.cpp
 	$(CC) $(CFLAGS) main.cpp
