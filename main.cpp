@@ -170,7 +170,6 @@ int main(int argc, char const *argv[])
       Vector ur (camera.getViewPlane().getUR().getX(), camera.getViewPlane().getUR().getY(), camera.getViewPlane().getUR().getZ());
       // Point on plane = u(v * LL + (1-v)UL) + (1 - u)(v*LR + (1-v)UR)
       Vector temp = ((ur * v) + lr * (1 - v)) * u + ((ul * v) + ll * (1-v)) * (1-u);
-      // Vector temp = ((ll * v) + ul * (1 - v)) * u + ((lr * v) + ur * (1-v)) * (1-u);
       Point p (temp.getX(), temp.getY(), temp.getZ());
 
       Vector r_dir (p, camera.getEye());
@@ -232,7 +231,7 @@ Color RayTrace(Ray r, int depth) {
       // TODO: FIGURE OUT SHADOW RAYS? 
       // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
       if (lights[j].getType() == -1) {
-        light = Vector (g.getPoint(),lights[j].getPoint());
+        light = Vector (lights[j].getPoint(), g.getPoint());
       } else if (lights[j].getType() == -2) {
         light = Vector (-lights[j].getPoint().getX(), -lights[j].getPoint().getY(), -lights[j].getPoint().getZ());
       }
