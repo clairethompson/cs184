@@ -25,6 +25,14 @@ Matrix::Matrix() {
     this->mat[3][3] = 1.0;
 };
 
+Matrix::Matrix(float a[4][4]) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            this->mat[i][j] = a[i][j];
+        }
+    }
+}
+
 Matrix::Matrix(Point a, Point b, Point c) {
     this->mat[0][0] = a.x;
     this->mat[0][1] = a.y;

@@ -10,6 +10,7 @@ public:
   Matrix(float a, float b, float c, int type);  
   Matrix();
   Matrix(Point a, Point b, Point c);
+  Matrix(float a[4][4]);
   float getValue(int a, int b);
   void setValue(int a, int b, float c);
   Matrix operator*(Matrix m);
