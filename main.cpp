@@ -37,8 +37,9 @@
 
 
 /* RayTracer Methods */
-Color PhongShading(Light l, BRDF b, LocalGeo g);
+Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo g);
 Color RayTrace(Ray r, int depth);
+Vector reflect(Vector normal, Vector light);
 
 /* Globals */
 Camera camera = Camera();
@@ -80,6 +81,7 @@ int main(int argc, char const *argv[])
       Point ur = Point(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]));
       count += 3;
       camera = Camera(eye, ll, lr, ul, ur);
+      fprintf(stdout, "%s\n", "camera");
     } else if (strcmp(argv[count], SPHERE) == 0) {
       float cx = std::stof(argv[count + 1]);
       float cy = std::stof(argv[count + 2]);
@@ -91,6 +93,7 @@ int main(int argc, char const *argv[])
       shapes.push_back(&sphere);
 
       count += 4;
+      fprintf(stdout, "%s\n", "sphere");
     } else if (strcmp(argv[count], TRIANGLE) == 0) {
       Point a = Point(std::stof(argv[count+1]), std::stof(argv[count+2]), std::stof(argv[count+3]));
       Point b = Point(std::stof(argv[count+4]), std::stof(argv[count+5]), std::stof(argv[count+6]));
@@ -118,6 +121,7 @@ int main(int argc, char const *argv[])
       count += 6;
 
       lights.push_back(dl);
+      fprintf(stdout, "%s\n", "direct light");
     } else if (strcmp(argv[count], AMB_LIGHT) == 0) {
       
       Light al = Light(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]));
@@ -133,6 +137,7 @@ int main(int argc, char const *argv[])
       Color kr = Color(std::stof(argv[count+11]), std::stof(argv[count+12]), std::stof(argv[count+13]));
       f = BRDF(ka, kd, ks, sp, kr);
       count += 13;
+      fprintf(stdout, "%s\n", "BRDF");
     } else if (strcmp(argv[count], TRANSLATE) == 0) {
       Matrix trans = Matrix(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), 1);
       // PUT THIS MATRIX INTO SOME SORT OF LIST
@@ -149,33 +154,56 @@ int main(int argc, char const *argv[])
     count += 1;
   }
 
-  WIDTH = camera.getWidth();
-  HEIGHT = camera.getHeight();
+  // WIDTH = camera.getWidth();
+  // HEIGHT = camera.getHeight();
+  WIDTH = 1000;
+  HEIGHT = 500;
+  fprintf(stdout, "Width:%f Height:%f\n", WIDTH, HEIGHT);
   //Used to map pixels to image plane
-  float r = camera.getWidth() / 2.0;
+  if (WIDTH < 1 || HEIGHT < 1) 
+    fprintf(stderr, "%s\n", "FUCK");
+  float r = WIDTH / 2.0;
+  //float r = 1000/2.0;
   float l = -1.0 * r;
-  float t = camera.getHeight() / 2.0;
+  float t = HEIGHT / 2.0;
+  //float t = 500/2.0;
   float b = -1.0 * t;
+  fprintf(stdout, "R:%f\tL:%f\tT:%f\tB:%f\n", r, l, t, b);
 
+  //Vector camera_position (camera.getEye().getX(), camera.getEye().getY(), camera.getEye().getZ());
+  Vector camera_u (camera.getViewPlane().getLL(), camera.getViewPlane().getUL());
+  camera_u.normalize();
+
+  fprintf(stdout, "WIDTH: %f, HEIGHT: %f\n", WIDTH, HEIGHT );
   /* Shade each pixel */
-  for (int x = 0; x < WIDTH; x++) {
-    for (int y = 0; y < HEIGHT; y++) {
+  for (int i = 0; i < WIDTH; i++) {
+    //fprintf(stdout, "In LOOP 1\n");
+    for (int j = 0; j < HEIGHT; j++) {
+      //fprintf(stdout, "IN LOOP\n");
       //TODO: Rays? Shading?
       //Calculate the coordinate of pixel's position on image plane
-      float u = l + (r - l)*(x + 0.5)/WIDTH;
-      float v = b + (t - b)*(y + 0.5)/HEIGHT;
+      float u = l + (r - l)*(i + 0.5)/WIDTH;
+      float v = b + (t - b)*(j + 0.5)/HEIGHT;
       //TODO: Figure out focal distance from eye to plane
-      float d = 0.0;
+      //float d = 0.0;
+      Point q (u, v, 0.0);
+      Vector camera_w (q, camera.getEye());
+      camera_w.normalize();
+      float d = camera_w.getLength();
+      Vector camera_v = camera_w.cross(camera_u);
+      camera_v.normalize();
       //TODO: Figure out which axes -d, u, v coordinate to in XYZ
       //-dw + uu + vv
-      Vector r_dir (-d, u, v);
+      Vector r_dir = camera_w * -d + camera_u * u + camera_v * v;
       Ray r (camera.getEye(), r_dir, 0.0, 0.0);
-      
+      //fprintf(stdout, "%s\n", "calling color RayTrace..");
       Color fin = RayTrace(r, 0);
-      color.rgbRed = fin.getR();
-      color.rgbGreen = fin.getG();
-      color.rgbBlue = fin.getB();
-      FreeImage_SetPixelColor(bitmap, x, y, &color);
+      //Color fin (255.0, 0.0, 0.0);
+      color.rgbRed = fmaxf(fin.getR() * 255, 0);
+      color.rgbGreen = fmaxf(fin.getG() * 255, 0);
+      color.rgbBlue = fmaxf(fin.getB() * 255, 0);
+      //printf("%d %d %d\n", fin.getR(), fin.getG(), fin.getB());
+      FreeImage_SetPixelColor(bitmap, i, j, &color);
     }
   }
 
@@ -190,68 +218,103 @@ int main(int argc, char const *argv[])
 
 /* Return Color C of raytrace */
 Color RayTrace(Ray r, int depth) {
-  float ray_obj_dist;
   int i, j, k;
-  Shape* hitobject;
+  Shape * hitobject;
+
 
   float dist_max = FLT_MAX;
+  float ray_obj_dist = 0.0;
   std::vector<int>::size_type num_obj = shapes.size();
   std::vector<int>::size_type num_lights = lights.size();
   LocalGeo g;
-  //Look through objects
+  bool hit_check;
+
+  // Loop through objects to check if intersection exists (HIT_CHECK)
+  // If HIT_CHECK, then check if its closer & update HITOBJECT
   for (i = 0; i < num_obj; i++)
   {
-    //ray_obj_dist = set distance of nearest intersection of ray & shapes[i]
-    if (ray_obj_dist < dist_max) {
-      dist_max = ray_obj_dist;
-      hitobject = shapes[i];
+    hit_check = shapes[i]->intersection(r, &g);
+    if (hit_check) {  
+      Vector ray_obj_vect (g.getPoint(), r.getStart());
+      ray_obj_dist = ray_obj_vect.getLength();
+      if (ray_obj_dist < dist_max) {
+        dist_max = ray_obj_dist;
+        hitobject = shapes[i];
+      }
     }
   }
 
   if (!hitobject) {
     //Set position var PT to nearest inersection point of R & I_S
+    Vector light, norm, reflection, refraction;
+
+    norm  = Vector(g.getNormal().getX(), g.getNormal().getX(), g.getNormal().getZ());
     Color c (0.0,0.0,0.0); //Set color to black
     for (j = 0; j < num_lights; j++) {
-      for (k = 0; k < num_obj; k++) {
-        //If OBJ blocks light coming from light source to PT
-          //Attenuate intesnsity by transmittivity
+      // TODO: FIGURE OUT SHADOW RAYS? IF THIS IS WHAT ITS FOR
+      // for (k = 0; k < num_obj; k++) {
+      //   //If OBJ blocks light coming from light source to PT
+      //     //Attenuate intensity by transmittivity
+      // }
+
+      // Light Vector Calculation; Falloff = 0 for DL, > 0 for PL
+      if (lights[j].getFalloff() > 0.0) {
+        Vector light (lights[j].getPoint(), g.getPoint());
+      } else {
+        Vector light (-lights[j].getPoint().getX(), -lights[j].getPoint().getY(), -lights[j].getPoint().getZ());
       }
+        
+      light.normalize();
       //Calc perceived color of obj at pt due to this light source
-      Color block_color = PhongShading(lights[j], shapes[k]->getBRDF(), g);
-      //Add to c
+      Color block_color = PhongShading(norm, light, lights[j].getIntensity(), shapes[k]->getBRDF(), g);
       c = c + block_color;
     }
     //Check recursive depth
     if (depth < MAX_DEPTH) {
-      //Generate 2 rays: reflection  and refraction
+      //Generate 2 rays: reflection  and refraction (optional)
       //Ray reflection();
-      //Ray refraction()
-      //c = c + RayTrace(reflection, depth+1) * intersect_shape.;
+      
+      
+      Ray reflection (camera.getEye(), reflect(norm, light), 0, 0);
+      c = c + RayTrace(reflection, depth+1) * hitobject->getBRDF().getKR();
       //c = c + RayTrace(refraction, depth+1) * intersect_shape.;
 
     } else {
       //Set total color C to background color
+      fprintf(stdout, "%s\n", "Total color to backgroudn?");
     }
     return c;
   }
 }
 
 /* Phong Shade the colors */
-Color PhongShading(Light l, BRDF b, LocalGeo g) {
-  Vector normal (g.getNormal().getX(), g.getNormal().getX(), g.getNormal().getZ());
-  Vector view;
-
-  //TODO: Change light XYZ vals if Point or Directonal Light
-  Vector light (l.getPoint().getX(), l.getPoint().getY(), l.getPoint().getZ());
-  light.normalize();
-
+Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo g) {
   //Diffuse Color
   float diffuseColor = fmaxf(light.dot(normal), 0.0);
 
   //Specular Color
   Vector reflect = (normal * (2.0 * light.dot(normal))) - light;
   reflect.normalize();
+  Vector view (g.getPoint(), camera.getEye());
   float specularColor = pow(fmax(view.dot(reflect), 0.0), b.getSP());
 
-  return ((b.getKS() * specularColor) + (b.getKD() * diffuseColor) + b.getKA()) * l.getIntensity();
+  return ((b.getKS() * specularColor) + (b.getKD() * diffuseColor) + b.getKA()) * light_c;
+}
+
+
+/* Return reflection vector of the LIGHT about the NORMAL */
+Vector reflect(Vector normal, Vector light) {
+  return (normal * (2.0 * light.dot(normal))) - light;
+}
+
+/* OPTIONAL : NOT DONE */
+/* Return refraction vector of the LIGHT about the NORMAL */
+Vector refract(Vector normal, Vector light, double n1, double n2) {
+  float n = n1/n2;
+  float angle = light.dot(normal);
+  float check = pow(n,2) * (1.0 - pow(angle,2));
+  if (check > 1.0) {
+    return normal;
+  }
+  return light*n - (normal * (n + sqrt(1.0 - check)));
 }

@@ -14,6 +14,7 @@ public:
   Light(float x, float y, float z, float r, float g, float b);
   Color getIntensity();
   Point getPoint();
+  float getFalloff();
 
 };
 
