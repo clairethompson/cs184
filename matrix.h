@@ -10,7 +10,11 @@ public:
   Matrix(float a, float b, float c, int type);  
   Matrix();
   Matrix(Point a, Point b, Point c);
+  float getValue(int a, int b);
+  void setValue(int a, int b, float c);
   Matrix operator*(Matrix m);
+  Matrix invert(Matrix m);
+  Matrix transpose(Matrix m);
 };
 
 #endif
