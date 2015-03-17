@@ -1,7 +1,13 @@
 #include "BRDF.h"
 #include "color.h"
 
-BRDF::BRDF(Color a, Color d, Color s, float sp, Color r) : ka(a), kd(d), ks(s), kr(r) {}
+BRDF::BRDF(Color a, Color d, Color s, float sp, Color r) {
+	this->ka = a;
+	this->kd = d;
+	this->ks = s;
+	this->sp = sp;
+	this->kr = r;
+}
 
 BRDF::BRDF() : ka(Color()), kd(Color()), ks(Color()), sp(0.0), kr(Color()) {}
 

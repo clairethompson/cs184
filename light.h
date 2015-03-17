@@ -17,6 +17,7 @@ public:
   Point getPoint();
   float getFalloff();
   int getType();
+  void setFalloff(float f);
 };
 
 #endif

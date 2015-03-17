@@ -32,4 +32,5 @@ Color Light::getIntensity() { return this->intensity; }
 Point Light::getPoint() { return this->p; }
 float Light::getFalloff() { return this->falloff; }
 int Light::getType() { return this->type; }
+void Light::setFalloff(float f) { this->falloff = f;}
 

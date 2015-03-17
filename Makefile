@@ -6,11 +6,12 @@ DEBUG = -g
 CFLAGS = -Wall -c $(DEBUG)
 LFLAGS = -Wall $(DEBUG)
 
+CXXFLAGS = -I lib/boost_1_57_0/
 LDOPTS = -L./ -lfreeimage
 
 
 all: $(OBJS) 
-	$(CC) $(LFLAGS) $(LDOPTS) $(OBJS) -o raytracer
+	$(CC) $(CXXFLAGS) $(LFLAGS) $(LDOPTS) $(OBJS) -o raytracer
 
 point.o: point.h point.cpp
 	$(CC) $(CFLAGS) point.cpp
@@ -55,7 +56,7 @@ triangle.o: triangle.h triangle.cpp shape.h
 	$(CC) $(CFLAGS) triangle.cpp
 
 main.o: point.o vector.o main.cpp
-	$(CC) $(CFLAGS) main.cpp
+	$(CC) $(CXXFLAGS) $(CFLAGS) main.cpp
 
 tests.o: tests.h tests.cpp
 	$(CC) $(CFLAGS) tests.cpp

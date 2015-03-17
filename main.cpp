@@ -4,7 +4,12 @@
 #include <stdint.h>
 #include <float.h>
 #include <cmath>
+#include <cstring>
+#include <fstream>
+
 #include "FreeImage.h"
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "point.h"
 #include "color.h"
@@ -19,7 +24,6 @@
 #include "triangle.h"
 #include "ray.h"
 
-
 #define CAMERA "cam"
 #define SPHERE "sph"
 #define TRIANGLE "tri"
@@ -31,10 +35,11 @@
 #define TRANSLATE "xft"
 #define ROTATE "xfr"
 #define SCALE "xfs"
+#define RESET_TFM "xfz"
 
 #define BPP 24
 // Raytracer recursive depth limit
-#define MAX_DEPTH 2
+#define MAX_DEPTH 3
 
 
 /* RayTracer Methods */
@@ -49,13 +54,13 @@ std::vector<Shape *> shapes;
 float WIDTH = 1000;
 float HEIGHT = 500;
 
+using namespace std;
+using namespace boost;
 
 int main(int argc, char const *argv[])
 {
   int count;
-
   count = 0;
-
   BRDF f = BRDF();
 
   /* Set up image output -- using FreeImage Library */
@@ -69,94 +74,97 @@ int main(int argc, char const *argv[])
     exit(1);
 
   /* Parse all inputs */
-  while (count != argc) {
-    if (strcmp(argv[count], "test") == 0) {
-      Tests t = Tests();
-      t.checkAll();
-      exit(0);
-    } else if (strcmp(argv[count], CAMERA) == 0) {
-      Point eye = Point(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]));
-      count += 3;
-      Point ll = Point(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]));
-      count += 3;
-      Point lr = Point(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]));
-      count += 3;
-      Point ul = Point(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]));
-      count += 3;
-      Point ur = Point(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]));
-      count += 3;
-      camera = Camera(eye, ll, lr, ul, ur);
-      fprintf(stdout, "%s\n", "camera");
-    } else if (strcmp(argv[count], SPHERE) == 0) {
-      float cx = std::stof(argv[count + 1]);
-      float cy = std::stof(argv[count + 2]);
-      float cz = std::stof(argv[count + 3]);
-      float rad = std::stof(argv[count + 4]);
-      Point center = Point(cx, cy, cz);
-      
-      Ellipsoid sphere = Ellipsoid(center, rad, f);
-      shapes.push_back(&sphere);
+  ifstream sceneFile;
+  sceneFile.open(argv[1]);
 
-      count += 4;
-      fprintf(stdout, "%s\n", "sphere");
-    } else if (strcmp(argv[count], TRIANGLE) == 0) {
-      Point a = Point(std::stof(argv[count+1]), std::stof(argv[count+2]), std::stof(argv[count+3]));
-      Point b = Point(std::stof(argv[count+4]), std::stof(argv[count+5]), std::stof(argv[count+6]));
-      Point c = Point(std::stof(argv[count+7]), std::stof(argv[count+8]), std::stof(argv[count+9]));
+  /* Declare tokenizer & delimiters */
+  typedef tokenizer< char_separator<char> > Tokenizer;
+  char_separator<char> sep(" \t");
+  string line;
 
-      Triangle tri = Triangle(a, b, c, f);
-      shapes.push_back(&tri);
-      
-      count += 9;
-    } else if (strcmp(argv[count], OBJ_FILE) == 0) {
-      // TODO: obj file parsing
+  /* Parse each line from file & break into tokens */
+  while (getline(sceneFile, line)) {
+    Tokenizer tok(line,sep);
+    for(Tokenizer::iterator it(tok.begin()), end(tok.end()); it != end; ) {
+      const char * command = (*it).c_str();
+      if (strcmp(command, CAMERA) == 0) {
+        printf("%s\n", "CAMERA");
+        Point eye = Point(stof((++it)->c_str()), stof((++it)->c_str()),stof((++it)->c_str()));
+        Point ll = Point(stof((++it)->c_str()), stof((++it)->c_str()),stof((++it)->c_str()));
+        Point lr = Point(stof((++it)->c_str()), stof((++it)->c_str()),stof((++it)->c_str()));
+        Point ul = Point(stof((++it)->c_str()), stof((++it)->c_str()),stof((++it)->c_str()));
+        Point ur = Point(stof((++it)->c_str()), stof((++it)->c_str()),stof((++it)->c_str()));
+        camera = Camera(eye, ll, lr, ul, ur);
+      } else if (strcmp(command, SPHERE) == 0) {
+        printf("%s\n", "SPHERE");
+        Point center = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        float rad = stof((++it)->c_str());
+        Ellipsoid sphere = Ellipsoid(center, rad, f);
+        shapes.push_back(&sphere);
+      } else if (strcmp(command, TRIANGLE) == 0) {
+        printf("%s\n", "TRIANGLE");
+        Point a = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        Point b = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        Point c = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        Triangle tri = Triangle(a, b, c, f);
+        shapes.push_back(&tri);
+      } else if (strcmp(command, OBJ_FILE) == 0) {
+        printf("%s\n", "OBJ_FILE");
+        fprintf(stdout, "FILENAME: %s\n", (++it)->c_str());
 
-    } else if (strcmp(argv[count], POINT_LIGHT) == 0) {
-
-      Light pl = Light(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), std::stof(argv[count + 4]), std::stof(argv[count + 5]), std::stof(argv[count + 6]), std::stof(argv[count + 7]));
-      count += 7;
-
-      lights.push_back(pl);
-
-    } else if (strcmp(argv[count], DIRECT_LIGHT) == 0) {
-      
-      Light dl = Light(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), std::stof(argv[count + 4]), std::stof(argv[count + 5]), std::stof(argv[count + 6]));
-      count += 6;
-
-      lights.push_back(dl);
-      fprintf(stdout, "%s\n", "direct light");
-    } else if (strcmp(argv[count], AMB_LIGHT) == 0) {
-      
-      Light al = Light(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]));
-      count += 3;
-
-      lights.push_back(al);
-
-    } else if (strcmp(argv[count], MATERIAL) == 0) {
-      Color ka = Color(std::stof(argv[count+1]), std::stof(argv[count+2]), std::stof(argv[count+3]));
-      Color kd = Color(std::stof(argv[count+4]), std::stof(argv[count+5]), std::stof(argv[count+6]));
-      Color ks = Color(std::stof(argv[count+7]), std::stof(argv[count+8]), std::stof(argv[count+9]));
-      float sp = std::stof(argv[count+10]);
-      Color kr = Color(std::stof(argv[count+11]), std::stof(argv[count+12]), std::stof(argv[count+13]));
-      f = BRDF(ka, kd, ks, sp, kr);
-      count += 13;
-      fprintf(stdout, "%s\n", "BRDF");
-    } else if (strcmp(argv[count], TRANSLATE) == 0) {
-      Matrix trans = Matrix(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), 1);
-      // TODO: PUT THIS MATRIX INTO SOME SORT OF LIST
-      count += 3;
-    } else if (strcmp(argv[count], ROTATE) == 0) {
-      Matrix rot = Matrix(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), 2);
-      // TODO: PUT THIS MATRIX INTO SOME SORT OF LIST
-      count += 3;
-    } else if (strcmp(argv[count], SCALE) == 0) {
-      Matrix scale = Matrix(std::stof(argv[count + 1]), std::stof(argv[count + 2]), std::stof(argv[count + 3]), 3);
-      // TODO: PUT THIS MATRIX INTO SOME SORT OF LIST
-      count += 3;
+      } else if (strcmp(command, POINT_LIGHT) == 0) {
+        printf("%s\n", "POINT_LIGHT");
+        Light pl = Light(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 
+                         stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()),
+                         0.0);
+        if (++it != tok.end()) {
+          pl.setFalloff(stof((it)->c_str()));
+        }
+        lights.push_back(pl);
+      } else if (strcmp(command, DIRECT_LIGHT) == 0) {
+        printf("%s\n", "DIRECT_LIGHT");
+        Light dl = Light(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 
+                         stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        lights.push_back(dl);
+      } else if (strcmp(command, AMB_LIGHT) == 0) {
+        printf("%s\n", "AMB_LIGHT");
+        Light al = Light(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        lights.push_back(al);
+      } else if (strcmp(command, MATERIAL) == 0) {
+        printf("%s\n", "Material");
+        Color ka = Color(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        Color kd = Color(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        Color ks = Color(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        float sp = stof((++it)->c_str());
+        Color kr = Color(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
+        f = BRDF(ka, kd, ks, sp, kr);
+      } else if (strcmp(command, TRANSLATE) == 0) {
+        printf("%s\n", "Transform");
+        Matrix trans = Matrix(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 1);
+      } else if (strcmp(command, ROTATE) == 0) {
+        printf("%s\n", "Rotate");
+        Matrix rot = Matrix(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 2);
+      } else if (strcmp(command, SCALE) == 0) {
+        printf("%s\n", "Scale");
+        Matrix scale = Matrix(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 3);
+      } else if (strcmp(command, RESET_TFM) == 0) {
+        printf("%s\n", "RESET_TFM");
+      } else {
+        //Unrecognized type
+        fprintf(stderr, "Unrecognized command: %s\n", command);
+      }
+      break;
     }
-    count += 1;
   }
+  sceneFile.close();
+  /* End Parsing */
 
+  /* ViewPlane Corners used to determine ViewPlane Intersection Point*/
+  Vector ll = Vector(camera.getViewPlane().getLL().getX(), camera.getViewPlane().getLL().getY(), camera.getViewPlane().getLL().getZ());
+  Vector lr = Vector(camera.getViewPlane().getLR().getX(), camera.getViewPlane().getLR().getY(), camera.getViewPlane().getLR().getZ());
+  Vector ul = Vector(camera.getViewPlane().getUL().getX(), camera.getViewPlane().getUL().getY(), camera.getViewPlane().getUL().getZ());
+  Vector ur = Vector(camera.getViewPlane().getUR().getX(), camera.getViewPlane().getUR().getY(), camera.getViewPlane().getUR().getZ());
+  
   /* Shade each pixel */
   for (int i = 0; i < WIDTH; i++) {
     float u = (i + 0.5)/WIDTH;
@@ -164,17 +172,13 @@ int main(int argc, char const *argv[])
       //Calculate the coordinate of pixel's position on image plane
       float v = (j + 0.5)/HEIGHT;
 
-      Vector ll (camera.getViewPlane().getLL().getX(), camera.getViewPlane().getLL().getY(), camera.getViewPlane().getLL().getZ());
-      Vector lr (camera.getViewPlane().getLR().getX(), camera.getViewPlane().getLR().getY(), camera.getViewPlane().getLR().getZ());
-      Vector ul (camera.getViewPlane().getUL().getX(), camera.getViewPlane().getUL().getY(), camera.getViewPlane().getUL().getZ());
-      Vector ur (camera.getViewPlane().getUR().getX(), camera.getViewPlane().getUR().getY(), camera.getViewPlane().getUR().getZ());
       // Point on plane = u(v * LL + (1-v)UL) + (1 - u)(v*LR + (1-v)UR)
       Vector temp = ((ur * v) + lr * (1 - v)) * u + ((ul * v) + ll * (1-v)) * (1-u);
-      Point p (temp.getX(), temp.getY(), temp.getZ());
+      Point p = Point(temp.getX(), temp.getY(), temp.getZ());
 
-      Vector r_dir (p, camera.getEye());
+      Vector r_dir = Vector(p, camera.getEye());
       //R(t) = E + t(P-E)
-      Ray r (camera.getEye(), r_dir, -1000.0, 1000.0);
+      Ray r = Ray(camera.getEye(), r_dir, -1000.0, 1000.0);
 
       Color fin = RayTrace(r, 0);
 
@@ -203,11 +207,10 @@ Color RayTrace(Ray r, int depth) {
   float ray_obj_dist = 0.0;
   std::vector<int>::size_type num_obj = shapes.size();
   std::vector<int>::size_type num_lights = lights.size();
-  LocalGeo g;
+  LocalGeo g = LocalGeo();
   LocalGeo closest;
   bool hit_check;
   Color c (0.0,0.0,0.0); //Set color to black
-
   // Loop through objects to check if intersection exists (HIT_CHECK)
   // If HIT_CHECK, then check if its closer & update HITOBJECT
   for (int i = 0; i < num_obj; i++)
@@ -234,40 +237,47 @@ Color RayTrace(Ray r, int depth) {
     for (int j = 0; j < num_lights; j++) {
       // TODO: FIGURE OUT SHADOW RAYS? 
       // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
-      if (lights[j].getType() == -1) {
-        light = Vector (lights[j].getPoint(), closest.getPoint());
-      } else if (lights[j].getType() == -2) {
-        light = Vector (-lights[j].getPoint().getX(), -lights[j].getPoint().getY(), -lights[j].getPoint().getZ());
+      if (lights[j].getType() == 0) {
+        c = c + (lights[j].getIntensity() * hitobject->getBRDF().getKA());
+      } else {
+        if (lights[j].getType() == -1) {
+          light = Vector (lights[j].getPoint(), closest.getPoint());
+        } else if (lights[j].getType() == -2) {
+          light = Vector (-lights[j].getPoint().getX(), -lights[j].getPoint().getY(), -lights[j].getPoint().getZ());
+        }
+          
+        light.normalize();
+        //Calc perceived color of obj at pt due to this light source
+        Color result = PhongShading(norm, light, lights[j].getIntensity(), hitobject->getBRDF(), closest);
+        c = c + result;
       }
-        
-      light.normalize();
-      //Calc perceived color of obj at pt due to this light source
-      Color result = PhongShading(norm, light, lights[j].getIntensity(), hitobject->getBRDF(), closest);
-      c = c + result;
+     
     }
     //Check recursive depth
     if (depth < MAX_DEPTH) {      
       Ray reflection (camera.getEye(), reflect(norm, light), -1000, 1000);
       c = c + RayTrace(reflection, depth+1) * hitobject->getBRDF().getKR();
     } else {
-      //Set total color C to background color
+      //TODO: Set total color C to background color (currently defaults to black)
       c = Color(0.0,0.0,0.0);
     }
   }
   return c;
 }
 
-/* Phong Shade the colors */
+/* Phong Shade the colors 
+ * -- Ignoring Ka since we multiply ka by AMBIENT LIGHT (not Point or Directional)
+ */
 Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo g) {
   //Diffuse Color
   float diffuseColor = fmaxf(light.dot(normal), 0.0);
 
   //Specular Color
-  Vector reflect = (normal * (2.0 * light.dot(normal))) - light;
+  Vector reflect = ((normal * (2.0 * light.dot(normal))) - light) * -1.0;
   reflect.normalize();
   Vector view (g.getPoint(), camera.getEye());
   view.normalize();
-  float specularColor = pow(fmaxf(view.dot(reflect*-1.0), 0.0), b.getSP());
+  float specularColor = pow(fmaxf(view.dot(reflect), 0.0), b.getSP());
 
   return ((b.getKS() * specularColor) + (b.getKD() * diffuseColor)) * light_c;
 }
