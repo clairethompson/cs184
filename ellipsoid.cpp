@@ -5,6 +5,7 @@
 #include "ray.h"
 #include <math.h>
 #include <algorithm>
+#include <iostream>
 
 Ellipsoid::Ellipsoid(Point c, float rad, BRDF f) {
   this->center = c;

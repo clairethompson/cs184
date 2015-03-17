@@ -197,12 +197,14 @@ int main(int argc, char const *argv[])
 
 /* Return Color C of raytrace */
 Color RayTrace(Ray r, int depth) {
+
   Shape * hitobject;
   float dist_max = FLT_MAX;
   float ray_obj_dist = 0.0;
   std::vector<int>::size_type num_obj = shapes.size();
   std::vector<int>::size_type num_lights = lights.size();
   LocalGeo g;
+  LocalGeo closest;
   bool hit_check;
   Color c (0.0,0.0,0.0); //Set color to black
 
@@ -215,6 +217,8 @@ Color RayTrace(Ray r, int depth) {
       Vector ray_obj_vect (r.getStart(), g.getPoint());
       ray_obj_dist = ray_obj_vect.getLength();
       if (ray_obj_dist < dist_max) {
+        closest.setPoint(g.getPoint());
+        closest.setNormal(g.getNormal());
         dist_max = ray_obj_dist;
         hitobject = shapes[i];
       }
@@ -225,20 +229,20 @@ Color RayTrace(Ray r, int depth) {
     //Set position var PT to nearest inersection point of R & I_S
     Vector light, norm;
 
-    norm = Vector(g.getNormal().getX(), g.getNormal().getY(), g.getNormal().getZ());
+    norm = Vector(closest.getNormal().getX(), closest.getNormal().getY(), closest.getNormal().getZ());
 
     for (int j = 0; j < num_lights; j++) {
       // TODO: FIGURE OUT SHADOW RAYS? 
       // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
       if (lights[j].getType() == -1) {
-        light = Vector (lights[j].getPoint(), g.getPoint());
+        light = Vector (lights[j].getPoint(), closest.getPoint());
       } else if (lights[j].getType() == -2) {
         light = Vector (-lights[j].getPoint().getX(), -lights[j].getPoint().getY(), -lights[j].getPoint().getZ());
       }
         
       light.normalize();
       //Calc perceived color of obj at pt due to this light source
-      Color result = PhongShading(norm, light, lights[j].getIntensity(), hitobject->getBRDF(), g);
+      Color result = PhongShading(norm, light, lights[j].getIntensity(), hitobject->getBRDF(), closest);
       c = c + result;
     }
     //Check recursive depth
