@@ -276,7 +276,7 @@ Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo 
   float diffuseColor = fmaxf(light.dot(normal), 0.0);
 
   //Specular Color
-  Vector reflect = reflection(normal, light) * -1;
+  Vector reflect = reflection(normal, light);
   reflect.normalize();
   Vector view (g.getPoint(), camera.getEye());
   view.normalize();
