@@ -2,6 +2,7 @@
 #define VECTOR_H
 
 #include "point.h"
+#include "normal.h"
 class Vector {
 public:
 	float x;
@@ -12,6 +13,7 @@ public:
 	Vector() {};
 	Vector(float a, float b, float c);
 	Vector(Point a, Point b);
+	Vector(Normal n);
 
 	float getX() {return this->x;}
 	float getY() {return this->y;}

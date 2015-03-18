@@ -1,3 +1,4 @@
+#include <iostream>
 #include "point.h"
 Point::Point (float a, float b, float c) : x(a), y(b), z(c) {};
 
@@ -15,4 +16,8 @@ float Point::getY() {
 }
 float Point::getZ() {
   return this->z;
+}
+
+void Point::print() {
+  std::cout << x << " " << y << " " << z << "\n";
 }

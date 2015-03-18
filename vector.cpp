@@ -15,6 +15,12 @@ Vector::Vector(Point a,  Point b) {
 			z = a.z - b.z;
 }
 
+Vector::Vector(Normal n) {
+	this->x = n.getX();
+	this->y = n.getY();
+	this->z = n.getZ();
+}
+
 /* Returns the vector length of V */
 float Vector::getLength() {
 	return sqrt(pow(x,2)+pow(y,2)+pow(z,2));

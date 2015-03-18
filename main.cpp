@@ -216,8 +216,7 @@ Color RayTrace(Ray r, int depth) {
   // Loop through objects to check if intersection exists (HIT_CHECK)
   // If HIT_CHECK, then check if its closer & update HITOBJECT
 
-  for (int i = 0; i < num_obj; i++)
-  {
+  for (int i = 0; i < num_obj; i++) {
     hit_check = shapes[i]->intersection(r, &g);
     if (hit_check) {  
       Vector ray_obj_vect (r.getStart(), g.getPoint());
@@ -235,7 +234,7 @@ Color RayTrace(Ray r, int depth) {
     //Set position var PT to nearest inersection point of R & I_S
     Vector light, norm;
 
-    norm = Vector(closest.getNormal().getX(), closest.getNormal().getY(), closest.getNormal().getZ());
+    norm = Vector(closest.getNormal());
 
     for (int j = 0; j < num_lights; ++j) {
       // TODO: FIGURE OUT SHADOW RAYS? 
@@ -244,6 +243,7 @@ Color RayTrace(Ray r, int depth) {
         c = c + (lights[j].getIntensity() * hitobject->getBRDF().getKA());
       } else {
         if (lights[j].getType() == -1) {
+
           light = Vector (lights[j].getPoint(), closest.getPoint());
         } else if (lights[j].getType() == -2) {
           light = Vector (lights[j].getPoint(), Point(0, 0, 0));

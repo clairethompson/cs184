@@ -13,6 +13,9 @@ class Point {
   	float getX();
   	float getY();
   	float getZ();
+
+    /* FOR DEBUGGIN */
+    void print();
 };
 
 #endif

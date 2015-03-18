@@ -27,6 +27,7 @@ bool Ray::inRange(float t) {
 }
 
 Point Ray::getPointAtT(float t) {
+  this->dir.normalize();
   Vector temp = (this->dir * t) + this->start;
   Point p = Point(temp.x, temp.y, temp.z);
   return p;
