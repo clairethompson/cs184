@@ -22,6 +22,7 @@ Ellipsoid::Ellipsoid() {
    TODO: make work for arbitrary ellipsoid, might need to do stuff with world space / object space*/
 bool Ellipsoid::intersection(Ray r, LocalGeo* l) {
   Vector dir = r.getDir();
+  dir.normalize();
   Point start = r.getStart();
   Point cen = this->center;
   float rad = this->radius;

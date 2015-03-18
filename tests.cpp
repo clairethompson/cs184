@@ -145,6 +145,7 @@ bool Tests::ellipsoid() {
   Point a = Point(0, 1, 0);
   Point start = Point(0, 0, 4);
   Point origin = Point(0, 0, 0);
+  Point unit = Point(1/sqrt(2), 1/sqrt(2), 1/sqrt(2));
   Vector dir = Vector(0, 0, -1);
   Ellipsoid e = Ellipsoid(origin, 1.0, f);
   Ray r = Ray(start, dir, 0.0, 20);
@@ -156,7 +157,13 @@ bool Tests::ellipsoid() {
   n = e.getNormalAtPoint(a);
   if(n.x != 0.0 || n.y != 1.0 || n.z != 0.0) {
     pass = 0;
-    std::cout << "\t\nGet Normal at Point";
+    std::cout << "\t\nGet Normal at Point1";
+  }
+  
+  n = e.getNormalAtPoint(unit);
+  if(n.x != 1/sqrt(2) || n.y != 1/sqrt(2) || n.z != 1/sqrt(2)) {
+    pass = 0;
+    std::cout << "\t\nGet Normal at Point1";
   }
 
   if(e.intersection(r, &temp)) {

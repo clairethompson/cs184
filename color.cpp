@@ -1,9 +1,9 @@
 #include "color.h"
 
 Color::Color(float r, float g, float b) {
-  this->r = r;
-  this->g = g;
-  this->b = b;
+  this->r = (r > 1) ? 1 : r ;
+  this->g = (g > 1) ? 1 : g ;
+  this->b = (b > 1) ? 1 : b ;
 }
 Color::Color() {
   this->r = 0;
