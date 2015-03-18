@@ -45,7 +45,7 @@
 /* RayTracer Methods */
 Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo g);
 Color RayTrace(Ray r, int depth);
-Vector reflect(Vector normal, Vector light);
+Vector reflection(Vector normal, Vector v);
 
 /* Globals */
 Camera camera = Camera();
@@ -164,7 +164,7 @@ int main(int argc, char const *argv[])
   Vector lr = Vector(camera.getViewPlane().getLR().getX(), camera.getViewPlane().getLR().getY(), camera.getViewPlane().getLR().getZ());
   Vector ul = Vector(camera.getViewPlane().getUL().getX(), camera.getViewPlane().getUL().getY(), camera.getViewPlane().getUL().getZ());
   Vector ur = Vector(camera.getViewPlane().getUR().getX(), camera.getViewPlane().getUR().getY(), camera.getViewPlane().getUR().getZ());
-  
+
   /* Shade each pixel */
   for (int i = 0; i < WIDTH; i++) {
     float u = (i + 0.5)/WIDTH;
@@ -178,13 +178,15 @@ int main(int argc, char const *argv[])
 
       Vector r_dir = Vector(p, camera.getEye());
       //R(t) = E + t(P-E)
-      Ray r = Ray(camera.getEye(), r_dir, -1000.0, 1000.0);
+      Ray r = Ray(camera.getEye(), r_dir, -2000.0, 2000.0);
 
       Color fin = RayTrace(r, 0);
-
-      color.rgbRed = fmaxf(fin.getR() * 255, 0);
-      color.rgbGreen = fmaxf(fin.getG() * 255, 0);
-      color.rgbBlue = fmaxf(fin.getB() * 255, 0);
+      float fR = fmaxf(0.0, fminf(fin.getR(), 1.0));
+      float fG = fmaxf(0.0, fminf(fin.getG(), 1.0));
+      float fB = fmaxf(0.0, fminf(fin.getB(), 1.0));
+      color.rgbRed = floor(fR == 1.0 ? 255 : fR * 256.0);
+      color.rgbGreen = floor(fG == 1.0 ? 255 : fG * 256.0);
+      color.rgbBlue = floor(fB == 1.0 ? 255 : fB * 256.0);
 
       FreeImage_SetPixelColor(bitmap, i, j, &color);
     }
@@ -234,7 +236,7 @@ Color RayTrace(Ray r, int depth) {
 
     norm = Vector(closest.getNormal().getX(), closest.getNormal().getY(), closest.getNormal().getZ());
 
-    for (int j = 0; j < num_lights; j++) {
+    for (int j = 0; j < num_lights; ++j) {
       // TODO: FIGURE OUT SHADOW RAYS? 
       // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
       if (lights[j].getType() == 0) {
@@ -243,7 +245,7 @@ Color RayTrace(Ray r, int depth) {
         if (lights[j].getType() == -1) {
           light = Vector (lights[j].getPoint(), closest.getPoint());
         } else if (lights[j].getType() == -2) {
-          light = Vector (-lights[j].getPoint().getX(), -lights[j].getPoint().getY(), -lights[j].getPoint().getZ());
+          light = Vector (lights[j].getPoint(), Point(0, 0, 0));
         }
           
         light.normalize();
@@ -255,11 +257,11 @@ Color RayTrace(Ray r, int depth) {
     }
     //Check recursive depth
     if (depth < MAX_DEPTH) {      
-      Ray reflection (camera.getEye(), reflect(norm, light), -1000, 1000);
-      c = c + RayTrace(reflection, depth+1) * hitobject->getBRDF().getKR();
+      Ray ray_reflect = Ray(camera.getEye(), reflection(norm, r.getDir()), -2000, 000);
+      c = c + RayTrace(ray_reflect, depth+1) * hitobject->getBRDF().getKR();
     } else {
       //TODO: Set total color C to background color (currently defaults to black)
-      c = Color(0.0,0.0,0.0);
+      //c = Color(0.0,0.0,0.0);
     }
   }
   return c;
@@ -273,7 +275,7 @@ Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo 
   float diffuseColor = fmaxf(light.dot(normal), 0.0);
 
   //Specular Color
-  Vector reflect = ((normal * (2.0 * light.dot(normal))) - light) * -1.0;
+  Vector reflect = reflection(normal, light);
   reflect.normalize();
   Vector view (g.getPoint(), camera.getEye());
   view.normalize();
@@ -283,9 +285,9 @@ Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo 
 }
 
 
-/* Return reflection vector of the LIGHT about the NORMAL */
-Vector reflect(Vector normal, Vector light) {
-  return (normal * (2.0 * light.dot(normal))) - light;
+/* Return reflection vector of the V about the NORMAL */
+Vector reflection(Vector normal, Vector v) {
+  return v - (normal * (2.0 * v.dot(normal)));
 }
 
 /* OPTIONAL : NOT DONE */
