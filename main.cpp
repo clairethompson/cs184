@@ -205,6 +205,7 @@ int main(int argc, char const *argv[])
 Color RayTrace(Ray r, int depth) {
 
   Shape * hitobject;
+  int hitObjIndex;
   float dist_max = FLT_MAX;
   float ray_obj_dist = 0.0;
   std::vector<int>::size_type num_obj = shapes.size();
@@ -226,6 +227,7 @@ Color RayTrace(Ray r, int depth) {
         closest.setNormal(g.getNormal());
         dist_max = ray_obj_dist;
         hitobject = shapes[i];
+        hitObjIndex = i;
       }
     }
   }
@@ -239,20 +241,38 @@ Color RayTrace(Ray r, int depth) {
     for (int j = 0; j < num_lights; ++j) {
       // TODO: FIGURE OUT SHADOW RAYS? 
       // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
+      Vector shadowDir = Vector();
       if (lights[j].getType() == 0) {
         c = c + (lights[j].getIntensity() * hitobject->getBRDF().getKA());
       } else {
         if (lights[j].getType() == -1) {
-
           light = Vector (lights[j].getPoint(), closest.getPoint());
+          shadowDir = light;
         } else if (lights[j].getType() == -2) {
           light = Vector (lights[j].getPoint(), Point(0, 0, 0));
+          shadowDir = light;
+        }
+
+        shadowDir.normalize();
+        Ray shadRay = Ray(closest.getPoint(), shadowDir, 0.0, 1000);
+        bool shadow = 0;
+        int s = 0;
+
+        while (s < num_obj && !shadow) {
+          if (s != hitObjIndex && shapes[s]->intersection(shadRay, &g)) {
+            shadow = 1;
+          }
+          s++;
         }
           
         light.normalize();
         //Calc perceived color of obj at pt due to this light source
         Color result = PhongShading(norm, light, lights[j].getIntensity(), hitobject->getBRDF(), closest);
-        c = c + result;
+        if (shadow) {
+          c = c + result * 0.1; 
+        } else {
+          c = c + result; 
+        }
       }
      
     }

@@ -20,7 +20,7 @@ Vector Ray::getDir() {
 }
 
 bool Ray::inRange(float t) {
-  if (this->t_min < t < this->t_max) {
+  if (this->t_min < t && t < this->t_max) {
     return 1;
   }
   return 0;
