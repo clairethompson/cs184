@@ -30,3 +30,16 @@ Point Camera::getEye() {
 ViewPlane Camera::getViewPlane() {
 	return this->vp;
 }
+
+Point Camera::getLL() {
+  return this->vp.getLL();
+}
+Point Camera::getUL() {
+  return this->vp.getUL();
+}
+Point Camera::getLR() {
+  return this->vp.getLR();
+}
+Point Camera::getUR() {
+  return this->vp.getUR();
+}

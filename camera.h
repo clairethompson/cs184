@@ -16,6 +16,10 @@ public:
   float getFocalLength();
   Point getEye();
 	ViewPlane getViewPlane();
+  Point getLL();
+  Point getUL();
+  Point getLR();
+  Point getUR();
 };
 
 #endif

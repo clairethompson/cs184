@@ -99,15 +99,15 @@ int main(int argc, char const *argv[])
         printf("%s\n", "SPHERE");
         Point center = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         float rad = stof((++it)->c_str());
-        Ellipsoid sphere = Ellipsoid(center, rad, f);
-        shapes.push_back(&sphere);
+        Ellipsoid * sphere = new Ellipsoid(center, rad, f);
+        shapes.push_back(sphere);
       } else if (strcmp(command, TRIANGLE) == 0) {
         printf("%s\n", "TRIANGLE");
         Point a = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         Point b = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         Point c = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
-        Triangle tri = Triangle(a, b, c, f);
-        shapes.push_back(&tri);
+        Triangle * tri = new Triangle(a, b, c, f);
+        shapes.push_back(tri);
       } else if (strcmp(command, OBJ_FILE) == 0) {
         printf("%s\n", "OBJ_FILE");
         fprintf(stdout, "FILENAME: %s\n", (++it)->c_str());
@@ -160,10 +160,10 @@ int main(int argc, char const *argv[])
   /* End Parsing */
 
   /* ViewPlane Corners used to determine ViewPlane Intersection Point*/
-  Vector ll = Vector(camera.getViewPlane().getLL().getX(), camera.getViewPlane().getLL().getY(), camera.getViewPlane().getLL().getZ());
-  Vector lr = Vector(camera.getViewPlane().getLR().getX(), camera.getViewPlane().getLR().getY(), camera.getViewPlane().getLR().getZ());
-  Vector ul = Vector(camera.getViewPlane().getUL().getX(), camera.getViewPlane().getUL().getY(), camera.getViewPlane().getUL().getZ());
-  Vector ur = Vector(camera.getViewPlane().getUR().getX(), camera.getViewPlane().getUR().getY(), camera.getViewPlane().getUR().getZ());
+  Vector ll = Vector(camera.getLL(), Point());
+  Vector lr = Vector(camera.getLR(), Point());
+  Vector ul = Vector(camera.getUL(), Point());
+  Vector ur = Vector(camera.getUR(), Point());
 
   /* Shade each pixel */
   for (int i = 0; i < WIDTH; i++) {
@@ -215,6 +215,7 @@ Color RayTrace(Ray r, int depth) {
   Color c (0.0,0.0,0.0); //Set color to black
   // Loop through objects to check if intersection exists (HIT_CHECK)
   // If HIT_CHECK, then check if its closer & update HITOBJECT
+
   for (int i = 0; i < num_obj; i++)
   {
     hit_check = shapes[i]->intersection(r, &g);
