@@ -25,8 +25,8 @@
 #include "triangle.h"
 #include "transformation.h"
 #include "ray.h"
-#include "object.h"
 #include "material.h"
+#include "libraries.h"
 
 #define CAMERA "cam"
 #define SPHERE "sph"
@@ -52,7 +52,6 @@ using namespace boost;
 Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo g);
 Color RayTrace(Ray r, int depth);
 Vector reflection(Vector normal, Vector v);
-std::vector<Object> parse_obj(const char* file);
 std::vector<Material> mtl_parser(string mtl_file);
 void split(const string& s, char c, vector<string>& v);
 
@@ -120,19 +119,20 @@ int main(int argc, char const *argv[])
         printf("%s\n", "OBJ_FILE");
         //fprintf(stdout, "FILENAME: %s\n", (++it)->c_str());
         // this is a vector of all the objects from the obj file:
-        std::vector<Object> objects = parse_obj((++it)->c_str());
-        for(int i=0; i < objects.size(); i++){
-          for (int f = 0; f < objects[i].faces.size(); f++) {
-            Tringle * tri = objects[i].faces[f];
-            shapes.push_back(tri);
-          }
-          Color ka = objects[i].mtl.ka;
-          Color ks = objects[i].mtl.ks;
-          Color kd = objects[i].mtl.kd;
-          float sp = objects[i].mtl.ns;
+        libs = parse_obj((++it)->c_str());
+        for (int f = 0; f < libs.faces.size(), f++) {
+          Triangle * tri = libs.faces[f];
+          shapes.push_back(tri);
+        }
+        for (int m = 0; m < libs.materials.size(); m++) {
+          Color ka = libs.materials[m].ka;
+          Color ks = libs.materials[m].ks;
+          Color kd = libs.materials[m].kd;
+          float sp = libs.materials[m].ns;
           Color kr = Color(0.0, 0.0, 0.0);
           f = BRDF(ka, kd, ks, sp, kr)
         }
+
       } else if (strcmp(command, POINT_LIGHT) == 0) {
         printf("%s\n", "POINT_LIGHT");
         Light pl = Light(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 
@@ -340,16 +340,14 @@ Vector reflection(Vector normal, Vector v) {
 }
 
 
-/* Return vector of objects from obj file */
-std::vector<Object> parse_obj(const char* file) {
-  std::vector<Object> obj_library;    // this will only be used if the file contains objects (indicated by 'o')
+/* Returns libraries of materials, vertices, and faces. */
+Libraries parse_obj(const char* file) {
   std::vector<Material> mtl_library;    // this will only be used if a material is provided
   std::vector<Point> vertex_library;
   std::vector<Triangle> face_library;
 
   Material single_material;   // this will only be used if there are no indicated objects in the obj file
 
-  int obj_counter = -1; // counter for objects, not neccessarily used
   int v_counter = -1;   // counter for vertices
   int f_counter = -1;   // counter for faces
 
@@ -360,24 +358,13 @@ std::vector<Object> parse_obj(const char* file) {
     split(line, ' ', parsed);     // parses the current line of the .obj file
     to_lower(parsed[0]); // make parsed[0] all lower case
     const char * command = parsed[0].c_str(); // convert string to char* for comparison
-    if (strcmp(command, "o") == 0) {
-      obj_counter += 1;
-      obj_library.push_back(Object());    // adds an object to the object library
-      obj_library[obj_counter].name = parsed[1];    // sets the name of the object
 
-    } else if (strcmp(command, "v") == 0) {
+    if (strcmp(command, "v") == 0) {
       v_counter += 1;
-        if (obj_counter == -1) {  // if no objects exist:
-          vertex_library.push_back(Point());    // adds a vertex to the vertex library
-          vertex_library[v_counter].x = stof(parsed[1]);    // sets the x of the vertex
-          vertex_library[v_counter].y = stof(parsed[2]);    // sets the y of the vertex
-          vertex_library[v_counter].z = stof(parsed[3]);    // sets the z of the vertex
-        } else {
-          obj_library[obj_counter].vertices.push_back(Point());   // adds a vertex to the vertex vector of an object in the object library
-          obj_library[obj_counter].vertices[v_counter].x = stof(parsed[1]);   // sets the x of the vertex
-          obj_library[obj_counter].vertices[v_counter].y = stof(parsed[2]);   // sets the y of the vertex
-          obj_library[obj_counter].vertices[v_counter].z = stof(parsed[3]);   // sets the z of the vertex
-        }
+      vertex_library.push_back(Point());    // adds a vertex to the vertex library
+      vertex_library[v_counter].x = stof(parsed[1]);    // sets the x of the vertex
+      vertex_library[v_counter].y = stof(parsed[2]);    // sets the y of the vertex
+      vertex_library[v_counter].z = stof(parsed[3]);    // sets the z of the vertex
     } else if (strcmp(command, "f") == 0) {
       f_counter += 1;
 
@@ -390,18 +377,11 @@ std::vector<Object> parse_obj(const char* file) {
       vector<string> v_vt_vn_3;
       split(parsed[3], '/', v_vt_vn_3);
 
-      if (obj_counter == -1) {    // if no objects exist
-        face_library.push_back(Triangle());     // adds a face to the face library
-        face_library[f_counter].setA(obj_library[obj_counter].vertices[stoi(v_vt_vn_1[0]) - 1]);  // sets vertex 'a' of the face
-        face_library[f_counter].setB(obj_library[obj_counter].vertices[stoi(v_vt_vn_2[0]) - 1]);  // sets vertex 'b' of the face
-        face_library[f_counter].setC(obj_library[obj_counter].vertices[stoi(v_vt_vn_3[0]) - 1]);  // sets vertex 'c' of the face
-      } else {    
-        obj_library[obj_counter].faces.push_back(Triangle());   // adds a face to the face vector of the object library
-        obj_library[obj_counter].faces[f_counter].setA(obj_library[obj_counter].vertices[stoi(v_vt_vn_1[0]) - 1]);    // sets vertex 'a' of the face
-        obj_library[obj_counter].faces[f_counter].setB(obj_library[obj_counter].vertices[stoi(v_vt_vn_2[0]) - 1]);    // sets vertex 'b' of the face
-        obj_library[obj_counter].faces[f_counter].setC(obj_library[obj_counter].vertices[stoi(v_vt_vn_3[0]) - 1]);    // sets vertex 'c' of the face
-      }
-      // the above statements ignore the possible vt and vn components of the v_vt_vn's
+      Point a = obj_library[obj_counter].vertices[stoi(v_vt_vn_1[0]) - 1]
+      Point b = obj_library[obj_counter].vertices[stoi(v_vt_vn_2[0]) - 1]
+      Point c = obj_library[obj_counter].vertices[stoi(v_vt_vn_3[0]) - 1]
+      Triangle * tri = new Triangle(a, b, c, f);
+      face_library.push_back(tri);
 
     } else if (strcmp(command, "mtllib") == 0) {;
       mtl_library = mtl_parser(parsed[1]);
@@ -410,11 +390,7 @@ std::vector<Object> parse_obj(const char* file) {
       int i = 0;
       while (i < mtl_library.size()) {
         if (strcmp(mtl_library[i].name.c_str(), parsed[1].c_str()) == 0) {
-          if (obj_counter == -1) {
-            single_material = mtl_library[i];
-          } else {
-            obj_library[obj_counter].mtl = mtl_library[i];
-          }       
+           single_material = mtl_library[i];
         } else {
           i++;
         }
@@ -423,13 +399,11 @@ std::vector<Object> parse_obj(const char* file) {
       // empty statement as a catch-all for other arguments that we're ignoring
     }
   }
-  if (obj_counter == -1) {
-    obj_library.push_back(Object());
-    obj_library[0].vertices = vertex_library;
-    obj_library[0].faces = face_library;
-    obj_library[0].mtl = single_material;
-  }
-  return obj_library;
+  lib = Library();
+  lib.materials = mtl_library;
+  lib.vertices vertex_library;
+  lib.faces = face_library;
+  return lib;
 }
 
 
