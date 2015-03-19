@@ -1,5 +1,6 @@
 #include "material.h"
 #include <string>
+#include "color.h"
 
 Material::Material() {
 	this->name = "";

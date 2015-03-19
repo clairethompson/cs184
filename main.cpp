@@ -134,7 +134,7 @@ int main(int argc, char const *argv[])
         }
 
       } else if (strcmp(command, POINT_LIGHT) == 0) {
-        printf("%s\n", "POINT_LIGHT");
+        printf("%s\n", "POINT_LIGHT")
         Light pl = Light(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 
                          stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()),
                          0.0);
@@ -345,12 +345,11 @@ Libraries parse_obj(const char* file) {
   std::vector<Material> mtl_library;    // this will only be used if a material is provided
   std::vector<Point> vertex_library;
   std::vector<Triangle> face_library;
-
-  Material single_material;   // this will only be used if there are no indicated objects in the obj file
+  std::vector<Material> all_materials;
 
   int v_counter = -1;   // counter for vertices
   int f_counter = -1;   // counter for faces
-
+  int m_counter = -1;   // counter for materials used
   std::ifstream input(file);
   string line;
   while (std::getline(input, line)) {   // loops through every line of the .obj file
@@ -377,20 +376,22 @@ Libraries parse_obj(const char* file) {
       vector<string> v_vt_vn_3;
       split(parsed[3], '/', v_vt_vn_3);
 
-      Point a = obj_library[obj_counter].vertices[stoi(v_vt_vn_1[0]) - 1]
-      Point b = obj_library[obj_counter].vertices[stoi(v_vt_vn_2[0]) - 1]
-      Point c = obj_library[obj_counter].vertices[stoi(v_vt_vn_3[0]) - 1]
+      Point a = vertex_library[stoi(v_vt_vn_1[0]) - 1]
+      Point b = vertex_library[stoi(v_vt_vn_2[0]) - 1]
+      Point c = vertex_library[stoi(v_vt_vn_3[0]) - 1]
       Triangle * tri = new Triangle(a, b, c, f);
       face_library.push_back(tri);
 
     } else if (strcmp(command, "mtllib") == 0) {;
-      mtl_library = mtl_parser(parsed[1]);
+      all_materials = mtl_parser(parsed[1]);
 
     } else if (strcmp(command, "usemtl") == 0) {
       int i = 0;
+      m_counter += 1;
       while (i < mtl_library.size()) {
         if (strcmp(mtl_library[i].name.c_str(), parsed[1].c_str()) == 0) {
-           single_material = mtl_library[i];
+          mtl_library.push_back(Matterial());
+          mtl_library[m_counter] = all_materials[i];
         } else {
           i++;
         }
@@ -407,7 +408,7 @@ Libraries parse_obj(const char* file) {
 }
 
 
-/* Return vector of Materials used in Objects from obj file */
+/* Return vector of Materials used in Libraries from obj file */
 std::vector<Material> mtl_parser(string mtl_file) {
   std::vector<Material> library;
   int mtl_counter = -1;
