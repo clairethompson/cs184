@@ -9,7 +9,7 @@
 class Shape {
 protected:
   BRDF f;
-  Matrix m;
+  Matrix m, inv;
 
 public:   
   /* If there is an intersection, return 1 and update l to the intersection point */

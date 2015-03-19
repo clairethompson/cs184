@@ -4,12 +4,13 @@
 #include "matrix.h"
 
 class Transformation {
-  Matrix trans;
+  Matrix trans, inv;
 public:
   Transformation(Matrix m);  
   Transformation();  
-  void addTransformation();
+  void addTransformation(Matrix m);
   void clear();
+  Matrix getTrans();
 };
 
 #endif

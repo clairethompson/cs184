@@ -22,6 +22,7 @@
 #include "tests.h"
 #include "ellipsoid.h"
 #include "triangle.h"
+#include "transformation.h"
 #include "ray.h"
 
 #define CAMERA "cam"
@@ -81,6 +82,7 @@ int main(int argc, char const *argv[])
   typedef tokenizer< char_separator<char> > Tokenizer;
   char_separator<char> sep(" \t");
   string line;
+  Transformation t = Transformation();
 
   /* Parse each line from file & break into tokens */
   while (getline(sceneFile, line)) {
@@ -100,6 +102,7 @@ int main(int argc, char const *argv[])
         Point center = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         float rad = stof((++it)->c_str());
         Ellipsoid * sphere = new Ellipsoid(center, rad, f);
+        sphere->transform(t);
         shapes.push_back(sphere);
       } else if (strcmp(command, TRIANGLE) == 0) {
         printf("%s\n", "TRIANGLE");
@@ -141,14 +144,19 @@ int main(int argc, char const *argv[])
       } else if (strcmp(command, TRANSLATE) == 0) {
         printf("%s\n", "Transform");
         Matrix trans = Matrix(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 1);
+        t.addTransformation(trans);
       } else if (strcmp(command, ROTATE) == 0) {
         printf("%s\n", "Rotate");
         Matrix rot = Matrix(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 2);
+        t.addTransformation(rot);
       } else if (strcmp(command, SCALE) == 0) {
         printf("%s\n", "Scale");
         Matrix scale = Matrix(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 3);
+        scale.print();
+        t.addTransformation(scale);
       } else if (strcmp(command, RESET_TFM) == 0) {
         printf("%s\n", "RESET_TFM");
+        t.clear();
       } else {
         //Unrecognized type
         fprintf(stderr, "Unrecognized command: %s\n", command);
@@ -219,7 +227,7 @@ Color RayTrace(Ray r, int depth) {
 
   for (int i = 0; i < num_obj; i++) {
     hit_check = shapes[i]->intersection(r, &g);
-    if (hit_check) {  
+    if (hit_check) {
       Vector ray_obj_vect (r.getStart(), g.getPoint());
       ray_obj_dist = ray_obj_vect.getLength();
       if (ray_obj_dist < dist_max) {
@@ -242,19 +250,21 @@ Color RayTrace(Ray r, int depth) {
       // TODO: FIGURE OUT SHADOW RAYS? 
       // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
       Vector shadowDir = Vector();
+      float t_max = 1000;
       if (lights[j].getType() == 0) {
         c = c + (lights[j].getIntensity() * hitobject->getBRDF().getKA());
       } else {
         if (lights[j].getType() == -1) {
           light = Vector (lights[j].getPoint(), closest.getPoint());
           shadowDir = light;
+          t_max = light.getLength();
         } else if (lights[j].getType() == -2) {
           light = Vector (lights[j].getPoint(), Point(0, 0, 0));
           shadowDir = light;
         }
 
         shadowDir.normalize();
-        Ray shadRay = Ray(closest.getPoint(), shadowDir, 0.0, 1000);
+        Ray shadRay = Ray(closest.getPoint(), shadowDir, 0.0, t_max);
         bool shadow = 0;
         int s = 0;
 

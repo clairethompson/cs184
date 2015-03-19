@@ -1,5 +1,4 @@
 #include "ellipsoid.h"
-#include "matrix.h"
 #include "vector.h"
 #include "normal.h"
 #include "ray.h"
@@ -10,8 +9,9 @@
 Ellipsoid::Ellipsoid(Point c, float rad, BRDF f) {
   this->center = c;
   this->f = f;
-  this->m = Matrix(c.x, c.y, c.z, 1); // TODO: INCORPORATE RADIUS ONTO DIAGONAL
-  this->radius = rad;
+  this->m = Matrix(c, rad);
+  this->inv = m.invert();
+  this->radX, this->radY, this->radZ, this->radius = rad;
 }
 
 Ellipsoid::Ellipsoid() {
@@ -21,7 +21,7 @@ Ellipsoid::Ellipsoid() {
 /* RIGHT NOW ONLY WORKS FOR SPHERES, NOT ELLIPSOIDS 
    TODO: make work for arbitrary ellipsoid, might need to do stuff with world space / object space*/
 bool Ellipsoid::intersection(Ray r, LocalGeo* l) {
-  Vector dir = r.getDir();
+  Vector dir = this->m * r.getDir();
   dir.normalize();
   Point start = r.getStart();
   Point cen = this->center;
@@ -67,6 +67,19 @@ bool Ellipsoid::intersection(Ray r, LocalGeo* l) {
 /* Only works for spheres. 
   TODO: implement for ellipsoid */
 Normal Ellipsoid::getNormalAtPoint(Point p) {
-  return Normal((p.x - this->center.x)/this->radius, (p.y - this->center.y)/this->radius, (p.z - this->center.z)/this->radius);
+  Vector v = Vector(p.x - this->center.x, p.y - this->center.y, p.z - this->center.z);
+  v = this->m * v;
+  return Normal(v.getX(), v.getY(), v.getZ());
+}
+
+
+void Ellipsoid::transform(Transformation t) {
+  this->m = this->m * t.getTrans();
+  this->m.print();
+  this->inv = m.invert();
+  this->center = Point(m.getValue(3, 0), m.getValue(3, 1), m.getValue(3, 2));
+  this->radX = m.getValue(0, 0);
+  this->radY = m.getValue(1, 1);
+  this->radZ = m.getValue(2, 2);
 }
 

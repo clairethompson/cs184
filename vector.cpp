@@ -4,15 +4,15 @@
 #include "math.h"
 
 Vector::Vector(float a,  float b,  float c) {
-			x = a;
-			y = b;
-			z = c;
+	x = a;
+	y = b;
+	z = c;
 }
 
 Vector::Vector(Point a,  Point b) {
-			x = a.x - b.x;
-			y = a.y - b.y;
-			z = a.z - b.z;
+	x = a.x - b.x;
+	y = a.y - b.y;
+	z = a.z - b.z;
 }
 
 Vector::Vector(Normal n) {

@@ -4,55 +4,64 @@
 #include <math.h>
 
 Matrix::Matrix() {
-    this->mat[0][0] = 1.0;
-    this->mat[0][1] = 0.0;
-    this->mat[0][2] = 0.0;
-    this->mat[0][3] = 0.0;
+  this->mat[0][0] = 1.0;
+  this->mat[0][1] = 0.0;
+  this->mat[0][2] = 0.0;
+  this->mat[0][3] = 0.0;
 
-    this->mat[1][0] = 0.0;
-    this->mat[1][1] = 1.0;
-    this->mat[1][2] = 0.0;
-    this->mat[1][3] = 0.0;
+  this->mat[1][0] = 0.0;
+  this->mat[1][1] = 1.0;
+  this->mat[1][2] = 0.0;
+  this->mat[1][3] = 0.0;
 
-    this->mat[2][0] = 0.0;
-    this->mat[2][1] = 0.0;
-    this->mat[2][2] = 1.0;
-    this->mat[2][3] = 0.0;
+  this->mat[2][0] = 0.0;
+  this->mat[2][1] = 0.0;
+  this->mat[2][2] = 1.0;
+  this->mat[2][3] = 0.0;
 
-    this->mat[3][0] = 0.0;
-    this->mat[3][1] = 0.0;
-    this->mat[3][2] = 0.0;
-    this->mat[3][3] = 1.0;
+  this->mat[3][0] = 0.0;
+  this->mat[3][1] = 0.0;
+  this->mat[3][2] = 0.0;
+  this->mat[3][3] = 1.0;
 };
 
 Matrix::Matrix(float a[4][4]) {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            this->mat[i][j] = a[i][j];
-        }
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      this->mat[i][j] = a[i][j];
     }
-}
+  }
+};
 
 Matrix::Matrix(Point a, Point b, Point c) {
-    this->mat[0][0] = a.x;
-    this->mat[0][1] = a.y;
-    this->mat[0][2] = a.z;
-    this->mat[0][3] = 0.0;
+  this->mat[0][0] = a.x;
+  this->mat[0][1] = a.y;
+  this->mat[0][2] = a.z;
+  this->mat[0][3] = 0.0;
 
-    this->mat[1][0] = b.x;
-    this->mat[1][1] = b.y;
-    this->mat[1][2] = b.z;
-    this->mat[1][3] = 0.0;
+  this->mat[1][0] = b.x;
+  this->mat[1][1] = b.y;
+  this->mat[1][2] = b.z;
+  this->mat[1][3] = 0.0;
 
-    this->mat[2][0] = c.x;
-    this->mat[2][1] = c.y;
-    this->mat[2][2] = c.z;
-    this->mat[2][3] = 0.0;
+  this->mat[2][0] = c.x;
+  this->mat[2][1] = c.y;
+  this->mat[2][2] = c.z;
+  this->mat[2][3] = 0.0;
 
-    this->mat[3][0] = 0.0;
-    this->mat[3][1] = 0.0;
-    this->mat[3][2] = 0.0;
-    this->mat[3][3] = 1.0;
+  this->mat[3][0] = 0.0;
+  this->mat[3][1] = 0.0;
+  this->mat[3][2] = 0.0;
+  this->mat[3][3] = 1.0;
+};
+
+Matrix::Matrix(Point cen, float rad) {
+  float a[4][4] = {{rad, 0.0, 0.0, 0.0}, {0, rad, 0, 0}, {0, 0, rad, 0}, {cen.getX(), cen.getY(), cen.getZ(), 1.0}};
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      this->mat[i][j] = a[i][j];
+    }
+  }
 };
 
 Matrix::Matrix(float a, float b, float c, int type) {
@@ -151,27 +160,34 @@ void Matrix::setValue(int a, int b, float c) {
 }
 
 Matrix Matrix::operator*(Matrix m1) {
-    Matrix m2 = Matrix();
+  Matrix m2 = Matrix();
 
-    m2.setValue(0, 0, (this->mat[0][0] * m1.getValue(0, 0) + this->mat[1][0] * m1.getValue(0, 1) + this->mat[2][0] * m1.getValue(0, 2) + this->mat[3][0] * m1.getValue(0, 3)));
-    m2.setValue(1, 0, (this->mat[0][0] * m1.getValue(1, 0) + this->mat[1][0] * m1.getValue(1, 1) + this->mat[2][0] * m1.getValue(1, 2) + this->mat[3][0] * m1.getValue(1, 3)));
-    m2.setValue(2, 0, (this->mat[0][0] * m1.getValue(2, 0) + this->mat[1][0] * m1.getValue(2, 1) + this->mat[2][0] * m1.getValue(2, 2) + this->mat[3][0] * m1.getValue(2, 3)));
-    m2.setValue(3, 0, (this->mat[0][0] * m1.getValue(3, 0) + this->mat[1][0] * m1.getValue(3, 1) + this->mat[2][0] * m1.getValue(3, 2) + this->mat[3][0] * m1.getValue(3, 3)));
-    m2.setValue(0, 1, (this->mat[0][1] * m1.getValue(0, 0) + this->mat[1][1] * m1.getValue(0, 1) + this->mat[2][1] * m1.getValue(0, 2) + this->mat[3][1] * m1.getValue(0, 3)));
-    m2.setValue(1, 1, (this->mat[0][1] * m1.getValue(1, 0) + this->mat[1][1] * m1.getValue(1, 1) + this->mat[2][1] * m1.getValue(1, 2) + this->mat[3][1] * m1.getValue(1, 3)));
-    m2.setValue(2, 1, (this->mat[0][1] * m1.getValue(2, 0) + this->mat[1][1] * m1.getValue(2, 1) + this->mat[2][1] * m1.getValue(2, 2) + this->mat[3][1] * m1.getValue(2, 3)));
-    m2.setValue(3, 1, (this->mat[0][1] * m1.getValue(3, 0) + this->mat[1][1] * m1.getValue(3, 1) + this->mat[2][1] * m1.getValue(3, 2) + this->mat[3][1] * m1.getValue(3, 3)));
-    m2.setValue(0, 2, (this->mat[0][2] * m1.getValue(0, 0) + this->mat[1][2] * m1.getValue(0, 1) + this->mat[2][2] * m1.getValue(0, 2) + this->mat[3][2] * m1.getValue(0, 3)));
-    m2.setValue(1, 2, (this->mat[0][2] * m1.getValue(1, 0) + this->mat[1][2] * m1.getValue(1, 1) + this->mat[2][2] * m1.getValue(1, 2) + this->mat[3][2] * m1.getValue(1, 3)));
-    m2.setValue(2, 2, (this->mat[0][2] * m1.getValue(2, 0) + this->mat[1][2] * m1.getValue(2, 1) + this->mat[2][2] * m1.getValue(2, 2) + this->mat[3][2] * m1.getValue(2, 3)));
-    m2.setValue(3, 2, (this->mat[0][2] * m1.getValue(3, 0) + this->mat[1][2] * m1.getValue(3, 1) + this->mat[2][2] * m1.getValue(3, 2) + this->mat[3][2] * m1.getValue(3, 3)));
-    m2.setValue(0, 3, (this->mat[0][3] * m1.getValue(0, 0) + this->mat[1][3] * m1.getValue(0, 1) + this->mat[2][3] * m1.getValue(0, 2) + this->mat[3][3] * m1.getValue(0, 3)));
-    m2.setValue(1, 3, (this->mat[0][3] * m1.getValue(1, 0) + this->mat[1][3] * m1.getValue(1, 1) + this->mat[2][3] * m1.getValue(1, 2) + this->mat[3][3] * m1.getValue(1, 3)));
-    m2.setValue(2, 3, (this->mat[0][3] * m1.getValue(2, 0) + this->mat[1][3] * m1.getValue(2, 1) + this->mat[2][3] * m1.getValue(2, 2) + this->mat[3][3] * m1.getValue(2, 3)));
-    m2.setValue(3, 3, (this->mat[0][3] * m1.getValue(3, 0) + this->mat[1][3] * m1.getValue(3, 1) + this->mat[2][3] * m1.getValue(3, 2) + this->mat[3][3] * m1.getValue(3, 3)));
+  m2.setValue(0, 0, (this->mat[0][0] * m1.getValue(0, 0) + this->mat[1][0] * m1.getValue(0, 1) + this->mat[2][0] * m1.getValue(0, 2) + this->mat[3][0] * m1.getValue(0, 3)));
+  m2.setValue(1, 0, (this->mat[0][0] * m1.getValue(1, 0) + this->mat[1][0] * m1.getValue(1, 1) + this->mat[2][0] * m1.getValue(1, 2) + this->mat[3][0] * m1.getValue(1, 3)));
+  m2.setValue(2, 0, (this->mat[0][0] * m1.getValue(2, 0) + this->mat[1][0] * m1.getValue(2, 1) + this->mat[2][0] * m1.getValue(2, 2) + this->mat[3][0] * m1.getValue(2, 3)));
+  m2.setValue(3, 0, (this->mat[0][0] * m1.getValue(3, 0) + this->mat[1][0] * m1.getValue(3, 1) + this->mat[2][0] * m1.getValue(3, 2) + this->mat[3][0] * m1.getValue(3, 3)));
+  m2.setValue(0, 1, (this->mat[0][1] * m1.getValue(0, 0) + this->mat[1][1] * m1.getValue(0, 1) + this->mat[2][1] * m1.getValue(0, 2) + this->mat[3][1] * m1.getValue(0, 3)));
+  m2.setValue(1, 1, (this->mat[0][1] * m1.getValue(1, 0) + this->mat[1][1] * m1.getValue(1, 1) + this->mat[2][1] * m1.getValue(1, 2) + this->mat[3][1] * m1.getValue(1, 3)));
+  m2.setValue(2, 1, (this->mat[0][1] * m1.getValue(2, 0) + this->mat[1][1] * m1.getValue(2, 1) + this->mat[2][1] * m1.getValue(2, 2) + this->mat[3][1] * m1.getValue(2, 3)));
+  m2.setValue(3, 1, (this->mat[0][1] * m1.getValue(3, 0) + this->mat[1][1] * m1.getValue(3, 1) + this->mat[2][1] * m1.getValue(3, 2) + this->mat[3][1] * m1.getValue(3, 3)));
+  m2.setValue(0, 2, (this->mat[0][2] * m1.getValue(0, 0) + this->mat[1][2] * m1.getValue(0, 1) + this->mat[2][2] * m1.getValue(0, 2) + this->mat[3][2] * m1.getValue(0, 3)));
+  m2.setValue(1, 2, (this->mat[0][2] * m1.getValue(1, 0) + this->mat[1][2] * m1.getValue(1, 1) + this->mat[2][2] * m1.getValue(1, 2) + this->mat[3][2] * m1.getValue(1, 3)));
+  m2.setValue(2, 2, (this->mat[0][2] * m1.getValue(2, 0) + this->mat[1][2] * m1.getValue(2, 1) + this->mat[2][2] * m1.getValue(2, 2) + this->mat[3][2] * m1.getValue(2, 3)));
+  m2.setValue(3, 2, (this->mat[0][2] * m1.getValue(3, 0) + this->mat[1][2] * m1.getValue(3, 1) + this->mat[2][2] * m1.getValue(3, 2) + this->mat[3][2] * m1.getValue(3, 3)));
+  m2.setValue(0, 3, (this->mat[0][3] * m1.getValue(0, 0) + this->mat[1][3] * m1.getValue(0, 1) + this->mat[2][3] * m1.getValue(0, 2) + this->mat[3][3] * m1.getValue(0, 3)));
+  m2.setValue(1, 3, (this->mat[0][3] * m1.getValue(1, 0) + this->mat[1][3] * m1.getValue(1, 1) + this->mat[2][3] * m1.getValue(1, 2) + this->mat[3][3] * m1.getValue(1, 3)));
+  m2.setValue(2, 3, (this->mat[0][3] * m1.getValue(2, 0) + this->mat[1][3] * m1.getValue(2, 1) + this->mat[2][3] * m1.getValue(2, 2) + this->mat[3][3] * m1.getValue(2, 3)));
+  m2.setValue(3, 3, (this->mat[0][3] * m1.getValue(3, 0) + this->mat[1][3] * m1.getValue(3, 1) + this->mat[2][3] * m1.getValue(3, 2) + this->mat[3][3] * m1.getValue(3, 3)));
   
   return m2;
 };
+
+Vector Matrix::operator*(Vector v) {
+  float a = v.getX() * getValue(0, 0) + v.getY() * getValue(1, 0) + v.getZ() * getValue(2, 0);
+  float b = v.getX() * getValue(0, 1) + v.getY() * getValue(1, 1) + v.getZ() * getValue(2, 1);
+  float c = v.getX() * getValue(0, 2) + v.getY() * getValue(1, 2) + v.getZ() * getValue(2, 2);
+  return Vector(a, b, c);
+}
 
 float Matrix::determinant() {
     float det =
@@ -396,3 +412,15 @@ bool Matrix::operator==(Matrix m) {
   }
   return pass;
 }
+
+void Matrix::print() {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      std::cout << this->mat[j][i];
+      std::cout << ",";
+    }
+    std::cout << "\n";
+  }
+  std::cout<< "\n";
+}
+

@@ -6,11 +6,12 @@
 #include "ray.h"
 #include "normal.h"
 #include "localgeo.h"
+#include "transformation.h"
 #include "BRDF.h"
 
 class Ellipsoid : public Shape {
   Point center;
-  float radius;
+  float radX, radY, radZ, radius;
 
 
 public:
@@ -20,6 +21,7 @@ public:
   /* If there is an intersection, return 1 and update l to the intersection point */
   bool intersection(Ray r, LocalGeo* l);
   Normal getNormalAtPoint(Point p);
+  void transform(Transformation t);
 };
 
 #endif
