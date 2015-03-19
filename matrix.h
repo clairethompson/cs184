@@ -16,6 +16,7 @@ public:
   float getValue(int a, int b);
   void setValue(int a, int b, float c);
   Matrix operator*(Matrix m);
+  Matrix operator*(float f);
   Vector operator*(Vector v);
   bool operator==(Matrix m);
   float determinant();

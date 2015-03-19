@@ -11,7 +11,8 @@
 
 class Ellipsoid : public Shape {
   Point center;
-  float radX, radY, radZ, radius;
+  float radius;
+  bool transformed;
 
 
 public:
@@ -22,6 +23,9 @@ public:
   bool intersection(Ray r, LocalGeo* l);
   Normal getNormalAtPoint(Point p);
   void transform(Transformation t);
+  Ray worldToObj(Ray r);
+  Point objToWorld(Point p);
+  Vector objToWorld(Vector v);
 };
 
 #endif

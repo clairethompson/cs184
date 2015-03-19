@@ -78,6 +78,12 @@ int main(int argc, char const *argv[])
   ifstream sceneFile;
   sceneFile.open(argv[1]);
 
+  /* Uncomment below to run tests */
+  // Tests test = Tests();
+  // test.checkAll();
+  // exit(0);
+
+
   /* Declare tokenizer & delimiters */
   typedef tokenizer< char_separator<char> > Tokenizer;
   char_separator<char> sep(" \t");
@@ -142,8 +148,9 @@ int main(int argc, char const *argv[])
         Color kr = Color(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         f = BRDF(ka, kd, ks, sp, kr);
       } else if (strcmp(command, TRANSLATE) == 0) {
-        printf("%s\n", "Transform");
+        printf("%s\n", "Translate");
         Matrix trans = Matrix(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 1);
+        trans.print();
         t.addTransformation(trans);
       } else if (strcmp(command, ROTATE) == 0) {
         printf("%s\n", "Rotate");

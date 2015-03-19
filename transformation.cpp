@@ -11,8 +11,8 @@ Transformation::Transformation() {
 };
 
 void Transformation::addTransformation(Matrix m) {
-  this->trans = this->trans * m;
-  this->inv = this->trans.invert();
+  this->trans = m * this->trans;
+  this->inv = m.invert() * this->inv;
 };
 
 void Transformation::clear() {
@@ -22,4 +22,8 @@ void Transformation::clear() {
 
 Matrix Transformation::getTrans() {
   return this->trans;
+}
+
+Matrix Transformation::getInv() {
+  return this->inv;
 }

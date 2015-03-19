@@ -34,19 +34,19 @@ Matrix::Matrix(float a[4][4]) {
 };
 
 Matrix::Matrix(Point a, Point b, Point c) {
-  this->mat[0][0] = a.x;
-  this->mat[0][1] = a.y;
-  this->mat[0][2] = a.z;
+  this->mat[0][0] = a.getX();
+  this->mat[0][1] = a.getY();
+  this->mat[0][2] = a.getZ();
   this->mat[0][3] = 0.0;
 
-  this->mat[1][0] = b.x;
-  this->mat[1][1] = b.y;
-  this->mat[1][2] = b.z;
+  this->mat[1][0] = b.getX();
+  this->mat[1][1] = b.getY();
+  this->mat[1][2] = b.getZ();
   this->mat[1][3] = 0.0;
 
-  this->mat[2][0] = c.x;
-  this->mat[2][1] = c.y;
-  this->mat[2][2] = c.z;
+  this->mat[2][0] = c.getX();
+  this->mat[2][1] = c.getY();
+  this->mat[2][2] = c.getZ();
   this->mat[2][3] = 0.0;
 
   this->mat[3][0] = 0.0;
@@ -182,11 +182,22 @@ Matrix Matrix::operator*(Matrix m1) {
   return m2;
 };
 
+Matrix Matrix::operator*(float f) {
+  float a[4][4];
+  for (int i = 0; i < 4; i ++) {
+    for (int j = 0; j < 4; j++) {
+      a[i][j] = this->mat[i][j] * f;
+    }
+  }
+  return Matrix(a);
+}
+
 Vector Matrix::operator*(Vector v) {
-  float a = v.getX() * getValue(0, 0) + v.getY() * getValue(1, 0) + v.getZ() * getValue(2, 0);
-  float b = v.getX() * getValue(0, 1) + v.getY() * getValue(1, 1) + v.getZ() * getValue(2, 1);
-  float c = v.getX() * getValue(0, 2) + v.getY() * getValue(1, 2) + v.getZ() * getValue(2, 2);
-  return Vector(a, b, c);
+  float a = v.getX() * getValue(0, 0) + v.getY() * getValue(1, 0) + v.getZ() * getValue(2, 0) + getValue(3, 0);
+  float b = v.getX() * getValue(0, 1) + v.getY() * getValue(1, 1) + v.getZ() * getValue(2, 1) + getValue(3, 1);
+  float c = v.getX() * getValue(0, 2) + v.getY() * getValue(1, 2) + v.getZ() * getValue(2, 2) + getValue(3, 2);
+  float d = v.getX() * getValue(0, 3) + v.getY() * getValue(1, 3) + v.getZ() * getValue(2, 3) + getValue(3, 3);
+  return Vector(a/d, b/d, c/d);
 }
 
 float Matrix::determinant() {
@@ -226,146 +237,130 @@ float Matrix::determinant() {
     return det;
 }
 
-
 Matrix Matrix::invert() {
   float det = determinant();
-  if (det != 0) {
+  float inv[4][4];
 
-    float b00 =   this->mat[1][1]*this->mat[2][2]*this->mat[3][3]
-                + this->mat[2][1]*this->mat[3][2]*this->mat[1][3]
-                + this->mat[3][1]*this->mat[1][2]*this->mat[2][3]
-                - this->mat[1][1]*this->mat[3][2]*this->mat[2][3]
-                - this->mat[2][1]*this->mat[1][2]*this->mat[3][3]
-                - this->mat[3][1]*this->mat[2][2]*this->mat[1][3];
+  inv[0][0] = mat[1][1]  * mat[2][2] * mat[3][3] - 
+           mat[1][1]  * mat[3][2] * mat[2][3] - 
+           mat[1][2]  * mat[2][1]  * mat[3][3] + 
+           mat[1][2]  * mat[3][1]  * mat[2][3] +
+           mat[1][3] * mat[2][1]  * mat[3][2] - 
+           mat[1][3] * mat[3][1]  * mat[2][2];
 
-    float b01 =   this->mat[1][0]*this->mat[3][2]*this->mat[2][3]
-                + this->mat[2][0]*this->mat[1][2]*this->mat[3][3]
-                + this->mat[3][0]*this->mat[2][2]*this->mat[1][3]
-                - this->mat[1][0]*this->mat[2][2]*this->mat[3][3]
-                - this->mat[2][0]*this->mat[3][2]*this->mat[1][3]
-                - this->mat[3][0]*this->mat[1][2]*this->mat[2][3];
+  inv[0][1] = -mat[0][1]  * mat[2][2] * mat[3][3] + 
+            mat[0][1]  * mat[3][2] * mat[2][3] + 
+            mat[0][2]  * mat[2][1]  * mat[3][3] - 
+            mat[0][2]  * mat[3][1]  * mat[2][3] - 
+            mat[0][3] * mat[2][1]  * mat[3][2] + 
+            mat[0][3] * mat[3][1]  * mat[2][2];
 
-    float b02 =   this->mat[1][0]*this->mat[2][1]*this->mat[3][3]
-                + this->mat[2][0]*this->mat[3][1]*this->mat[1][3]
-                + this->mat[3][0]*this->mat[1][1]*this->mat[2][3]
-                - this->mat[1][0]*this->mat[3][1]*this->mat[2][3]
-                - this->mat[2][0]*this->mat[1][1]*this->mat[3][3]
-                - this->mat[3][0]*this->mat[2][1]*this->mat[1][3];
+  inv[0][2] = mat[0][1]  * mat[1][2] * mat[3][3] - 
+           mat[0][1]  * mat[3][2] * mat[1][3] - 
+           mat[0][2]  * mat[1][1] * mat[3][3] + 
+           mat[0][2]  * mat[3][1] * mat[1][3] + 
+           mat[0][3] * mat[1][1] * mat[3][2] - 
+           mat[0][3] * mat[3][1] * mat[1][2];
 
-    float b03 =   this->mat[1][0]*this->mat[3][1]*this->mat[2][2]
-                + this->mat[2][0]*this->mat[1][1]*this->mat[3][2]
-                + this->mat[3][0]*this->mat[2][1]*this->mat[1][2]
-                - this->mat[1][0]*this->mat[2][1]*this->mat[3][2]
-                - this->mat[2][0]*this->mat[3][1]*this->mat[1][2]
-                - this->mat[3][0]*this->mat[1][1]*this->mat[2][2];
+  inv[0][3] = -mat[0][1]  * mat[1][2] * mat[2][3] + 
+             mat[0][1]  * mat[2][2] * mat[1][3] +
+             mat[0][2]  * mat[1][1] * mat[2][3] - 
+             mat[0][2]  * mat[2][1] * mat[1][3] - 
+             mat[0][3] * mat[1][1] * mat[2][2] + 
+             mat[0][3] * mat[2][1] * mat[1][2];
 
-    float b10 =   this->mat[0][1]*this->mat[3][2]*this->mat[2][3]
-                + this->mat[2][1]*this->mat[0][2]*this->mat[3][3]
-                + this->mat[3][1]*this->mat[2][2]*this->mat[0][3]
-                - this->mat[0][1]*this->mat[2][2]*this->mat[3][3]
-                - this->mat[2][1]*this->mat[3][2]*this->mat[0][3]
-                - this->mat[3][1]*this->mat[0][2]*this->mat[2][3];
+  inv[1][0] = -mat[1][0]  * mat[2][2] * mat[3][3] + 
+            mat[1][0]  * mat[3][2] * mat[2][3] + 
+            mat[1][2]  * mat[2][0]* mat[3][3] - 
+            mat[1][2]  * mat[3][0] * mat[2][3] - 
+            mat[1][3] * mat[2][0]* mat[3][2] + 
+            mat[1][3] * mat[3][0] * mat[2][2];
 
-    float b11 =   this->mat[0][0]*this->mat[2][2]*this->mat[3][3]
-                + this->mat[2][0]*this->mat[3][2]*this->mat[0][3]
-                + this->mat[3][0]*this->mat[0][2]*this->mat[2][3]
-                - this->mat[0][0]*this->mat[3][2]*this->mat[2][3]
-                - this->mat[2][0]*this->mat[0][2]*this->mat[3][3]
-                - this->mat[3][0]*this->mat[2][2]*this->mat[0][3];
+  inv[1][1] = mat[0][0]  * mat[2][2] * mat[3][3] - 
+           mat[0][0]  * mat[3][2] * mat[2][3] - 
+           mat[0][2]  * mat[2][0]* mat[3][3] + 
+           mat[0][2]  * mat[3][0] * mat[2][3] + 
+           mat[0][3] * mat[2][0]* mat[3][2] - 
+           mat[0][3] * mat[3][0] * mat[2][2];
 
-    float b12 =   this->mat[0][0]*this->mat[3][1]*this->mat[2][3]
-                + this->mat[2][0]*this->mat[0][1]*this->mat[3][3]
-                + this->mat[3][0]*this->mat[2][1]*this->mat[0][3]
-                - this->mat[0][0]*this->mat[2][1]*this->mat[3][3]
-                - this->mat[2][0]*this->mat[3][1]*this->mat[0][3]
-                - this->mat[3][0]*this->mat[0][1]*this->mat[2][3];
+  inv[1][2] = -mat[0][0]  * mat[1][2] * mat[3][3] + 
+            mat[0][0]  * mat[3][2] * mat[1][3] + 
+            mat[0][2]  * mat[1][0] * mat[3][3] - 
+            mat[0][2]  * mat[3][0] * mat[1][3] - 
+            mat[0][3] * mat[1][0] * mat[3][2] + 
+            mat[0][3] * mat[3][0] * mat[1][2];
 
-    float b13 =   this->mat[0][0]*this->mat[1][1]*this->mat[3][2]
-                + this->mat[1][0]*this->mat[3][1]*this->mat[0][2]
-                + this->mat[3][0]*this->mat[0][1]*this->mat[1][2]
-                - this->mat[0][0]*this->mat[3][1]*this->mat[1][2]
-                - this->mat[1][0]*this->mat[0][1]*this->mat[3][2]
-                - this->mat[3][0]*this->mat[2][1]*this->mat[0][2];
+  inv[1][3] = mat[0][0]  * mat[1][2] * mat[2][3] - 
+            mat[0][0]  * mat[2][2] * mat[1][3] - 
+            mat[0][2]  * mat[1][0] * mat[2][3] + 
+            mat[0][2]  * mat[2][0]* mat[1][3] + 
+            mat[0][3] * mat[1][0] * mat[2][2] - 
+            mat[0][3] * mat[2][0]* mat[1][2];
 
-    float b20 =   this->mat[0][1]*this->mat[1][2]*this->mat[3][3]
-                + this->mat[1][1]*this->mat[3][2]*this->mat[0][3]
-                + this->mat[3][1]*this->mat[0][2]*this->mat[1][3]
-                - this->mat[0][1]*this->mat[3][2]*this->mat[1][3]
-                - this->mat[1][1]*this->mat[0][2]*this->mat[3][3]
-                - this->mat[3][1]*this->mat[1][2]*this->mat[0][3];
+  inv[2][0] = mat[1][0]  * mat[2][1] * mat[3][3] - 
+           mat[1][0]  * mat[3][1] * mat[2][3] - 
+           mat[1][1]  * mat[2][0]* mat[3][3] + 
+           mat[1][1]  * mat[3][0] * mat[2][3] + 
+           mat[1][3] * mat[2][0]* mat[3][1] - 
+           mat[1][3] * mat[3][0] * mat[2][1];
 
-    float b21 =   this->mat[0][0]*this->mat[3][2]*this->mat[1][3]
-                + this->mat[1][0]*this->mat[0][2]*this->mat[3][3]
-                + this->mat[3][0]*this->mat[0][2]*this->mat[0][3]
-                - this->mat[0][0]*this->mat[1][2]*this->mat[3][3]
-                - this->mat[1][0]*this->mat[3][2]*this->mat[0][3]
-                - this->mat[3][0]*this->mat[0][2]*this->mat[1][3];
+  inv[2][1] = -mat[0][0]  * mat[2][1] * mat[3][3] + 
+            mat[0][0]  * mat[3][1] * mat[2][3] + 
+            mat[0][1]  * mat[2][0]* mat[3][3] - 
+            mat[0][1]  * mat[3][0] * mat[2][3] - 
+            mat[0][3] * mat[2][0]* mat[3][1] + 
+            mat[0][3] * mat[3][0] * mat[2][1];
 
-    float b22 =   this->mat[0][0]*this->mat[1][1]*this->mat[3][3]
-                + this->mat[1][0]*this->mat[3][1]*this->mat[0][3]
-                + this->mat[3][0]*this->mat[0][1]*this->mat[1][3]
-                - this->mat[0][0]*this->mat[3][1]*this->mat[1][3]
-                - this->mat[1][0]*this->mat[0][1]*this->mat[3][3]
-                - this->mat[3][0]*this->mat[1][1]*this->mat[0][3];
+  inv[2][2] = mat[0][0]  * mat[1][1] * mat[3][3] - 
+            mat[0][0]  * mat[3][1] * mat[1][3] - 
+            mat[0][1]  * mat[1][0] * mat[3][3] + 
+            mat[0][1]  * mat[3][0] * mat[1][3] + 
+            mat[0][3] * mat[1][0] * mat[3][1] - 
+            mat[0][3] * mat[3][0] * mat[1][1];
 
-    float b23 =   this->mat[0][0]*this->mat[3][1]*this->mat[1][2]
-                + this->mat[1][0]*this->mat[0][1]*this->mat[3][2]
-                + this->mat[3][0]*this->mat[0][1]*this->mat[0][2]
-                - this->mat[0][0]*this->mat[1][1]*this->mat[3][2]
-                - this->mat[1][0]*this->mat[3][1]*this->mat[0][2]
-                - this->mat[3][0]*this->mat[0][1]*this->mat[1][2];
+  inv[2][3] = -mat[0][0]  * mat[1][1] * mat[2][3] + 
+             mat[0][0]  * mat[2][1] * mat[1][3] + 
+             mat[0][1]  * mat[1][0] * mat[2][3] - 
+             mat[0][1]  * mat[2][0]* mat[1][3] - 
+             mat[0][3] * mat[1][0] * mat[2][1] + 
+             mat[0][3] * mat[2][0]* mat[1][1];
 
-    float b30 =   this->mat[0][1]*this->mat[2][2]*this->mat[1][3]
-                + this->mat[1][1]*this->mat[0][2]*this->mat[2][3]
-                + this->mat[2][1]*this->mat[1][2]*this->mat[0][3]
-                - this->mat[0][1]*this->mat[1][2]*this->mat[2][3]
-                - this->mat[1][1]*this->mat[2][2]*this->mat[0][3]
-                - this->mat[2][1]*this->mat[0][2]*this->mat[1][3];
+  inv[3][0] = -mat[1][0] * mat[2][1] * mat[3][2] + 
+            mat[1][0] * mat[3][1] * mat[2][2] + 
+            mat[1][1] * mat[2][0]* mat[3][2] - 
+            mat[1][1] * mat[3][0] * mat[2][2] - 
+            mat[1][2] * mat[2][0]* mat[3][1] + 
+            mat[1][2] * mat[3][0] * mat[2][1];
 
-    float b31 =   this->mat[0][0]*this->mat[1][2]*this->mat[2][3]
-                + this->mat[1][0]*this->mat[2][2]*this->mat[0][3]
-                + this->mat[2][0]*this->mat[0][2]*this->mat[1][3]
-                - this->mat[0][0]*this->mat[2][2]*this->mat[1][3]
-                - this->mat[1][0]*this->mat[0][2]*this->mat[2][3]
-                - this->mat[2][0]*this->mat[1][2]*this->mat[0][3];
+  inv[3][1] = mat[0][0] * mat[2][1] * mat[3][2] - 
+           mat[0][0] * mat[3][1] * mat[2][2] - 
+           mat[0][1] * mat[2][0]* mat[3][2] + 
+           mat[0][1] * mat[3][0] * mat[2][2] + 
+           mat[0][2] * mat[2][0]* mat[3][1] - 
+           mat[0][2] * mat[3][0] * mat[2][1];
 
-    float b32 =   this->mat[0][0]*this->mat[2][1]*this->mat[1][3]
-                + this->mat[1][0]*this->mat[0][1]*this->mat[2][3]
-                + this->mat[2][0]*this->mat[1][1]*this->mat[0][3]
-                - this->mat[0][0]*this->mat[1][1]*this->mat[2][3]
-                - this->mat[1][0]*this->mat[2][1]*this->mat[0][3]
-                - this->mat[2][0]*this->mat[0][1]*this->mat[1][3];
+  inv[3][2] = -mat[0][0] * mat[1][1] * mat[3][2] + 
+             mat[0][0] * mat[3][1] * mat[1][2] + 
+             mat[0][1] * mat[1][0] * mat[3][2] - 
+             mat[0][1] * mat[3][0] * mat[1][2] - 
+             mat[0][2] * mat[1][0] * mat[3][1] + 
+             mat[0][2] * mat[3][0] * mat[1][1];
 
-    float b33 =   this->mat[0][0]*this->mat[1][1]*this->mat[2][2]
-                + this->mat[1][0]*this->mat[2][1]*this->mat[0][2]
-                + this->mat[2][0]*this->mat[0][1]*this->mat[1][2]
-                - this->mat[0][0]*this->mat[2][1]*this->mat[1][2]
-                - this->mat[1][0]*this->mat[0][1]*this->mat[2][2]
-                - this->mat[2][0]*this->mat[1][1]*this->mat[0][2];
+  inv[3][3] = mat[0][0] * mat[1][1] * mat[2][2] - 
+            mat[0][0] * mat[2][1] * mat[1][2] - 
+            mat[0][1] * mat[1][0] * mat[2][2] + 
+            mat[0][1] * mat[2][0]* mat[1][2] + 
+            mat[0][2] * mat[1][0] * mat[2][1] - 
+            mat[0][2] * mat[2][0]* mat[1][1];
 
-    Matrix inverted = Matrix();
-    inverted.setValue(0, 0, b00/det);
-    inverted.setValue(0, 1, b01/det);
-    inverted.setValue(0, 2, b02/det);
-    inverted.setValue(0, 3, b03/det);
-    inverted.setValue(1, 0, b10/det);
-    inverted.setValue(1, 1, b11/det);
-    inverted.setValue(1, 2, b12/det);
-    inverted.setValue(1, 3, b13/det);
-    inverted.setValue(2, 0, b20/det);
-    inverted.setValue(2, 1, b21/det);
-    inverted.setValue(2, 2, b22/det);
-    inverted.setValue(2, 3, b23/det);
-    inverted.setValue(3, 0, b30/det);
-    inverted.setValue(3, 1, b31/det);
-    inverted.setValue(3, 2, b32/det);
-    inverted.setValue(3, 3, b33/det);
+  det = mat[0][0] * inv[0][0] + mat[1][0] * inv[0][1] + mat[2][0]* inv[0][2] + mat[3][0] * inv[0][3];
 
-    return inverted;
+  Matrix temp = Matrix(inv);
 
-    } else {
-        // THROW ERROR
-    }
+  det = 1.0f / det;
+  temp = temp * det;
+
+  return temp;
 }
 
 Matrix Matrix::transpose() {

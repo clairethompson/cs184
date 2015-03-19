@@ -11,6 +11,7 @@ public:
   void addTransformation(Matrix m);
   void clear();
   Matrix getTrans();
+  Matrix getInv();
 };
 
 #endif

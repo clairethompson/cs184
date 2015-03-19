@@ -2,7 +2,7 @@
 #define POINT_H
 
 class Point {
-  public:
+  private:
   	float x, y, z;
 
   public:

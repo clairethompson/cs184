@@ -2,6 +2,7 @@
 #include "vector.h"
 #include "point.h"
 #include "math.h"
+#include <iostream>
 
 Vector::Vector(float a,  float b,  float c) {
 	x = a;
@@ -88,4 +89,8 @@ void Vector::operator=(Vector v) {
 	this->x = v.x;
 	this->y = v.y;
 	this->z = v.z;
+}
+
+void Vector::print() {
+	std::cout << x << ", " << y << ", " << z << "\n";
 }

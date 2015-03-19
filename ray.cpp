@@ -19,6 +19,14 @@ Vector Ray::getDir() {
   return this->dir;
 }
 
+float Ray::getMin() {
+  return this->t_min;
+}
+
+float Ray::getMax() {
+  return this->t_max;
+}
+
 bool Ray::inRange(float t) {
   if (this->t_min < t && t < this->t_max) {
     return 1;

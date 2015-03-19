@@ -11,19 +11,26 @@ Ellipsoid::Ellipsoid(Point c, float rad, BRDF f) {
   this->f = f;
   this->m = Matrix(c, rad);
   this->inv = m.invert();
-  this->radX, this->radY, this->radZ, this->radius = rad;
+  this->radius = rad;
+  this->transformed = 0;
 }
 
 Ellipsoid::Ellipsoid() {
   Ellipsoid(Point(), 0.0, BRDF());
 }
 
-/* RIGHT NOW ONLY WORKS FOR SPHERES, NOT ELLIPSOIDS 
-   TODO: make work for arbitrary ellipsoid, might need to do stuff with world space / object space*/
-bool Ellipsoid::intersection(Ray r, LocalGeo* l) {
-  Vector dir = this->m * r.getDir();
-  dir.normalize();
+bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
+  Ray r;
+  if (this->transformed) {
+    r = worldToObj(wr);    
+  } else {
+    r = wr;
+  }
+
   Point start = r.getStart();
+  Vector dir = r.getDir();
+  dir.normalize();
+
   Point cen = this->center;
   float rad = this->radius;
 
@@ -39,12 +46,14 @@ bool Ellipsoid::intersection(Ray r, LocalGeo* l) {
     float t1 = (-b + sqrt(det))/2*a;
     float t2 = (-b - sqrt(det))/2*a;
     if (t1 * t2 < 0) { // ray starts inside of the sphere
+
       return 0;
     } else if (det == 0) { // ONE SOLUTION
       if (r.inRange(t1)) {
         t = t1;
       }
     } else if (!(r.inRange(t1)) && !(r.inRange(t2))) { // both t out of range
+      std::cout << t1 << " " << t2 << "\n";
       return 0;
     } else if (!r.inRange(t1)) {
       t = t2;
@@ -53,33 +62,63 @@ bool Ellipsoid::intersection(Ray r, LocalGeo* l) {
     } else { // return closer t value
       t = std::min(t1, t2);      
     }
+
+    Vector temp = (dir * t) + start;
+    Point p = Point(temp.getX(), temp.getY(), temp.getZ());
+
+    Normal n = this->getNormalAtPoint(p);
+    Vector vn = Vector(n);
+
+    if (this->transformed) {
+      p = objToWorld(p);
+      vn = objToWorld(vn); 
+    }
+
+    n = Normal(vn.getX(), vn.getY(), vn.getZ());
+
+    l->setPoint(p);
+    l->setNormal(n);
   }
-
-  Point p = r.getPointAtT(t);
-  Normal n = this->getNormalAtPoint(p);
-
-  l->setPoint(p);
-  l->setNormal(n);
 
   return 1;
 }
 
-/* Only works for spheres. 
-  TODO: implement for ellipsoid */
 Normal Ellipsoid::getNormalAtPoint(Point p) {
-  Vector v = Vector(p.x - this->center.x, p.y - this->center.y, p.z - this->center.z);
-  v = this->m * v;
+  // Vector v = Vector((p.getX() - this->center.getX())/this->radius, (p.getY() - this->center.getY())/this->radius, (p.getZ() - this->center.getZ())/this->radius);
+  Vector v = Vector(p, this->center);
+  v = v * (1/this->radius);
   return Normal(v.getX(), v.getY(), v.getZ());
 }
 
-
 void Ellipsoid::transform(Transformation t) {
-  this->m = this->m * t.getTrans();
+  this->transformed = 1;
+  std::cout<< "in transform\n";
   this->m.print();
-  this->inv = m.invert();
-  this->center = Point(m.getValue(3, 0), m.getValue(3, 1), m.getValue(3, 2));
-  this->radX = m.getValue(0, 0);
-  this->radY = m.getValue(1, 1);
-  this->radZ = m.getValue(2, 2);
+  this->m = t.getTrans() * this->m;
+  this->m.print();
+  this->inv = t.getInv() * this->inv;
+  this->inv.print();
 }
 
+Ray Ellipsoid::worldToObj(Ray r) {
+  Point p = r.getStart();
+  Vector vP = Vector(p, Point());
+  vP = this->inv * vP;
+  p = Point(vP.getX(), vP.getY(), vP.getZ());
+
+  Vector dir = r.getDir();
+  // dir = this->inv * dir;
+
+  return Ray(Point(vP.getX(), vP.getY(), vP.getZ()), this->inv * dir, r.getMin(), r.getMax());
+}
+
+Point Ellipsoid::objToWorld(Point p) {
+  Vector temp = Vector(p, Point());
+  temp = this->m * temp;
+
+  return Point(temp.getX(), temp.getY(), temp.getZ());
+}
+
+Vector Ellipsoid::objToWorld(Vector v) {
+  return this->m * v;
+}
