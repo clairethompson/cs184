@@ -1,4 +1,4 @@
-OBJS = point.o normal.o localgeo.o color.o vector.o ray.o BRDF.o light.o viewplane.o camera.o matrix.o transformation.o ellipsoid.o triangle.o main.o tests.o
+OBJS = object.o material.o point.o normal.o localgeo.o color.o vector.o ray.o BRDF.o light.o viewplane.o camera.o matrix.o transformation.o ellipsoid.o triangle.o main.o tests.o
 
 # Basics Compiling Stuff
 CC = g++
@@ -12,6 +12,12 @@ LDOPTS = -L./ -lfreeimage
 
 all: $(OBJS) 
 	$(CC) $(CXXFLAGS) $(LFLAGS) $(LDOPTS) $(OBJS) -o raytracer
+
+object.o: object.h object.cpp
+	$(CC) $(CFLAGS) object.cpp
+
+material.o: material.h material.cpp
+	$(CC) $(CFLAGS) material.cpp
 
 point.o: point.h point.cpp
 	$(CC) $(CFLAGS) point.cpp

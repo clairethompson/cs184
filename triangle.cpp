@@ -84,3 +84,12 @@ Normal Triangle::getNormal() {
   Vector temp = e1.cross(e2);
   return Normal(temp.x, temp.y, temp.z);
 }
+
+/* Getter & Setter methods */
+void Triangle::setA(Point a) { this->a = a; }
+void Triangle::setB(Point b) { this->b = b; }
+void Triangle::setC(Point c) { this->c = c; }
+Point Triangle::getA() { return this->a; }
+Point Triangle::getB() { return this->b; }
+Point Triangle::getC() { return this->c; }
+

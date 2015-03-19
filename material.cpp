@@ -2,7 +2,7 @@
 #include <string>
 
 Material::Material() {
-	this->name = '';
+	this->name = "";
 	this->ka = 0.0;
 	this->ks = 0.0;
 	this->kd = 0.0;

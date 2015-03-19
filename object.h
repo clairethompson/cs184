@@ -10,14 +10,13 @@
 
 class Object {
 public:
-	string name;
+	std::string name;
 	Material mtl;
-	std::vector<point> vertices;
+	std::vector<Point> vertices;
 	std::vector<Triangle> faces;
-	stf::vector<Vector> normals;
+	std::vector<Vector> normals;
+	Object();
 };
 
-public:
-	Object();
 
 #endif

@@ -5,16 +5,15 @@
 
 class Material {
 public:
-	string name;
+	std::string name;
 	float ka;
 	float ks;
-	float ks;
+	float kd;
 	float ns;
 	float d;
 	int illum;
 	float ni;
 
-public:
 	Material();
 
 };

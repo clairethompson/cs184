@@ -20,6 +20,14 @@ public:
   /* If there is an intersection, return 1 and update l to the intersection point */
   bool intersection(Ray r, LocalGeo* l);
   Normal getNormal();
+
+  /* Getter & Setter Methods */
+  void setA(Point a);
+  void setB(Point b);
+  void setC(Point c);
+  Point getA();
+  Point getB();
+  Point getC();
 };
 
 #endif

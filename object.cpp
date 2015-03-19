@@ -6,9 +6,9 @@
 #include <vector>
 
 Object::Object() {
-	this->name = '';
+	this->name = "";
 	this->mtl = Material();
-	this->vertices = std::vector<Point>;
-	this->faces = std::vector<Triangle>;
-	this->normals = stf::vector<Vector>;
+	this->vertices = std::vector<Point>();
+	this->faces = std::vector<Triangle>();
+	this->normals = std::vector<Vector>();
 }
