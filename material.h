@@ -2,18 +2,20 @@
 #define MATERIAL_H
 
 #include <string>
+#include "color.h"
 
 class Material {
 public:
 	std::string name;
-	float ka;
-	float ks;
-	float kd;
+	Color ka;
+	Color ks;
+	Color kd;
 	float ns;
 	float d;
 	int illum;
 	float ni;
 
+public:
 	Material();
 
 };

@@ -15,8 +15,9 @@ public:
 	std::vector<Point> vertices;
 	std::vector<Triangle> faces;
 	std::vector<Vector> normals;
+
+public:
 	Object();
 };
-
 
 #endif

@@ -121,6 +121,18 @@ int main(int argc, char const *argv[])
         //fprintf(stdout, "FILENAME: %s\n", (++it)->c_str());
         // this is a vector of all the objects from the obj file:
         std::vector<Object> objects = parse_obj((++it)->c_str());
+        for(int i=0; i < objects.size(); i++){
+          for (int f = 0; f < objects[i].faces.size(); f++) {
+            Tringle * tri = objects[i].faces[f];
+            shapes.push_back(tri);
+          }
+          Color ka = objects[i].mtl.ka;
+          Color ks = objects[i].mtl.ks;
+          Color kd = objects[i].mtl.kd;
+          float sp = objects[i].mtl.ns;
+          Color kr = Color(0.0, 0.0, 0.0);
+          f = BRDF(ka, kd, ks, sp, kr)
+        }
       } else if (strcmp(command, POINT_LIGHT) == 0) {
         printf("%s\n", "POINT_LIGHT");
         Light pl = Light(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 
@@ -437,11 +449,17 @@ std::vector<Material> mtl_parser(string mtl_file) {
       library.push_back(Material());
       library[mtl_counter].name = parsed[1];
     } else if (strcmp(command, "ka") == 0) {
-      library[mtl_counter].ka = stof(parsed[1]);
+      library[mtl_counter].ka.r = stof(parsed[1]);
+      library[mtl_counter].ka.g = stof(parsed[2]);
+      library[mtl_counter].ka.b = stof(parsed[3]);
     } else if (strcmp(command, "kd") == 0) {
-      library[mtl_counter].kd = stof(parsed[1]);
+      library[mtl_counter].kd.r = stof(parsed[1]);
+      library[mtl_counter].kd.g = stof(parsed[2]);
+      library[mtl_counter].ks.b = stof(parsed[3]);
     } else if (strcmp(command, "ks") == 0) {
-      library[mtl_counter].ks = stof(parsed[1]);
+      library[mtl_counter].ks.r = stof(parsed[1]);
+      library[mtl_counter].ks.g = stof(parsed[2]);
+      library[mtl_counter].ks.b = stof(parsed[3]);
     } else if (strcmp(command, "ns") == 0) {
       library[mtl_counter].ns = stof(parsed[1]);
     } else {
