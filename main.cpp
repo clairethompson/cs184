@@ -178,7 +178,7 @@ int main(int argc, char const *argv[])
 
       Vector r_dir = Vector(p, camera.getEye());
       //R(t) = E + t(P-E)
-      Ray r = Ray(camera.getEye(), r_dir, -2000.0, 2000.0);
+      Ray r = Ray(camera.getEye(), r_dir, 0, 2000.0);
 
       Color fin = RayTrace(r, 0);
       float fR = fmaxf(0.0, fminf(fin.getR(), 1.0));
@@ -278,7 +278,7 @@ Color RayTrace(Ray r, int depth) {
     }
     //Check recursive depth
     if (depth < MAX_DEPTH) {      
-      Ray ray_reflect = Ray(camera.getEye(), reflection(norm, r.getDir()), -2000, 000);
+      Ray ray_reflect = Ray(closest.getPoint(), reflection(norm, r.getDir()), 0, 2000);
       c = c + RayTrace(ray_reflect, depth+1) * hitobject->getBRDF().getKR();
     } else {
       //TODO: Set total color C to background color (currently defaults to black)
