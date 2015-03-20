@@ -107,7 +107,7 @@ Matrix::Matrix(float a, float b, float c, int type) {
   } else if (type == 2) {
     /* Rotation Matrix */
     Vector r = Vector(a, b, c);
-    float theta = r.getLength();
+    float theta = r.getLength() * (M_PI/180.0);
     r.normalize();
 
     Point p1 = Point(0.0, r.z, -r.y);
