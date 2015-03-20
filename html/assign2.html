@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<style type="text/css">
+body {
+  font-family: Arial;
+}
+img {
+  width: 50%
+}
+figcaption {
+  font-size: 10pt;
+}
+</style>
+<head>
+  <title>Assignment 2: Ray Tracer</title>
+</head>
+<body>
+  <h2>Assignment 2: Ray Tracer</h2>
+  <p> All images are 1000x1000 pixels scaled to 50% for display
+  <p>
+    <h3>Simple Renders</h3>
+    <p><b>Simple Sphere: Diffusion</b>
+      <br><img src="assign2/simplebluediffuse.png"></img>
+      <br>cam   0 0 2   -1 -1 1   1 -1 1   -1 1 1   1 1 1
+      <br>mat   0 0.5 0.5   0.5 0.5 0.5  0 0 0   64   0 0 0
+      <br>ltp   2 3 4   1 1 1   0
+      <br>lta   1 1 1
+      <br>sph   0 0 0   0.65
+    </p>
+    <p><b>Simple Sphere: Specular Component (Point Light)</b>
+      <br><img src="assign2/simplespecpl.png"></img>
+      <br>cam   0 0 2   -1 -1 1   1 -1 1   -1 1 1   1 1 1
+      <br>mat   0.3 0.3 0.3   0.2 0.5 0.4  1 1 1   30   0 0 0
+      <br>lta   0.5 0.5 0.5
+      <br>ltp   1 1 1   1 1 1   0
+      <br>sph   0 0 0   0.5
+    </p>
+    <p><b>Simple Sphere: Specular Component (Directional Light)</b>
+      <br><img src="assign2/simplespecdl.png"></img>
+      <br>cam   0 0 2   -1 -1 1   1 -1 1   -1 1 1   1 1 1
+      <br>mat   0.3 0.3 0.3   0.2 0.5 0.4  1 1 1   30   0 0 0
+      <br>lta   0.5 0.5 0.5
+      <br>ltd   1 1 -1   1 1 1   0
+      <br>sph   0 0 0   0.5
+    </p>
+    <p><b>Simple Spheres: Shadow</b>
+      <br><img src="assign2/simpleshadow.png"></img>
+      <br>cam   0 0 2   -1 -1 1   1 -1 1   -1 1 1   1 1 1
+      <br>mat   0.7 0.2 0.1   0.7 0.2 0.1  0 0 0   64   0 0 0
+      <br>ltp   1 1 1   1 1 1   0
+      <br>lta   1 1 1
+      <br>sph   -0.1 0 0   0.7
+      <br>mat   0.3 0.1 0.6    0.3 0.1 0.6  0 0 0   64   0 0 0
+      <br>sph   0.6 0.6 0.8   0.1
+    </p>
+    <h3>Reflection and Shadow Renders</h3>
+      <p><b>Triangle: Reflections (4 sec; depth 3)</b>
+      <figcaption>From FG to BG: Green, yellow, pink</figcaption>
+      <br><img src="assign2/trirefl.png"></img>
+      <br>cam   0 0 2   -1 -1 1   1 -1 1   -1 1 1   1 1 1
+      <br>mat   1 1 1   .5 0 .5  0 0 0   64   .2 .2 .2
+      <br>ltp   1 1 1   1 1 1   0
+      <br>ltp   -1 1 1   1 1 1   0
+      <br>ltd   0 0 -1  1 1 1
+      <br>lta   0.4 0.4 0.4
+      <br>tri   0 1 -1  -1 -1 -1   1 -1 -1
+      <br>mat   1 1 1   .5 .5 0  0 0 0   64   .2 .2 .2
+      <br>tri   1 1 0  0 -1 0  2 -1 0
+      <br>mat   1 1 1   0 .5 0  0 0 0   64   .2 .2 .2
+      <br>tri   -1 1 0.5  -2 -1 0.5   0 -1 0.5
+      </p>
+      <p><b>Sphere: Reflections (10 sec; depth=3)</b>
+      <figcaption></figcaption>
+      <br><img src="assign2/sphrefl.png"></img>
+        <br>cam   -2 -2 2   -2 -2 1   0 -2 1   -2 0 1   0 0 1
+        <br>mat   1 1 1   .5 0 .5  0 0 0   64   .4 .4 .4
+        <br>ltp   1 1 1   1 1 1   0
+        <br>ltp   -1 1 1   1 1 1   0
+        <br>ltd   0 0 -1  1 1 1
+        <br>lta   0.4 0.4 0.4
+        <br>sph   0 0 0   .5
+        <br>sph   1 -1 0  .5
+        <br>sph   -1 1 0  .5
+        <br>mat   1 1 1   .5 .5 0  0 0 0   64   .5 .5 .5
+        <br>sph   0 1 0   .5
+        <br>sph   1 0 0   .5
+        <br>mat   1 1 1   0 .5 0  0 0 0   64   .5 .5 .5
+        <br>sph   -1 0 0  .5
+        <br>sph   0 -1 0  .5
+        <br>mat   1 1 1   0 .5 .5  0 0 0   64   .5 .5 .5
+        <br>sph   -1 -1 0 .5
+      </p>
+    </p>
+  </p>
+</body>
+</html>
