@@ -89,20 +89,17 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
 }
 
 Normal Ellipsoid::getNormalAtPoint(Point p) {
-  // Vector v = Vector((p.getX() - this->center.getX())/this->radius, (p.getY() - this->center.getY())/this->radius, (p.getZ() - this->center.getZ())/this->radius);
   Vector v = Vector(p, this->center);
-  // v = v * (1/this->radius);
+
   return Normal(v.getX(), v.getY(), v.getZ());
 }
 
 void Ellipsoid::transform(Transformation t) {
-  std::cout<< "in transform\n";
-  this->m.print();
+
   this->m = t.getTrans() * this->m;
-  t.getTrans().print();
-  this->m.print();
+
   this->inv = this->inv *  t.getInv();
-  this->inv.print();
+
 }
 
 Ray Ellipsoid::worldToObj(Ray r) {

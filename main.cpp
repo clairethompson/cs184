@@ -374,6 +374,7 @@ Libraries parse_obj(const char* file, BRDF f) {
       Point c = vertex_library[stoi(parsed[3]) - 1];
       Triangle * tri;
       if (m_counter != -1) {
+        std::cout<< "HELLO \n";
         tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
           mtl_library[m_counter].ns, Color()));
       } else {

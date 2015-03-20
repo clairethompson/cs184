@@ -14,19 +14,8 @@ Transformation::Transformation() {
 void Transformation::addTransformation(Matrix m) {
   this->trans = this->trans * m;
   Matrix temp = m.invert();
-  std::cout << "in add transformation\n";
-  m.print();
-  // std::cout<< "\n";
-  // temp.print();
-  // std::cout<< "\n";
-  // inv.print();
-  // std::cout<< "\n";
-
   this->inv = temp * this->inv;
-  // std::cout << "after\n";
-  // inv.print();
-  // std::cout<< "\n";
-
+  
 };
 
 void Transformation::clear() {
