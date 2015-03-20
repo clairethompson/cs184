@@ -22,7 +22,7 @@ void Transformation::addTransformation(Matrix m) {
   // inv.print();
   // std::cout<< "\n";
 
-  this->inv = temp * this->inv;
+  this->inv = this->inv * temp;
   // std::cout << "after\n";
   // inv.print();
   // std::cout<< "\n";

@@ -209,12 +209,22 @@ Matrix Matrix::operator*(Matrix m1) {
 
   return m2;
 };
-
+// [dpwn][across]
 Vector Matrix::operator*(Vector v) {
   float a = v.getX() * getValue(0, 0) + v.getY() * getValue(0, 1) + v.getZ() * getValue(0, 2);
   float b = v.getX() * getValue(1, 0) + v.getY() * getValue(1, 1) + v.getZ() * getValue(1, 2);
   float c = v.getX() * getValue(2, 0) + v.getY() * getValue(2, 1) + v.getZ() * getValue(2, 2);
   return Vector(a, b, c);
+}
+
+Point Matrix::operator*(Point p) {
+  float a = p.getX() * getValue(0, 0) + p.getY() * getValue(0, 1) + p.getZ() * getValue(0, 2) + getValue(0, 3);
+  float b = p.getX() * getValue(1, 0) + p.getY() * getValue(1, 1) + p.getZ() * getValue(1, 2) + getValue(1, 3);
+  float c = p.getX() * getValue(2, 0) + p.getY() * getValue(2, 1) + p.getZ() * getValue(2, 2) + getValue(2, 3);
+  float d = getValue(3, 0) + getValue(3, 1) + getValue(3, 2) + getValue(3, 3);
+
+  return Point(a/d, b/d, c/d);
+
 }
 
 void Matrix::operator=(Matrix m) {

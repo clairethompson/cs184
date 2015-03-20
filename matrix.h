@@ -19,6 +19,7 @@ public:
   Matrix operator*(float f);
   void operator=(Matrix m);
   Vector operator*(Vector v);
+  Point operator*(Point v);
   bool operator==(Matrix m);
   float determinant();
   Matrix invert();

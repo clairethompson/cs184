@@ -107,22 +107,19 @@ void Ellipsoid::transform(Transformation t) {
   this->m = t.getTrans() * this->m;
   t.getTrans().print();
   this->m.print();
-  this->inv = t.getInv() * this->inv;
+  this->inv = this->inv *  t.getInv();
   this->inv.print();
 }
 
 Ray Ellipsoid::worldToObj(Ray r) {
-  Point p = r.getStart();
-  Vector vP = Vector(p, Point());
-  vP = this->inv * vP;
-  p = Point(vP.getX(), vP.getY(), vP.getZ());
+  Point p = this->inv * r.getStart();
 
-  Vector dir = r.getDir();
+  Vector dir = this->inv * r.getDir();
   // dir = this->inv * dir;
 
   // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
 
-  dir = this->inv * dir;
+  // dir = this->inv * dir;
 
   // this->inv.print();
   // std::cout << "\n";
@@ -135,10 +132,10 @@ Ray Ellipsoid::worldToObj(Ray r) {
 }
 
 Point Ellipsoid::objToWorld(Point p) {
-  Vector temp = Vector(p, Point());
-  temp = this->m * temp;
+  // Vector temp = Vector(p, Point());
+  // temp = this->m * temp;
 
-  return Point(temp.getX(), temp.getY(), temp.getZ());
+  return this->m * p;
 }
 
 Vector Ellipsoid::objToWorld(Vector v) {
