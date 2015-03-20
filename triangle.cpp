@@ -6,6 +6,7 @@
 #include "ray.h"
 #include <math.h>
 #include <algorithm>
+#include <iostream>
 
 Triangle::Triangle(Point a, Point b, Point c, BRDF f) {
   this->a = a;
@@ -18,7 +19,8 @@ Triangle::Triangle(Point a, Point b, Point c, BRDF f) {
   Vector temp = ab.cross(ac);
   this->n = Normal(temp.x, temp.y, temp.z);
 
-  this->m = Matrix(a, b, c); 
+  this->m = Matrix(); 
+  this->inv = Matrix();
 }
 
 Triangle::Triangle() {
@@ -27,7 +29,9 @@ Triangle::Triangle() {
 
 /* Moller-Trumbore Algorithm
 see: http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm */
-bool Triangle::intersection(Ray r, LocalGeo* l) {
+bool Triangle::intersection(Ray wr, LocalGeo* l) {
+  Ray r = worldToObj(wr);
+
   Point v1 = this->a;  // Triangle vertices
   Point v2 = this->b;
   Point v3 = this->c;
@@ -65,8 +69,13 @@ bool Triangle::intersection(Ray r, LocalGeo* l) {
   float t = e2.dot(Q) * inv_det;
  
   if(t > 0) { //ray intersection
-    Point p = r.getPointAtT(t);
+    Point p = objToWorld(r.getPointAtT(t));
     Normal n = this->getNormal();
+
+    Vector temp = Vector(n.getX(), n.getY(), n.getZ());
+    temp = objToWorld(temp);
+
+    n = Normal(temp.getX(), temp.getY(), temp.getZ());
 
     l->setPoint(p);
     l->setNormal(n);
@@ -84,3 +93,34 @@ Normal Triangle::getNormal() {
   Vector temp = e1.cross(e2);
   return Normal(temp.x, temp.y, temp.z);
 }
+
+
+void Triangle::transform(Transformation t) {
+  std::cout<< "in transform\n";
+  this->m.print();
+  this->m = t.getTrans() * this->m;
+  t.getTrans().print();
+  this->m.print();
+  this->inv = this->inv *  t.getInv();
+  this->inv.print();
+}
+
+Ray Triangle::worldToObj(Ray r) {
+  Point p = this->inv * r.getStart();
+
+  Vector dir = this->inv * r.getDir();
+
+  return Ray(p, dir, r.getMin(), r.getMax());
+}
+
+Point Triangle::objToWorld(Point p) {
+  // Vector temp = Vector(p, Point());
+  // temp = this->m * temp;
+
+  return this->m * p;
+}
+
+Vector Triangle::objToWorld(Vector v) {
+  return this->m * v;
+}
+

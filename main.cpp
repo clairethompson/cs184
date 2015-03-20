@@ -116,6 +116,7 @@ int main(int argc, char const *argv[])
         Point b = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         Point c = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         Triangle * tri = new Triangle(a, b, c, f);
+        tri->transform(t);
         shapes.push_back(tri);
       } else if (strcmp(command, OBJ_FILE) == 0) {
         printf("%s\n", "OBJ_FILE");

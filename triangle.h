@@ -7,6 +7,7 @@
 #include "ray.h"
 #include "localgeo.h"
 #include "BRDF.h"
+#include "transformation.h"
 
 class Triangle : public Shape {
   Point a, b, c;
@@ -20,6 +21,11 @@ public:
   /* If there is an intersection, return 1 and update l to the intersection point */
   bool intersection(Ray r, LocalGeo* l);
   Normal getNormal();
+  void transform(Transformation t);   
+  Ray worldToObj(Ray r);
+  Point objToWorld(Point p);
+  Vector objToWorld(Vector v);
+  
 };
 
 #endif
