@@ -29,8 +29,8 @@ Triangle::Triangle() {
 
 /* Moller-Trumbore Algorithm
 see: http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm */
-bool Triangle::intersection(Ray wr, LocalGeo* l) {
-  Ray r = worldToObj(wr);
+bool Triangle::intersection(Ray r, LocalGeo* l) {
+
 
   Point v1 = this->a;  // Triangle vertices
   Point v2 = this->b;
@@ -69,13 +69,8 @@ bool Triangle::intersection(Ray wr, LocalGeo* l) {
   float t = e2.dot(Q) * inv_det;
  
   if(t > 0) { //ray intersection
-    Point p = objToWorld(r.getPointAtT(t));
-    Normal n = this->getNormal();
-
-    Vector temp = Vector(n.getX(), n.getY(), n.getZ());
-    temp = objToWorld(temp);
-
-    n = Normal(temp.getX(), temp.getY(), temp.getZ());
+    Point p = r.getPointAtT(t);
+    Normal n = this->n;
 
     l->setPoint(p);
     l->setNormal(n);
@@ -106,26 +101,17 @@ void Triangle::transform(Transformation t) {
   std::cout<< "in transform\n";
   this->m.print();
   this->m = t.getTrans() * this->m;
+
+  this->a = this->m * a;
+  this->b = this->m * b;
+  this->c = this->m * c;
+  this->n = getNormal();
+
+
+
   t.getTrans().print();
   this->m.print();
   this->inv = this->inv *  t.getInv();
   this->inv.print();
 }
-
-Ray Triangle::worldToObj(Ray r) {
-  Point p = this->inv * r.getStart();
-
-  Vector dir = this->inv * r.getDir();
-
-  return Ray(p, dir, r.getMin(), r.getMax());
-}
-
-Point Triangle::objToWorld(Point p) {
-  return this->m * p;
-}
-
-Vector Triangle::objToWorld(Vector v) {
-  return this->m * v;
-}
-
 
