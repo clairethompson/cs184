@@ -7,7 +7,7 @@ class Libraries {
 public:
 	std::vector<Material> materials;
 	std::vector<Point> vertices;
-	std::vector<Triangle> faces;
+	std::vector<Triangle *> faces;
 	std::vector<Vector> normals;
 
 public:

@@ -385,11 +385,12 @@ Libraries parse_obj(const char* file) {
       Point a = vertex_library[stoi(v_vt_vn_1[0]) - 1];
       Point b = vertex_library[stoi(v_vt_vn_2[0]) - 1];
       Point c = vertex_library[stoi(v_vt_vn_3[0]) - 1];
-      if (mtl_library[m_counter]) {
-        Triangle * tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd
+      Triangle * tri;
+      if (m_counter != -1) {
+        tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
           mtl_library[m_counter].ns, 0.0));
       } else {
-        Triangle * tri = new Triangle(a, b, c, BRDF());
+        tri = new Triangle(a, b, c, BRDF());
       }
       face_library.push_back(tri);
 
@@ -401,7 +402,7 @@ Libraries parse_obj(const char* file) {
       m_counter += 1;
       while (i < mtl_library.size()) {
         if (strcmp(mtl_library[i].name.c_str(), parsed[1].c_str()) == 0) {
-          mtl_library.push_back(Matterial());
+          mtl_library.push_back(Material());
           mtl_library[m_counter] = all_materials[i];
         } else {
           i++;
@@ -411,7 +412,7 @@ Libraries parse_obj(const char* file) {
       // empty statement as a catch-all for other arguments that we're ignoring
     }
   }
-  lib = Library();
+  Libraries lib = Libraries();
   lib.materials = mtl_library;
   lib.vertices vertex_library;
   lib.faces = face_library;
