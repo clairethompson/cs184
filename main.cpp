@@ -133,6 +133,7 @@ int main(int argc, char const *argv[])
         libs = parse_obj((++it)->c_str(), f);
         for (int i = 0; i < libs.faces.size(); i++) {
           Triangle * tri = libs.faces[i];
+          tri->transform(t);
           shapes.push_back(tri);
         }
       } else if (strcmp(command, POINT_LIGHT) == 0) {
@@ -363,10 +364,8 @@ Libraries parse_obj(const char* file, BRDF f) {
 
     if (strcmp(command, "v") == 0) {
       v_counter += 1;
-      vertex_library.push_back(Point());    // adds a vertex to the vertex library
-      vertex_library[v_counter].x = stof(parsed[1]);    // sets the x of the vertex
-      vertex_library[v_counter].y = stof(parsed[2]);    // sets the y of the vertex
-      vertex_library[v_counter].z = stof(parsed[3]);    // sets the z of the vertex
+      Point p = Point(stof(parsed[1]), stof(parsed[2]), stof(parsed[3]));
+      vertex_library.push_back(p);    // adds a vertex to the vertex library
     } else if (strcmp(command, "f") == 0) {
       f_counter += 1;
 
