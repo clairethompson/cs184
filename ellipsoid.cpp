@@ -9,7 +9,7 @@
 Ellipsoid::Ellipsoid(Point c, float rad, BRDF f) {
   this->center = c;
   this->f = f;
-  this->m = Matrix(c, rad);
+  this->m = Matrix();
   this->inv = m.invert();
   this->radius = rad;
   this->transformed = 0;
