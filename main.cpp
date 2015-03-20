@@ -125,20 +125,11 @@ int main(int argc, char const *argv[])
         //fprintf(stdout, "FILENAME: %s\n", (++it)->c_str());
         // this is a vector of all the objects from the obj file:
         Libraries libs;
-        libs = parse_obj((++it)->c_str());
-        for (int f = 0; f < libs.faces.size(); f++) {
-          Triangle * tri = libs.faces[f];
+        libs = parse_obj((++it)->c_str(), f);
+        for (int i = 0; i < libs.faces.size(); i++) {
+          Triangle * tri = libs.faces[i];
           shapes.push_back(tri);
         }
-        for (int m = 0; m < libs.materials.size(); m++) {
-          Color ka = libs.materials[m].ka;
-          Color ks = libs.materials[m].ks;
-          Color kd = libs.materials[m].kd;
-          float sp = libs.materials[m].ns;
-          Color kr = Color(0.0, 0.0, 0.0);
-          f = BRDF(ka, kd, ks, sp, kr);
-        }
-
       } else if (strcmp(command, POINT_LIGHT) == 0) {
         printf("%s\n", "POINT_LIGHT");
         Light pl = Light(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 
@@ -347,7 +338,7 @@ Vector reflection(Vector normal, Vector v) {
 
 
 /* Returns libraries of materials, vertices, and faces. */
-Libraries parse_obj(const char* file) {
+Libraries parse_obj(const char* file, BRDF f) {
   std::vector<Material> mtl_library;    // this will only be used if a material is provided
   std::vector<Point> vertex_library;
   std::vector<Triangle *> face_library;
@@ -390,7 +381,7 @@ Libraries parse_obj(const char* file) {
         tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
           mtl_library[m_counter].ns, Color()));
       } else {
-        tri = new Triangle(a, b, c, BRDF());
+        tri = new Triangle(a, b, c, f);
       }
       face_library.push_back(tri);
 
@@ -413,7 +404,7 @@ Libraries parse_obj(const char* file) {
     }
   }
   Libraries lib = Libraries();
-  lib.materials = mtl_library;
+  //lib.materials = mtl_library;
   lib.vertices = vertex_library;
   lib.faces = face_library;
   return lib;
