@@ -364,18 +364,9 @@ Libraries parse_obj(const char* file, BRDF f) {
     } else if (strcmp(command, "f") == 0) {
       f_counter += 1;
 
-      vector<string> v_vt_vn_1;
-      split(parsed[1], '/', v_vt_vn_1);
-
-      vector<string> v_vt_vn_2;
-      split(parsed[2], '/', v_vt_vn_2);
-
-      vector<string> v_vt_vn_3;
-      split(parsed[3], '/', v_vt_vn_3);
-
-      Point a = vertex_library[stoi(v_vt_vn_1[0]) - 1];
-      Point b = vertex_library[stoi(v_vt_vn_2[0]) - 1];
-      Point c = vertex_library[stoi(v_vt_vn_3[0]) - 1];
+      Point a = vertex_library[stoi(parsed[1]) - 1];
+      Point b = vertex_library[stoi(parsed[2]) - 1];
+      Point c = vertex_library[stoi(parsed[3]) - 1];
       Triangle * tri;
       if (m_counter != -1) {
         tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
