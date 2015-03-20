@@ -413,27 +413,15 @@ Matrix Matrix::invert() {
 }
 
 Matrix Matrix::transpose() {
-    Matrix ret = Matrix();
+  Matrix ret = Matrix();
 
-    ret.setValue(0, 0, this->mat[0][0]);
-    ret.setValue(1, 0, this->mat[0][1]);
-    ret.setValue(2, 0, this->mat[0][2]);
-    ret.setValue(3, 0, this->mat[0][3]);
-
-    ret.setValue(0, 1, this->mat[1][0]);
-    ret.setValue(1, 1, this->mat[1][1]);
-    ret.setValue(2, 1, this->mat[1][2]);
-    ret.setValue(3, 1, this->mat[1][3]);
-
-    ret.setValue(0, 2, this->mat[2][0]);
-    ret.setValue(1, 2, this->mat[2][1]);
-    ret.setValue(2, 2, this->mat[2][2]);
-    ret.setValue(3, 2, this->mat[2][3]);
-
-    ret.setValue(0, 3, this->mat[3][0]);
-    ret.setValue(1, 3, this->mat[3][1]);
-    ret.setValue(2, 3, this->mat[3][2]);
-    ret.setValue(3, 3, this->mat[3][3]);
+  for (int i = 0; i < 4; i ++) {
+    for (int j = 0; j < 4; j++) {
+      ret.setValue(i, j, this->mat[j][i]);
+    }
+  }
+  
+  return ret;
 }
 
 bool Matrix::operator==(Matrix m) {
