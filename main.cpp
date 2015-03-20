@@ -119,6 +119,7 @@ int main(int argc, char const *argv[])
         printf("%s\n", "OBJ_FILE");
         //fprintf(stdout, "FILENAME: %s\n", (++it)->c_str());
         // this is a vector of all the objects from the obj file:
+        Libraries libs;
         libs = parse_obj((++it)->c_str());
         for (int f = 0; f < libs.faces.size(), f++) {
           Triangle * tri = libs.faces[f];

@@ -5,7 +5,7 @@
 Material::Material() {
 	this->name = "";
 	this->ka = Color();
-	this->ks = Color()
+	this->ks = Color();
 	this->kd = Color();
 	this->ns = 0.0;
 	this->ni = 0.0;
