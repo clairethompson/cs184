@@ -388,7 +388,7 @@ Libraries parse_obj(const char* file) {
       Triangle * tri;
       if (m_counter != -1) {
         tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
-          mtl_library[m_counter].ns, 0.0));
+          mtl_library[m_counter].ns, Color()));
       } else {
         tri = new Triangle(a, b, c, BRDF());
       }
@@ -414,7 +414,7 @@ Libraries parse_obj(const char* file) {
   }
   Libraries lib = Libraries();
   lib.materials = mtl_library;
-  lib.vertices vertex_library;
+  lib.vertices = vertex_library;
   lib.faces = face_library;
   return lib;
 }
