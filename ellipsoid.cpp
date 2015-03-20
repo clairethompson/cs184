@@ -7,11 +7,11 @@
 #include <iostream>
 
 Ellipsoid::Ellipsoid(Point c, float rad, BRDF f) {
-  this->center = c;
+  this->center = Point();
   this->f = f;
-  this->m = Matrix();
-  this->inv = Matrix();
-  this->radius = rad;
+  this->m = Matrix(c, rad);
+  this->inv = m.invert();
+  this->radius = 1.0;
 }
 
 Ellipsoid::Ellipsoid() {
@@ -73,11 +73,12 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
 
     Normal n = this->getNormalAtPoint(p);
 
-    p = objToWorld(p);
-    
-    Vector vn = Vector(n);
-    vn = objToWorld(vn); 
-    n = Normal(vn.getX(), vn.getY(), vn.getZ());
+
+      p = objToWorld(p);
+      
+      Vector vn = Vector(n);
+      vn = objToWorld(vn); 
+      n = Normal(vn.getX(), vn.getY(), vn.getZ());
 
 
     l->setPoint(p);
