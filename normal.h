@@ -2,9 +2,9 @@
 #define NORMAL_H
 
 class Normal {
-public:
+private:
   float x, y, z;
-
+public:
   /* Init normal */
   Normal(float x, float y, float z);
   Normal();

@@ -15,6 +15,8 @@ public:
   Point getStart();
   Vector getDir();
   bool inRange(float t);
+  float getMin();
+  float getMax();
   Point getPointAtT(float t);
 };
 

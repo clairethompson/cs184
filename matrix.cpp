@@ -107,7 +107,7 @@ Matrix::Matrix(float a, float b, float c, int type) {
   } else if (type == 2) {
     /* Rotation Matrix */
     Vector r = Vector(a, b, c);
-    float theta = r.getLength();
+    float theta = r.getLength() * (M_PI/180.0);
     r.normalize();
 
     Point p1 = Point(0.0, r.z, -r.y);
@@ -125,19 +125,26 @@ Matrix::Matrix(float a, float b, float c, int type) {
     this->mat[0][0] = rrt.getValue(0, 0) + sin(theta)*rx.getValue(0, 0) - cos(theta)*rxrx.getValue(0, 0);
     this->mat[1][0] = rrt.getValue(1, 0) + sin(theta)*rx.getValue(1, 0) - cos(theta)*rxrx.getValue(1, 0);
     this->mat[2][0] = rrt.getValue(2, 0) + sin(theta)*rx.getValue(2, 0) - cos(theta)*rxrx.getValue(2, 0);
-    this->mat[3][0] = rrt.getValue(3, 0) + sin(theta)*rx.getValue(3, 0) - cos(theta)*rxrx.getValue(3, 0);
+    this->mat[3][0] = 0.0;
+    //this->mat[3][0] = rrt.getValue(3, 0) + sin(theta)*rx.getValue(3, 0) - cos(theta)*rxrx.getValue(3, 0);
     this->mat[0][1] = rrt.getValue(0, 1) + sin(theta)*rx.getValue(0, 1) - cos(theta)*rxrx.getValue(0, 1);
     this->mat[1][1] = rrt.getValue(1, 1) + sin(theta)*rx.getValue(1, 1) - cos(theta)*rxrx.getValue(1, 1);
     this->mat[2][1] = rrt.getValue(2, 1) + sin(theta)*rx.getValue(2, 1) - cos(theta)*rxrx.getValue(2, 1);
-    this->mat[3][1] = rrt.getValue(3, 1) + sin(theta)*rx.getValue(3, 1) - cos(theta)*rxrx.getValue(3, 1);
+    this->mat[3][1] = 0.0;
+    //this->mat[3][1] = rrt.getValue(3, 1) + sin(theta)*rx.getValue(3, 1) - cos(theta)*rxrx.getValue(3, 1);
     this->mat[0][2] = rrt.getValue(0, 2) + sin(theta)*rx.getValue(0, 2) - cos(theta)*rxrx.getValue(0, 2);
     this->mat[1][2] = rrt.getValue(1, 2) + sin(theta)*rx.getValue(1, 2) - cos(theta)*rxrx.getValue(1, 2);
     this->mat[2][2] = rrt.getValue(2, 2) + sin(theta)*rx.getValue(2, 2) - cos(theta)*rxrx.getValue(2, 2);
-    this->mat[3][2] = rrt.getValue(3, 2) + sin(theta)*rx.getValue(3, 2) - cos(theta)*rxrx.getValue(3, 2);
-    this->mat[0][3] = rrt.getValue(0, 3) + sin(theta)*rx.getValue(0, 3) - cos(theta)*rxrx.getValue(0, 3);
-    this->mat[1][3] = rrt.getValue(1, 3) + sin(theta)*rx.getValue(1, 3) - cos(theta)*rxrx.getValue(1, 3);
-    this->mat[2][3] = rrt.getValue(2, 3) + sin(theta)*rx.getValue(2, 3) - cos(theta)*rxrx.getValue(2, 3);
-    this->mat[3][3] = rrt.getValue(3, 3) + sin(theta)*rx.getValue(3, 3) - cos(theta)*rxrx.getValue(3, 3);
+    this->mat[3][2] = 0.0;
+    //this->mat[3][2] = rrt.getValue(3, 2) + sin(theta)*rx.getValue(3, 2) - cos(theta)*rxrx.getValue(3, 2);
+    // this->mat[0][3] = rrt.getValue(0, 3) + sin(theta)*rx.getValue(0, 3) - cos(theta)*rxrx.getValue(0, 3);
+    // this->mat[1][3] = rrt.getValue(1, 3) + sin(theta)*rx.getValue(1, 3) - cos(theta)*rxrx.getValue(1, 3);
+    // this->mat[2][3] = rrt.getValue(2, 3) + sin(theta)*rx.getValue(2, 3) - cos(theta)*rxrx.getValue(2, 3);
+    // this->mat[3][3] = rrt.getValue(3, 3) + sin(theta)*rx.getValue(3, 3) - cos(theta)*rxrx.getValue(3, 3);
+    this->mat[0][3] = 0.0;
+    this->mat[1][3] = 0.0;
+    this->mat[2][3] = 0.0;
+    this->mat[3][3] = 1.0;
 
   } else if (type == 3) {
     /* Scaling Matrix */
@@ -174,6 +181,20 @@ void Matrix::setValue(int a, int b, float c) {
 }
 
 Matrix Matrix::operator*(Matrix m1) {
+  // int sum = 0;
+  // float a[4][4];
+  // for (int c = 0; c < 4; c++) {
+  //   for (int d = 0; d < 4; d++) {
+  //     for (int k = 0; k < 4; k++) {
+  //       sum = sum + mat[c][k]*m1.getValue(k, d);
+  //     }
+
+  //     a[c][d] = sum;
+  //     sum = 0;
+  //   }
+  // }
+  // return Matrix(a);
+
   Matrix m2 = Matrix();
 
   m2.setValue(0, 0, (this->mat[0][0] * m1.getValue(0, 0) + this->mat[0][1] * m1.getValue(1, 0) + this->mat[0][2] * m1.getValue(2, 0) + this->mat[0][3] * m1.getValue(3,0)));
@@ -195,12 +216,30 @@ Matrix Matrix::operator*(Matrix m1) {
 
   return m2;
 };
-
+// [dpwn][across]
 Vector Matrix::operator*(Vector v) {
   float a = v.getX() * getValue(0, 0) + v.getY() * getValue(0, 1) + v.getZ() * getValue(0, 2);
   float b = v.getX() * getValue(1, 0) + v.getY() * getValue(1, 1) + v.getZ() * getValue(1, 2);
   float c = v.getX() * getValue(2, 0) + v.getY() * getValue(2, 1) + v.getZ() * getValue(2, 2);
   return Vector(a, b, c);
+}
+
+Point Matrix::operator*(Point p) {
+  float a = p.getX() * getValue(0, 0) + p.getY() * getValue(0, 1) + p.getZ() * getValue(0, 2) + getValue(0, 3);
+  float b = p.getX() * getValue(1, 0) + p.getY() * getValue(1, 1) + p.getZ() * getValue(1, 2) + getValue(1, 3);
+  float c = p.getX() * getValue(2, 0) + p.getY() * getValue(2, 1) + p.getZ() * getValue(2, 2) + getValue(2, 3);
+  float d = getValue(3, 0) + getValue(3, 1) + getValue(3, 2) + getValue(3, 3);
+
+  return Point(a/d, b/d, c/d);
+
+}
+
+void Matrix::operator=(Matrix m) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      this->mat[i][j] = m.getValue(i, j);
+    }
+  }
 }
 
 float Matrix::determinant() {
@@ -430,7 +469,7 @@ bool Matrix::operator==(Matrix m) {
 void Matrix::print() {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      std::cout << this->mat[j][i];
+      std::cout << this->mat[i][j];
       std::cout << ",";
     }
     std::cout << "\n";

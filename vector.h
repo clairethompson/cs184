@@ -44,6 +44,9 @@ public:
 
 	/* Assigns vector to v */
 	void operator=(Vector v);
+
+	/* FOR DEBUGGIN */
+	void print();
 	
 };
 

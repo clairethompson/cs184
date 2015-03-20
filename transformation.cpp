@@ -1,4 +1,5 @@
 #include "transformation.h"
+#include <iostream>
 
 Transformation::Transformation(Matrix m) {
     this->trans = m;
@@ -11,8 +12,21 @@ Transformation::Transformation() {
 };
 
 void Transformation::addTransformation(Matrix m) {
-  this->trans = this->trans * m;
-  this->inv = this->trans.invert();
+  this->trans = m * this->trans;
+  Matrix temp = m.invert();
+  std::cout << "in add transformation\n";
+  m.print();
+  // std::cout<< "\n";
+  // temp.print();
+  // std::cout<< "\n";
+  // inv.print();
+  // std::cout<< "\n";
+
+  this->inv = this->inv * temp;
+  // std::cout << "after\n";
+  // inv.print();
+  // std::cout<< "\n";
+
 };
 
 void Transformation::clear() {
@@ -22,4 +36,8 @@ void Transformation::clear() {
 
 Matrix Transformation::getTrans() {
   return this->trans;
+}
+
+Matrix Transformation::getInv() {
+  return this->inv;
 }

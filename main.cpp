@@ -52,11 +52,9 @@ using namespace boost;
 Color PhongShading(Vector normal, Vector light, Color light_c, BRDF b, LocalGeo g);
 Color RayTrace(Ray r, int depth);
 Vector reflection(Vector normal, Vector v);
-std::vector<Material> mtl_parser(string mtl_file);
-void split(const string& s, char c, vector<string>& v);
 
 /* Obj parsing methods*/
-Libraries parse_obj(const char* file);
+Libraries parse_obj(const char* file, BRDF f);
 std::vector<Material> mtl_parser(string mtl_file);
 void split(const string& s, char c, vector<string>& v);
 
@@ -86,6 +84,12 @@ int main(int argc, char const *argv[])
   /* Parse all inputs */
   ifstream sceneFile;
   sceneFile.open(argv[1]);
+
+  /* Uncomment below to run tests */
+  // Tests test = Tests();
+  // test.checkAll();
+  // exit(0);
+
 
   /* Declare tokenizer & delimiters */
   typedef tokenizer< char_separator<char> > Tokenizer;
@@ -119,6 +123,7 @@ int main(int argc, char const *argv[])
         Point b = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         Point c = Point(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         Triangle * tri = new Triangle(a, b, c, f);
+        tri->transform(t);
         shapes.push_back(tri);
       } else if (strcmp(command, OBJ_FILE) == 0) {
         printf("%s\n", "OBJ_FILE");
@@ -157,8 +162,9 @@ int main(int argc, char const *argv[])
         Color kr = Color(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()));
         f = BRDF(ka, kd, ks, sp, kr);
       } else if (strcmp(command, TRANSLATE) == 0) {
-        printf("%s\n", "Transform");
+        printf("%s\n", "Translate");
         Matrix trans = Matrix(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 1);
+        trans.print();
         t.addTransformation(trans);
       } else if (strcmp(command, ROTATE) == 0) {
         printf("%s\n", "Rotate");

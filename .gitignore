@@ -7,3 +7,5 @@ libfreeimage.a
 raytracer
 test.png
 input
+/armadillo-4.650.3
+/armadillo-4.650.3/*

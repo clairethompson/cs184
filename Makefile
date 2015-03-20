@@ -64,11 +64,11 @@ ellipsoid.o: ellipsoid.h ellipsoid.cpp shape.h
 triangle.o: triangle.h triangle.cpp shape.h
 	$(CC) $(CFLAGS) triangle.cpp
 
-main.o: point.o vector.o main.cpp
-	$(CC) $(CXXFLAGS) $(CFLAGS) main.cpp
-
 tests.o: tests.h tests.cpp
 	$(CC) $(CFLAGS) tests.cpp
+
+main.o: point.o vector.o main.cpp
+	$(CC) $(CXXFLAGS) $(CFLAGS) main.cpp
 
 check:
 	make
