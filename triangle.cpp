@@ -121,9 +121,6 @@ Ray Triangle::worldToObj(Ray r) {
 }
 
 Point Triangle::objToWorld(Point p) {
-  // Vector temp = Vector(p, Point());
-  // temp = this->m * temp;
-
   return this->m * p;
 }
 

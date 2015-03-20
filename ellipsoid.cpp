@@ -10,9 +10,8 @@ Ellipsoid::Ellipsoid(Point c, float rad, BRDF f) {
   this->center = c;
   this->f = f;
   this->m = Matrix();
-  this->inv = m.invert();
+  this->inv = Matrix();
   this->radius = rad;
-  this->transformed = 0;
 }
 
 Ellipsoid::Ellipsoid() {
@@ -25,11 +24,8 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
   // std::cout << "IN INTERSECTION \n";
 
   Ray r;
-  // if (this->transformed) {
-    r = worldToObj(wr);    
-  // } else {
-  //   r = wr;
-  // }
+  r = worldToObj(wr);    
+
 
   Point start = r.getStart();
   Vector dir = r.getDir();
@@ -77,13 +73,11 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
 
     Normal n = this->getNormalAtPoint(p);
 
-    // if (this->transformed) {
-      p = objToWorld(p);
-      
-      Vector vn = Vector(n);
-      vn = objToWorld(vn); 
-      n = Normal(vn.getX(), vn.getY(), vn.getZ());
-    // }
+    p = objToWorld(p);
+    
+    Vector vn = Vector(n);
+    vn = objToWorld(vn); 
+    n = Normal(vn.getX(), vn.getY(), vn.getZ());
 
 
     l->setPoint(p);
@@ -96,12 +90,11 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
 Normal Ellipsoid::getNormalAtPoint(Point p) {
   // Vector v = Vector((p.getX() - this->center.getX())/this->radius, (p.getY() - this->center.getY())/this->radius, (p.getZ() - this->center.getZ())/this->radius);
   Vector v = Vector(p, this->center);
-  v = v * (1/this->radius);
+  // v = v * (1/this->radius);
   return Normal(v.getX(), v.getY(), v.getZ());
 }
 
 void Ellipsoid::transform(Transformation t) {
-  this->transformed = 1;
   std::cout<< "in transform\n";
   this->m.print();
   this->m = t.getTrans() * this->m;
@@ -115,29 +108,15 @@ Ray Ellipsoid::worldToObj(Ray r) {
   Point p = this->inv * r.getStart();
 
   Vector dir = this->inv * r.getDir();
-  // dir = this->inv * dir;
-
-  // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
-
-  // dir = this->inv * dir;
-
-  // this->inv.print();
-  // std::cout << "\n";
-
-  // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
-
-
-
+  
   return Ray(p, dir, r.getMin(), r.getMax());
 }
 
 Point Ellipsoid::objToWorld(Point p) {
-  // Vector temp = Vector(p, Point());
-  // temp = this->m * temp;
-
   return this->m * p;
 }
 
 Vector Ellipsoid::objToWorld(Vector v) {
   return this->m * v;
 }
+
