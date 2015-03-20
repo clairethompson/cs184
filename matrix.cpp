@@ -356,12 +356,17 @@ Matrix Matrix::invert() {
             mat[0][2] * mat[1][0] * mat[2][1] - 
             mat[0][2] * mat[2][0]* mat[1][1];
 
-  det = mat[0][0] * inv[0][0] + mat[1][0] * inv[0][1] + mat[2][0]* inv[0][2] + mat[3][0] * inv[0][3];
+  // det = mat[0][0] * inv[0][0] + mat[1][0] * inv[0][1] + mat[2][0]* inv[0][2] + mat[3][0] * inv[0][3];
 
   Matrix temp = Matrix(inv);
 
   det = 1.0f / det;
   temp = temp * det;
+
+  std::cout << "in invert\n";
+  temp.print();
+  std::cout<< det;
+  std::cout<< "\n";
 
   return temp;
 }

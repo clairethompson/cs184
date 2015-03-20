@@ -120,8 +120,8 @@ Ray Ellipsoid::worldToObj(Ray r) {
 
   dir = this->inv * dir;
 
-  this->inv.print();
-  std::cout << "\n";
+  // this->m.print();
+  // std::cout << "\n";
 
   // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
 
