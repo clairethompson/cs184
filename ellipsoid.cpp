@@ -104,7 +104,8 @@ void Ellipsoid::transform(Transformation t) {
   this->transformed = 1;
   std::cout<< "in transform\n";
   this->m.print();
-  this->m = this->m * t.getTrans();
+  this->m = t.getTrans() * this->m;
+  t.getTrans().print();
   this->m.print();
   this->inv = t.getInv() * this->inv;
   this->inv.print();
