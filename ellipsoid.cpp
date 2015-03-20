@@ -22,13 +22,14 @@ Ellipsoid::Ellipsoid() {
 bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
   // std::cout << wr.getDir().getX() << " " << wr.getDir().getY() << " " << wr.getDir().getZ() << "\n";
   
+  // std::cout << "IN INTERSECTION \n";
 
   Ray r;
-  if (this->transformed) {
+  // if (this->transformed) {
     r = worldToObj(wr);    
-  } else {
-    r = wr;
-  }
+  // } else {
+  //   r = wr;
+  // }
 
   Point start = r.getStart();
   Vector dir = r.getDir();
@@ -49,6 +50,8 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
   if (det < 0) { // NO INTERSECTION
     return 0;
   } else { // TWO SOLUTIONS 
+    // std::cout << "positive det \n";
+
     float t1 = (-b + sqrt(det))/2*a;
     float t2 = (-b - sqrt(det))/2*a;
     if (t1 * t2 < 0) { // ray starts inside of the sphere
@@ -74,13 +77,13 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
 
     Normal n = this->getNormalAtPoint(p);
 
-    if (this->transformed) {
+    // if (this->transformed) {
       p = objToWorld(p);
       
       Vector vn = Vector(n);
       vn = objToWorld(vn); 
       n = Normal(vn.getX(), vn.getY(), vn.getZ());
-    }
+    // }
 
 
     l->setPoint(p);
@@ -103,7 +106,7 @@ void Ellipsoid::transform(Transformation t) {
   this->m.print();
   this->m = this->m * t.getTrans();
   this->m.print();
-  this->inv = this->inv * t.getInv();
+  this->inv = t.getInv() * this->inv;
   this->inv.print();
 }
 
@@ -120,14 +123,14 @@ Ray Ellipsoid::worldToObj(Ray r) {
 
   dir = this->inv * dir;
 
-  // this->m.print();
+  // this->inv.print();
   // std::cout << "\n";
 
   // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
 
 
 
-  return Ray(Point(vP.getX(), vP.getY(), vP.getZ()), this->inv * dir, r.getMin(), r.getMax());
+  return Ray(p, dir, r.getMin(), r.getMax());
 }
 
 Point Ellipsoid::objToWorld(Point p) {

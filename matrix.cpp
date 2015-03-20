@@ -160,6 +160,9 @@ void Matrix::setValue(int a, int b, float c) {
 }
 
 Matrix Matrix::operator*(Matrix m1) {
+  // std::cout << "MAT MULT \n";
+  // print();
+  // m1.print();
   float ret[4][4];
   float sum;
 
@@ -173,8 +176,10 @@ Matrix Matrix::operator*(Matrix m1) {
     }
   }
   Matrix m2 = Matrix(ret);
-  m2.print();
-  return m2.transpose();
+  // m2.print();
+  m2 = m2.transpose();
+  // m2.print();
+  return m2;
 };
 
 Matrix Matrix::operator*(float f) {
@@ -244,12 +249,12 @@ Matrix Matrix::invert() {
   float det = determinant();
   float inv[4][4];
 
-  inv[0][0] = mat[0][1]  * mat[2][2] * mat[3][3] - 
-           mat[0][1]  * mat[3][2] * mat[2][3] - 
-           mat[1][2]  * mat[2][1]  * mat[3][3] + 
-           mat[1][2]  * mat[3][1]  * mat[2][3] +
-           mat[1][3] * mat[2][1]  * mat[3][2] - 
-           mat[1][3] * mat[3][1]  * mat[2][2];
+  inv[0][0] = mat[1][1] * mat[2][2] * mat[3][3] - 
+              mat[1][1] * mat[3][2] * mat[2][3] - 
+              mat[1][2] * mat[2][1] * mat[3][3] + 
+              mat[1][2] * mat[3][1] * mat[2][3] +
+              mat[1][3] * mat[2][1] * mat[3][2] - 
+              mat[1][3] * mat[3][1] * mat[2][2];
 
   inv[0][1] = -mat[0][1]  * mat[2][2] * mat[3][3] + 
             mat[0][1]  * mat[3][2] * mat[2][3] + 
@@ -329,11 +334,11 @@ Matrix Matrix::invert() {
              mat[0][3] * mat[2][0]* mat[1][1];
 
   inv[3][0] = -mat[1][0] * mat[2][1] * mat[3][2] + 
-            mat[1][0] * mat[3][1] * mat[2][2] + 
-            mat[1][1] * mat[2][0]* mat[3][2] - 
-            mat[1][1] * mat[3][0] * mat[2][2] - 
-            mat[1][2] * mat[2][0]* mat[3][1] + 
-            mat[1][2] * mat[3][0] * mat[2][1];
+               mat[1][0] * mat[3][1] * mat[2][2] + 
+               mat[1][1] * mat[2][0] * mat[3][2] - 
+               mat[1][1] * mat[3][0] * mat[2][2] - 
+               mat[1][2] * mat[2][0] * mat[3][1] + 
+               mat[1][2] * mat[3][0] * mat[2][1];
 
   inv[3][1] = mat[0][0] * mat[2][1] * mat[3][2] - 
            mat[0][0] * mat[3][1] * mat[2][2] - 
@@ -360,13 +365,15 @@ Matrix Matrix::invert() {
 
   Matrix temp = Matrix(inv);
 
+  // std::cout << "invert det " << det << "\n";
+
   det = 1.0f / det;
   temp = temp * det;
 
-  std::cout << "in invert\n";
-  temp.print();
-  std::cout<< det;
-  std::cout<< "\n";
+  // std::cout << "in invert\n";
+  // temp.print();
+  // std::cout<< det;
+  // std::cout<< "\n";
 
   return temp;
 }
