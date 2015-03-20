@@ -57,18 +57,12 @@ Matrix::Matrix(Point a, Point b, Point c) {
 };
 
 Matrix::Matrix(Point cen, float rad) {
-  //float a[4][4] = {{rad, 0.0, 0.0, 0.0}, {0, rad, 0, 0}, {0, 0, rad, 0}, {cen.getX(), cen.getY(), cen.getZ(), 1.0}};
-  //for (int i = 0; i < 4; i++) {
-   // for (int j = 0; j < 4; j++) {
-    //  this->mat[i][j] = a[i][j];
-    //}
-  //}
   this->mat[0][0] = rad;
   this->mat[1][0] = 0.0;
   this->mat[2][0] = 0.0;
   this->mat[3][0] = 0.0;
 
-  this->mat[0][1] = 0.0
+  this->mat[0][1] = 0.0;
   this->mat[1][1] = rad;
   this->mat[2][1] = 0.0;
   this->mat[3][1] = 0.0;
@@ -82,8 +76,6 @@ Matrix::Matrix(Point cen, float rad) {
   this->mat[1][3] = cen.getY();
   this->mat[2][3] = cen.getZ();
   this->mat[3][3] = 1.0;
-};
-
 };
 
 Matrix::Matrix(float a, float b, float c, int type) {
@@ -128,7 +120,7 @@ Matrix::Matrix(float a, float b, float c, int type) {
     Point p6 = Point(r.x*r.z, r.y*r.z, r.z*r.z);
     Matrix rrt = Matrix(p4, p5, p6);
 
-    Matrix rxrx = rx;, 0
+    Matrix rxrx = rx * rx;
 
     this->mat[0][0] = rrt.getValue(0, 0) + sin(theta)*rx.getValue(0, 0) - cos(theta)*rxrx.getValue(0, 0);
     this->mat[1][0] = rrt.getValue(1, 0) + sin(theta)*rx.getValue(1, 0) - cos(theta)*rxrx.getValue(1, 0);
