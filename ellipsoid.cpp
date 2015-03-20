@@ -71,14 +71,14 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
     Vector temp = (dir * t) + start;
     Point p = Point(temp.getX(), temp.getY(), temp.getZ());
 
-    //Normal n = this->getNormalAtPoint(p);
-    Point inv_p = this->inv * p;
-    Vector ip = Vector(inv_p, this->center);
+    Normal n = this->getNormalAtPoint(p);
 
-    p = objToWorld(p);
 
-    Vector vn = objToWorld(ip);
-    Normal n = Normal(vn.getX(), vn.getY(), vn.getZ());
+      p = objToWorld(p);
+      
+      Vector vn = Vector(n);
+      vn = objToWorld(vn); 
+      n = Normal(vn.getX(), vn.getY(), vn.getZ());
 
 
     l->setPoint(p);
@@ -90,8 +90,7 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
 
 Normal Ellipsoid::getNormalAtPoint(Point p) {
   // Vector v = Vector((p.getX() - this->center.getX())/this->radius, (p.getY() - this->center.getY())/this->radius, (p.getZ() - this->center.getZ())/this->radius);
-  Vector v = Vector(p, 
-    this->center);
+  Vector v = Vector(p, this->center);
   // v = v * (1/this->radius);
   return Normal(v.getX(), v.getY(), v.getZ());
 }
