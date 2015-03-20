@@ -3,6 +3,11 @@
 
 #include <vector>
 
+#include "triangle.h"
+#include "point.h"
+#include "material.h"
+#include "vector.h"
+
 class Libraries {
 public:
 	std::vector<Material> materials;
