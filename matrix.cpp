@@ -160,26 +160,21 @@ void Matrix::setValue(int a, int b, float c) {
 }
 
 Matrix Matrix::operator*(Matrix m1) {
-  Matrix m2 = Matrix();
+  float ret[4][4];
+  float sum;
 
-  m2.setValue(0, 0, (this->mat[0][0] * m1.getValue(0, 0) + this->mat[1][0] * m1.getValue(0, 1) + this->mat[2][0] * m1.getValue(0, 2) + this->mat[3][0] * m1.getValue(0, 3)));
-  m2.setValue(1, 0, (this->mat[0][0] * m1.getValue(1, 0) + this->mat[1][0] * m1.getValue(1, 1) + this->mat[2][0] * m1.getValue(1, 2) + this->mat[3][0] * m1.getValue(1, 3)));
-  m2.setValue(2, 0, (this->mat[0][0] * m1.getValue(2, 0) + this->mat[1][0] * m1.getValue(2, 1) + this->mat[2][0] * m1.getValue(2, 2) + this->mat[3][0] * m1.getValue(2, 3)));
-  m2.setValue(3, 0, (this->mat[0][0] * m1.getValue(3, 0) + this->mat[1][0] * m1.getValue(3, 1) + this->mat[2][0] * m1.getValue(3, 2) + this->mat[3][0] * m1.getValue(3, 3)));
-  m2.setValue(0, 1, (this->mat[0][1] * m1.getValue(0, 0) + this->mat[1][1] * m1.getValue(0, 1) + this->mat[2][1] * m1.getValue(0, 2) + this->mat[3][1] * m1.getValue(0, 3)));
-  m2.setValue(1, 1, (this->mat[0][1] * m1.getValue(1, 0) + this->mat[1][1] * m1.getValue(1, 1) + this->mat[2][1] * m1.getValue(1, 2) + this->mat[3][1] * m1.getValue(1, 3)));
-  m2.setValue(2, 1, (this->mat[0][1] * m1.getValue(2, 0) + this->mat[1][1] * m1.getValue(2, 1) + this->mat[2][1] * m1.getValue(2, 2) + this->mat[3][1] * m1.getValue(2, 3)));
-  m2.setValue(3, 1, (this->mat[0][1] * m1.getValue(3, 0) + this->mat[1][1] * m1.getValue(3, 1) + this->mat[2][1] * m1.getValue(3, 2) + this->mat[3][1] * m1.getValue(3, 3)));
-  m2.setValue(0, 2, (this->mat[0][2] * m1.getValue(0, 0) + this->mat[1][2] * m1.getValue(0, 1) + this->mat[2][2] * m1.getValue(0, 2) + this->mat[3][2] * m1.getValue(0, 3)));
-  m2.setValue(1, 2, (this->mat[0][2] * m1.getValue(1, 0) + this->mat[1][2] * m1.getValue(1, 1) + this->mat[2][2] * m1.getValue(1, 2) + this->mat[3][2] * m1.getValue(1, 3)));
-  m2.setValue(2, 2, (this->mat[0][2] * m1.getValue(2, 0) + this->mat[1][2] * m1.getValue(2, 1) + this->mat[2][2] * m1.getValue(2, 2) + this->mat[3][2] * m1.getValue(2, 3)));
-  m2.setValue(3, 2, (this->mat[0][2] * m1.getValue(3, 0) + this->mat[1][2] * m1.getValue(3, 1) + this->mat[2][2] * m1.getValue(3, 2) + this->mat[3][2] * m1.getValue(3, 3)));
-  m2.setValue(0, 3, (this->mat[0][3] * m1.getValue(0, 0) + this->mat[1][3] * m1.getValue(0, 1) + this->mat[2][3] * m1.getValue(0, 2) + this->mat[3][3] * m1.getValue(0, 3)));
-  m2.setValue(1, 3, (this->mat[0][3] * m1.getValue(1, 0) + this->mat[1][3] * m1.getValue(1, 1) + this->mat[2][3] * m1.getValue(1, 2) + this->mat[3][3] * m1.getValue(1, 3)));
-  m2.setValue(2, 3, (this->mat[0][3] * m1.getValue(2, 0) + this->mat[1][3] * m1.getValue(2, 1) + this->mat[2][3] * m1.getValue(2, 2) + this->mat[3][3] * m1.getValue(2, 3)));
-  m2.setValue(3, 3, (this->mat[0][3] * m1.getValue(3, 0) + this->mat[1][3] * m1.getValue(3, 1) + this->mat[2][3] * m1.getValue(3, 2) + this->mat[3][3] * m1.getValue(3, 3)));
-  
-  return m2;
+  for (int c = 0; c < 4; c++) {
+    for (int d = 0; d < 4; d++) {
+      for (int k = 0; k < 4; k++) {
+        sum += this->mat[k][c]*m1.getValue(d, k);
+      }
+      ret[c][d] = sum;
+      sum = 0;
+    }
+  }
+  Matrix m2 = Matrix(ret);
+  m2.print();
+  return m2.transpose();
 };
 
 Matrix Matrix::operator*(float f) {
@@ -190,6 +185,14 @@ Matrix Matrix::operator*(float f) {
     }
   }
   return Matrix(a);
+}
+
+void Matrix::operator=(Matrix m) {
+  for (int i = 0; i < 4; i ++) {
+    for (int j = 0; j < 4; j++) {
+      this->mat[i][j] = m.getValue(i, j);
+    }
+  }
 }
 
 Vector Matrix::operator*(Vector v) {
@@ -241,8 +244,8 @@ Matrix Matrix::invert() {
   float det = determinant();
   float inv[4][4];
 
-  inv[0][0] = mat[1][1]  * mat[2][2] * mat[3][3] - 
-           mat[1][1]  * mat[3][2] * mat[2][3] - 
+  inv[0][0] = mat[0][1]  * mat[2][2] * mat[3][3] - 
+           mat[0][1]  * mat[3][2] * mat[2][3] - 
            mat[1][2]  * mat[2][1]  * mat[3][3] + 
            mat[1][2]  * mat[3][1]  * mat[2][3] +
            mat[1][3] * mat[2][1]  * mat[3][2] - 
@@ -262,12 +265,12 @@ Matrix Matrix::invert() {
            mat[0][3] * mat[1][1] * mat[3][2] - 
            mat[0][3] * mat[3][1] * mat[1][2];
 
-  inv[0][3] = -mat[0][1]  * mat[1][2] * mat[2][3] + 
-             mat[0][1]  * mat[2][2] * mat[1][3] +
-             mat[0][2]  * mat[1][1] * mat[2][3] - 
-             mat[0][2]  * mat[2][1] * mat[1][3] - 
-             mat[0][3] * mat[1][1] * mat[2][2] + 
-             mat[0][3] * mat[2][1] * mat[1][2];
+  inv[0][3] = -mat[0][1] * mat[1][2] * mat[2][3] + 
+               mat[0][1] * mat[2][2] * mat[1][3] +
+               mat[0][2] * mat[1][1] * mat[2][3] - 
+               mat[0][2] * mat[2][1] * mat[1][3] - 
+               mat[0][3] * mat[1][1] * mat[2][2] + 
+               mat[0][3] * mat[2][1] * mat[1][2];
 
   inv[1][0] = -mat[1][0]  * mat[2][2] * mat[3][3] + 
             mat[1][0]  * mat[3][2] * mat[2][3] + 
@@ -385,6 +388,8 @@ Matrix Matrix::transpose() {
     ret.setValue(1, 3, this->mat[3][1]);
     ret.setValue(2, 3, this->mat[3][2]);
     ret.setValue(3, 3, this->mat[3][3]);
+
+    return ret;
 }
 
 bool Matrix::operator==(Matrix m) {
@@ -392,19 +397,16 @@ bool Matrix::operator==(Matrix m) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       if(this->mat[i][j] != m.getValue(i, j)) {
-        std::cout << "\n";
-        std::cout << "\n";
-        std::cout << i;
-        std::cout << "\n";
-        std::cout << j;
-        std::cout << "\n";
-        std::cout << this->mat[i][j];
-        std::cout << "\n";
-        std::cout << m.getValue(i, j);
         pass = 0;
       }
     }
   }
+  if (!pass) {
+    print();
+    std::cout<< "\n";
+    m.print();
+  }
+
   return pass;
 }
 

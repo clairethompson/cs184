@@ -236,9 +236,10 @@ bool Tests::matrix() {
   bool pass = 1;
 
   float a[4][4] = {{.5, .3, .2, .6}, {.7, .3, .2, .3}, {.4, .5, .2, .1}, {.5, .4, .3, .6}};
-  // float a[4][4] = {{.5, .3, .2, .6}, {.7, .3, .2, .3}, {.4, .5, .2, .1}, {.5, .4, .3, .6}};
+  float b[4][4] = {{.4, .7, .2, .9}, {.3, .4, .6, .2}, {.3, .5, .7, .1}, {.4, .2, .7, .8}};
 
   Matrix m1 = Matrix(a);
+  Matrix m2 = Matrix(b);
   
   Matrix temp = Matrix();  // NOT STATIC THROUGHOUT TEST
 
@@ -256,7 +257,12 @@ bool Tests::matrix() {
   //   std::cout << "\n\tinvert";
   // }
 
-  // temp = m1 * m2;
+  m1.print();
+  // m2.print();
+  temp = m1.invert();
+  std::cout<< "4 \n";
+
+  temp.print();
   // if (!(temp == m1m2)) {
   //   pass = 0;
   //   std::cout << "\n\tMatrix multiply";

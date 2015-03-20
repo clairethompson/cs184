@@ -20,6 +20,9 @@ Ellipsoid::Ellipsoid() {
 }
 
 bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
+  // std::cout << wr.getDir().getX() << " " << wr.getDir().getY() << " " << wr.getDir().getZ() << "\n";
+  
+
   Ray r;
   if (this->transformed) {
     r = worldToObj(wr);    
@@ -38,6 +41,9 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
   float b = dir.dot(Vector(start, cen)) * 2;
   float c = (Vector(start, cen)).dot(Vector(start, cen)) - pow(rad, 2);
 
+  // std::cout << a << "\n";
+  // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
+
   float det = pow(b, 2) - 4*a*c;
   float t;
   if (det < 0) { // NO INTERSECTION
@@ -53,7 +59,7 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
         t = t1;
       }
     } else if (!(r.inRange(t1)) && !(r.inRange(t2))) { // both t out of range
-      std::cout << t1 << " " << t2 << "\n";
+      // std::cout << t1 << " " << t2 << "\n";
       return 0;
     } else if (!r.inRange(t1)) {
       t = t2;
@@ -67,14 +73,15 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
     Point p = Point(temp.getX(), temp.getY(), temp.getZ());
 
     Normal n = this->getNormalAtPoint(p);
-    Vector vn = Vector(n);
 
     if (this->transformed) {
       p = objToWorld(p);
+      
+      Vector vn = Vector(n);
       vn = objToWorld(vn); 
+      n = Normal(vn.getX(), vn.getY(), vn.getZ());
     }
 
-    n = Normal(vn.getX(), vn.getY(), vn.getZ());
 
     l->setPoint(p);
     l->setNormal(n);
@@ -94,9 +101,9 @@ void Ellipsoid::transform(Transformation t) {
   this->transformed = 1;
   std::cout<< "in transform\n";
   this->m.print();
-  this->m = t.getTrans() * this->m;
+  this->m = this->m * t.getTrans();
   this->m.print();
-  this->inv = t.getInv() * this->inv;
+  this->inv = this->inv * t.getInv();
   this->inv.print();
 }
 
@@ -108,6 +115,17 @@ Ray Ellipsoid::worldToObj(Ray r) {
 
   Vector dir = r.getDir();
   // dir = this->inv * dir;
+
+  // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
+
+  dir = this->inv * dir;
+
+  this->inv.print();
+  std::cout << "\n";
+
+  // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
+
+
 
   return Ray(Point(vP.getX(), vP.getY(), vP.getZ()), this->inv * dir, r.getMin(), r.getMax());
 }
