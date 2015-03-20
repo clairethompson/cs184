@@ -55,6 +55,11 @@ Vector reflection(Vector normal, Vector v);
 std::vector<Material> mtl_parser(string mtl_file);
 void split(const string& s, char c, vector<string>& v);
 
+/* Obj parsing methods*/
+Libraries parse_obj(const char* file);
+std::vector<Material> mtl_parser(string mtl_file);
+void split(const string& s, char c, vector<string>& v);
+
 /* Globals */
 Camera camera = Camera();
 std::vector<Light> lights;
@@ -121,7 +126,7 @@ int main(int argc, char const *argv[])
         // this is a vector of all the objects from the obj file:
         Libraries libs;
         libs = parse_obj((++it)->c_str());
-        for (int f = 0; f < libs.faces.size(), f++) {
+        for (int f = 0; f < libs.faces.size(); f++) {
           Triangle * tri = libs.faces[f];
           shapes.push_back(tri);
         }
@@ -131,11 +136,11 @@ int main(int argc, char const *argv[])
           Color kd = libs.materials[m].kd;
           float sp = libs.materials[m].ns;
           Color kr = Color(0.0, 0.0, 0.0);
-          f = BRDF(ka, kd, ks, sp, kr)
+          f = BRDF(ka, kd, ks, sp, kr);
         }
 
       } else if (strcmp(command, POINT_LIGHT) == 0) {
-        printf("%s\n", "POINT_LIGHT")
+        printf("%s\n", "POINT_LIGHT");
         Light pl = Light(stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()), 
                          stof((++it)->c_str()), stof((++it)->c_str()), stof((++it)->c_str()),
                          0.0);
@@ -345,7 +350,7 @@ Vector reflection(Vector normal, Vector v) {
 Libraries parse_obj(const char* file) {
   std::vector<Material> mtl_library;    // this will only be used if a material is provided
   std::vector<Point> vertex_library;
-  std::vector<Triangle> face_library;
+  std::vector<Triangle *> face_library;
   std::vector<Material> all_materials;
 
   int v_counter = -1;   // counter for vertices
@@ -377,10 +382,15 @@ Libraries parse_obj(const char* file) {
       vector<string> v_vt_vn_3;
       split(parsed[3], '/', v_vt_vn_3);
 
-      Point a = vertex_library[stoi(v_vt_vn_1[0]) - 1]
-      Point b = vertex_library[stoi(v_vt_vn_2[0]) - 1]
-      Point c = vertex_library[stoi(v_vt_vn_3[0]) - 1]
-      Triangle * tri = new Triangle(a, b, c, f);
+      Point a = vertex_library[stoi(v_vt_vn_1[0]) - 1];
+      Point b = vertex_library[stoi(v_vt_vn_2[0]) - 1];
+      Point c = vertex_library[stoi(v_vt_vn_3[0]) - 1];
+      if (mtl_library[m_counter]) {
+        Triangle * tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd
+          mtl_library[m_counter].ns, 0.0));
+      } else {
+        Triangle * tri = new Triangle(a, b, c, BRDF());
+      }
       face_library.push_back(tri);
 
     } else if (strcmp(command, "mtllib") == 0) {;
