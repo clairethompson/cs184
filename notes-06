@@ -1,0 +1,8 @@
+notes-06
+
+Command Line: ./raytracer assign2/input-06
+Result: ./test.png
+Time to Run: ~ 10 seconds
+Features: Phong shading (diffusion), Point Light, Ambient Light, Sphere Rendering, Shadows, Reflection
+Additional Comments: Reflection depth 3, Sphere material KR differs,
+	From front to back: middle sphere, yellow/green spheres, non-middle pink and blue spheres
