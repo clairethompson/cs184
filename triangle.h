@@ -19,7 +19,7 @@ class Triangle : public Shape {
 public:
   Triangle(Point a, Point b, Point c, BRDF f);
   Triangle();
-  Triangle(Point a, Point b, Point c, BRDF f, na, nb, nc)
+  Triangle(Point a, Point b, Point c, BRDF f, Normal na, Normal nb, Normal nc);
 
   /* If there is an intersection, return 1 and update l to the intersection point */
   bool intersection(Ray r, LocalGeo* l);
