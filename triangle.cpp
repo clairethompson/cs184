@@ -98,8 +98,6 @@ Point Triangle::getB() { return this->b; }
 Point Triangle::getC() { return this->c; }
 
 void Triangle::transform(Transformation t) {
-  std::cout<< "in transform\n";
-  this->m.print();
   this->m = t.getTrans() * this->m;
 
   this->a = this->m * a;
@@ -107,11 +105,6 @@ void Triangle::transform(Transformation t) {
   this->c = this->m * c;
   this->n = getNormal();
 
-
-
-  t.getTrans().print();
-  this->m.print();
   this->inv = this->inv *  t.getInv();
-  this->inv.print();
 }
 

@@ -54,15 +54,15 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
 
       return 0;
     } else if (det == 0) { // ONE SOLUTION
-      if (r.inRange(t1)) {
+      if (wr.inRange(t1)) {
         t = t1;
       }
-    } else if (!(r.inRange(t1)) && !(r.inRange(t2))) { // both t out of range
+    } else if (!(wr.inRange(t1)) && !(wr.inRange(t2))) { // both t out of range
       // std::cout << t1 << " " << t2 << "\n";
       return 0;
-    } else if (!r.inRange(t1)) {
+    } else if (!wr.inRange(t1)) {
       t = t2;
-    } else if (!r.inRange(t2)) {
+    } else if (!wr.inRange(t2)) {
       t = t1;
     } else { // return closer t value
       t = std::min(t1, t2);      

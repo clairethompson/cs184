@@ -271,22 +271,23 @@ Color RayTrace(Ray r, int depth) {
     for (int j = 0; j < num_lights; ++j) {
       // TODO: FIGURE OUT SHADOW RAYS? 
       // Light Vector Calculation; POINT (-1), DIRECT (-2), AMB (0)
-      Vector shadowDir = Vector();
-      float t_max = 1000;
       if (lights[j].getType() == 0) {
         c = c + (lights[j].getIntensity() * hitobject->getBRDF().getKA());
       } else {
+        Vector shadowDir = Vector();
+        float t_max = 1000;
+
         if (lights[j].getType() == -1) {
           light = Vector (lights[j].getPoint(), closest.getPoint());
           shadowDir = light;
-          t_max = light.getLength();
+          t_max = shadowDir.getLength();
         } else if (lights[j].getType() == -2) {
           light = Vector (lights[j].getPoint(), Point(0, 0, 0));
           shadowDir = light;
         }
 
         shadowDir.normalize();
-        Ray shadRay = Ray(closest.getPoint(), shadowDir, 0.0, t_max);
+        Ray shadRay = Ray(closest.getPoint(), shadowDir, 0.0, 1000);
         bool shadow = 0;
         int s = 0;
 
@@ -364,7 +365,9 @@ Libraries parse_obj(const char* file, BRDF f) {
 
     if (strcmp(command, "v") == 0) {
       v_counter += 1;
-      Point p = Point(stof(parsed[1]), stof(parsed[2]), stof(parsed[3]));
+      // std::cout << parsed[1].c_str() << " helllo 1\n";
+      Point p = Point(stof(parsed[1].c_str()), stof(parsed[2].c_str()), stof(parsed[3].c_str()));
+      // std::cout << "helllo 2\n";
       vertex_library.push_back(p);    // adds a vertex to the vertex library
     } else if (strcmp(command, "f") == 0) {
       f_counter += 1;
@@ -374,7 +377,6 @@ Libraries parse_obj(const char* file, BRDF f) {
       Point c = vertex_library[stoi(parsed[3]) - 1];
       Triangle * tri;
       if (m_counter != -1) {
-        std::cout<< "HELLO \n";
         tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
           mtl_library[m_counter].ns, Color()));
       } else {
@@ -445,8 +447,8 @@ std::vector<Material> mtl_parser(string mtl_file) {
 }
 
 
-/* Used to split strings, e.g. lines from obj file */
-// split function copied from https://www.safaribooksonline.com/library/view/c-cookbook/0596007612/ch04s07.html
+/* Used to split strings, e.g. lines from obj file 
+split function copied from https://www.safaribooksonline.com/library/view/c-cookbook/0596007612/ch04s07.html */
 void split(const string& s, char c,
            vector<string>& v) {
    string::size_type i = 0;
