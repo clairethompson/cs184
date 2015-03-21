@@ -21,10 +21,33 @@ Triangle::Triangle(Point a, Point b, Point c, BRDF f) {
 
   this->m = Matrix(); 
   this->inv = Matrix();
+
+  this->na = Normal();
+  this->nb = Normal();
+  this->nc = Normal();
+
 }
 
 Triangle::Triangle() {
-  Triangle(Point(), Point(), Point(), BRDF());
+  Triangle(Point(), Point(), Point(), BRDF(), Normal(), Normal(), Normal());
+}
+
+Triangle::Triangle(Point a, Point b, Point c, BRDF f, Normal na, Normal nb, Normal nc) {
+  this->a = a;
+  this->b = b;
+  this->c = c;
+  this->f = f;
+  this->na = na;
+  this->nb = nb;
+  this->nc = nc;
+
+  Vector ab = Vector(a, b);
+  Vector ac = Vector(a, c);
+  Vector temp = ab.cross(ac);
+  this->n = Normal(temp.x, temp.y, temp.z);
+
+  this->m = Matrix(); 
+  this->inv = Matrix();
 }
 
 /* Moller-Trumbore Algorithm

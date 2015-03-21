@@ -350,10 +350,12 @@ Libraries parse_obj(const char* file, BRDF f) {
   std::vector<Point> vertex_library;
   std::vector<Triangle *> face_library;
   std::vector<Material> all_materials;
+  std::vector<Normal> normal_library;
 
   int v_counter = -1;   // counter for vertices
   int f_counter = -1;   // counter for faces
   int m_counter = -1;   // counter for materials used
+  int n_counter = -1;   // counter for normals
   std::ifstream input(file);
   string line;
   while (std::getline(input, line)) {   // loops through every line of the .obj file
@@ -366,22 +368,48 @@ Libraries parse_obj(const char* file, BRDF f) {
       v_counter += 1;
       Point p = Point(stof(parsed[1]), stof(parsed[2]), stof(parsed[3]));
       vertex_library.push_back(p);    // adds a vertex to the vertex library
+    } else if (strcomp(command, "vn") == 0) {
+      n_counter += 1;
+      Normal new_normal = Normal(stof(parsed[1]), stoff(parsed[2]), stof(parsed[3]));
+      normal_library.push_back(new_normal);
     } else if (strcmp(command, "f") == 0) {
       f_counter += 1;
-
-      Point a = vertex_library[stoi(parsed[1]) - 1];
-      Point b = vertex_library[stoi(parsed[2]) - 1];
-      Point c = vertex_library[stoi(parsed[3]) - 1];
-      Triangle * tri;
-      if (m_counter != -1) {
-        std::cout<< "HELLO \n";
-        tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
-          mtl_library[m_counter].ns, Color()));
+      std::string slash ("/");
+      string::size_type j = parsed[1].find(slash);
+      if (j == string::npos) {
+        Point a = vertex_library[stoi(parsed[1]) - 1];
+        Point b = vertex_library[stoi(parsed[2]) - 1];
+        Point c = vertex_library[stoi(parsed[3]) - 1];
+        Triangle * tri;
+        if (m_counter != -1) {
+          std::cout<< "HELLO \n";
+          tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
+            mtl_library[m_counter].ns, Color()));
+        } else {
+          tri = new Triangle(a, b, c, f);
+        }
       } else {
-        tri = new Triangle(a, b, c, f);
+        vector<string> v_vt_vn_1;
+        split(parsed[1], '/', v_vt_vn_1);
+        vector<string> v_vt_vn_1;
+        split(parsed[2], '/', v_vt_vn_2);
+        vector<string> v_vt_vn_1;
+        split(parsed[3], '/', v_vt_vn_3);
+        Point a = vertex_library[stoi(v_vt_vn_1[0]) - 1];
+        Point b = vertex_library[stoi(v_vt_vn_2[0]) - 1];
+        Point c = vertex_library[stoi(v_vt_vn_3[0]) - 1];
+        Normal n1 = normal_library[stoi(_vt_vn_1[2]) - 1];
+        Normal n2 = normal_library[stoi(_vt_vn_2[2]) - 1];
+        Normal n3 = normal_library[stoi(_vt_vn_3[2]) - 1];
+        Triangle * tri;
+        if (m_counter != -1) {
+          tri = new Triangle(a, b, c, BRDF(mtl_library[m_counter].ka, mtl_library[m_counter].ks, mtl_library[m_counter].kd,
+            mtl_library[m_counter].ns, Color()), n1, n2, n3);
+        } else {
+          tri = new Triangle(a, b, c, f, n1, n2, n3);
+        }
       }
       face_library.push_back(tri);
-
     } else if (strcmp(command, "mtllib") == 0) {;
       all_materials = mtl_parser(parsed[1]);
 
