@@ -12,7 +12,6 @@
 class Ellipsoid : public Shape {
   Point center;
   float radius;
-  bool transformed;
 
 
 public:
