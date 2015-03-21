@@ -15,6 +15,9 @@ class Triangle : public Shape {
   Normal na;
   Normal nb;
   Normal nc;
+  float alpha;
+  float beta;
+  float gamma;
 
 public:
   Triangle(Point a, Point b, Point c, BRDF f);
