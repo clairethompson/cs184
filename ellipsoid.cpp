@@ -19,13 +19,9 @@ Ellipsoid::Ellipsoid() {
 }
 
 bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
-  // std::cout << wr.getDir().getX() << " " << wr.getDir().getY() << " " << wr.getDir().getZ() << "\n";
-  
-  // std::cout << "IN INTERSECTION \n";
 
   Ray r;
   r = worldToObj(wr);    
-
 
   Point start = r.getStart();
   Vector dir = r.getDir();
@@ -38,9 +34,6 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
   float b = dir.dot(Vector(start, cen)) * 2;
   float c = (Vector(start, cen)).dot(Vector(start, cen)) - pow(rad, 2);
 
-  // std::cout << a << "\n";
-  // std::cout << dir.getX() << " " << dir.getY() << " " << dir.getZ() << "\n";
-
   float det = pow(b, 2) - 4*a*c;
   float t;
   if (det < 0) { // NO INTERSECTION
@@ -51,14 +44,14 @@ bool Ellipsoid::intersection(Ray wr, LocalGeo* l) {
     float t1 = (-b + sqrt(det))/2*a;
     float t2 = (-b - sqrt(det))/2*a;
     if (t1 * t2 < 0) { // ray starts inside of the sphere
-
       return 0;
     } else if (det == 0) { // ONE SOLUTION
       if (wr.inRange(t1)) {
         t = t1;
+      } else {
+        return 0;
       }
     } else if (!(wr.inRange(t1)) && !(wr.inRange(t2))) { // both t out of range
-      // std::cout << t1 << " " << t2 << "\n";
       return 0;
     } else if (!wr.inRange(t1)) {
       t = t2;

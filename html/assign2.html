@@ -91,7 +91,64 @@ figcaption {
         <br>sph -1 -1 -1 .5
         <br>sph 1 1 -1 .5
       </p>
-      <p><b>Obj File: Looming Human  (~ 30 seconds)</b>
+      
+      <p><b>Transformations: Translation (~ 2 sec; depth=3)</b>
+      <figcaption></figcaption>
+      <br><img src="assign2/translation.png"></img>
+       <br> cam 0 0 2 -1 -1 1 1 -1 1 -1 1 1 1 1 1 
+       <br> mat 0 0.5 0.5 0.5 0.5 0.5 0 0 0 64 0 0 0 
+       <br> ltp 2 3 4 1 1 1 0 
+       <br> lta 1 1 1 
+       <br> xft 0.5 -0.5 0
+       <br> sph 0 0 0 0.65
+      </p>
+
+      <p><b>Transformations: Scale (~ 2 sec; depth=3)</b>
+      <figcaption></figcaption>
+      <br><img src="assign2/scale.png"></img>
+        <br> cam 0 0 2 -1 -1 1 1 -1 1 -1 1 1 1 1 1 
+        <br> mat 0.3 0.3 0.3 0.2 0.5 0.4 1 1 1 30 0 0 0 
+        <br> lta 0.5 0.5 0.5 
+        <br> ltp 1 1 1 1 1 1 0 
+        <br> xfs 0.5 2 0.25
+        <br> sph 0 0 0 0.5
+      </p>
+
+      <p><b>Transformations: Rotation (~ 2 sec; depth=3)</b>
+      <figcaption></figcaption>
+      <br><img src="assign2/rotation.png"></img>
+        <br> cam 0 0 2 -1 -1 1 1 -1 1 -1 1 1 1 1 1 
+        <br> mat 0.3 0.3 0.3 0.2 0.5 0.4 1 1 1 30 0 0 0 
+        <br> lta 0.5 0.5 0.5 
+        <br> ltp 1 1 1 1 1 1 0 
+        <br> xfr 0 0 90
+        <br> tri 1 1 0 -1 -1 0 1 -1 0
+      </p>
+
+      <p><b>Obj File: Alien man (~ 25 sec; depth=3)</b>
+      <figcaption>Shows Objfile input and perspective<br>OBJ file provided by: http://people.sc.fsu.edu/~jburkardt/data/obj/obj.html</figcaption>
+      <br><img src="assign2/image-07.png"></img>
+        <br>cam   -8 0 10   -1 -10 0   -1 10 0   -1 -10 20   -1 10 20
+        <br>mat   0.8 0.3 0.3   .1 .1 .9   1 1 1   64   0.0 0.0 0.0
+        <br>ltd   0 -1 0  1 1 1    0
+        <br>ltp   -10 20 0  1 1 1  
+        <br>lta   1 1 1
+        <br>xfr   0 0 30
+        <br>obj   humanoid.obj
+      </p>
+
+      <p><b>Obj File: Baby blue (~ 25 sec; depth=3)</b>
+      <figcaption>Shows Objfile input and perspective<br>OBJ file provided by: http://people.sc.fsu.edu/~jburkardt/data/obj/obj.html</figcaption>
+      <br><img src="assign2/image-08.png"></img>
+       <br>cam   -2 0 10   -1 -10 0   -1 10 0   -1 -10 20   -1 10 20
+       <br>mat   0.3 0.6 0.6   .1 .1 .9   1 1 1   64   0.0 0.0 0.0
+       <br>ltd   0 -1 0  1 1 1    0
+       <br>ltp   -10 20 0  1 1 1  
+       <br>lta   1 1 1
+       <br>obj   humanoid.obj
+      </p>
+      
+      <p><b>Obj File: Looming Human  (~ 25 seconds)</b>
       <figcaption>Shows Objfile input and perspective<br>OBJ file provided by: http://people.sc.fsu.edu/~jburkardt/data/obj/obj.html</figcaption>
       <br><img src="assign2/image-09.png"></img>
         <br>cam   -10 20 0  -10 -20 10   10 -20 10   -10 20 10   10 20 10
@@ -102,7 +159,7 @@ figcaption {
         <br>ltd   1 0 0 .9 0 0
         <br>lta   1 1 1
 
-        <br>obj humanoid.obj
+        <br>obj   humanoid.obj
       </p>
       <p><b>Obj File: Blue Gourd (~ 2 minutes)</b>
       <figcaption>Shows more complex objfile input<br>OBJ file provided by: http://people.sc.fsu.edu/~jburkardt/data/obj/obj.html</figcaption>

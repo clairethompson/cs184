@@ -145,7 +145,7 @@ bool Tests::ellipsoid() {
   Point a = Point(0, 1, 0);
   Point start = Point(0, 0, 4);
   Point origin = Point(0, 0, 0);
-  Point unit = Point(1/sqrt(3), 1/sqrt(3), 1/sqrt(3));
+  // Point unit = Point(1/sqrt(3), 1/sqrt(3), 1/sqrt(3));
   Vector dir = Vector(0, 0, -1);
   Ellipsoid e = Ellipsoid(origin, 1.0, f);
   Ray r = Ray(start, dir, 0.0, 20);
@@ -236,10 +236,10 @@ bool Tests::matrix() {
   bool pass = 1;
 
   float a[4][4] = {{.5, .3, .2, .6}, {.7, .3, .2, .3}, {.4, .5, .2, .1}, {.5, .4, .3, .6}};
-  float b[4][4] = {{.4, .7, .2, .9}, {.3, .4, .6, .2}, {.3, .5, .7, .1}, {.4, .2, .7, .8}};
+  // float b[4][4] = {{.4, .7, .2, .9}, {.3, .4, .6, .2}, {.3, .5, .7, .1}, {.4, .2, .7, .8}};
 
   Matrix m1 = Matrix(a);
-  Matrix m2 = Matrix(b);
+  // Matrix m2 = Matrix(b);
   
   Matrix temp = Matrix();  // NOT STATIC THROUGHOUT TEST
 

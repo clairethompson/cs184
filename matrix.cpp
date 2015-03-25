@@ -5,25 +5,34 @@
 
 Matrix::Matrix() {
   // matrix[down][across]
-  this->mat[0][0] = 1.0;
-  this->mat[1][0] = 0.0;
-  this->mat[2][0] = 0.0;
-  this->mat[3][0] = 0.0;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (i == j) {
+        this->mat[i][j] = 1.0;
+      } else {
+        this->mat[i][j] = 0.0;
+      }
+    }
+  }
+  // this->mat[0][0] = 1.0;
+  // this->mat[1][0] = 0.0;
+  // this->mat[2][0] = 0.0;
+  // this->mat[3][0] = 0.0;
 
-  this->mat[0][1] = 0.0;
-  this->mat[1][1] = 1.0;
-  this->mat[2][1] = 0.0;
-  this->mat[3][1] = 0.0;
+  // this->mat[0][1] = 0.0;
+  // this->mat[1][1] = 1.0;
+  // this->mat[2][1] = 0.0;
+  // this->mat[3][1] = 0.0;
 
-  this->mat[0][2] = 0.0;
-  this->mat[1][2] = 0.0;
-  this->mat[2][2] = 1.0;
-  this->mat[3][2] = 0.0;
+  // this->mat[0][2] = 0.0;
+  // this->mat[1][2] = 0.0;
+  // this->mat[2][2] = 1.0;
+  // this->mat[3][2] = 0.0;
 
-  this->mat[0][3] = 0.0;
-  this->mat[1][3] = 0.0;
-  this->mat[2][3] = 0.0;
-  this->mat[3][3] = 1.0;
+  // this->mat[0][3] = 0.0;
+  // this->mat[1][3] = 0.0;
+  // this->mat[2][3] = 0.0;
+  // this->mat[3][3] = 1.0;
 };
 
 Matrix::Matrix(float a[4][4]) {
@@ -122,8 +131,8 @@ Matrix::Matrix(float a, float b, float c, int type) {
 
     Matrix rxrx = rx * rx;
 
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
         this->mat[i][j] = rrt.getValue(i, j) + sin(theta)*rx.getValue(i, j) - cos(theta)*rxrx.getValue(i, j);
       }
     }
@@ -408,6 +417,8 @@ Matrix Matrix::invert() {
     return inverted;
 
     } else {
+        std::cout<< "cannot invert matrix\n";
+        return Matrix();
         // THROW ERROR
     }
 }
