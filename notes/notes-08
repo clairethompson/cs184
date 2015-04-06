@@ -1,7 +1,0 @@
-notes-08
-
-Command Line: ./raytracer assign2/input-08
-Result: ./test.png
-Time to Run: ~ 25 seconds
-Features: Phong shading, Point Light, Directional Light, Ambient Light, Triangle Rendering, Shadows, Obj File input, Perspective
-Additional Comments: OBJ file provided by http://people.sc.fsu.edu/~jburkardt/data/obj/obj.html
