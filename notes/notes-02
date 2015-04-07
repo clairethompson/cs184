@@ -1,7 +1,0 @@
-notes-02
-
-Command Line: ./raytracer assign2/input-02
-Result: ./test.png
-Time to Run: ~ 2 seconds
-Features: Phong shading (diffusion & specular), Point Light, Ambient Light, Sphere Rendering
-Additional Comments:
