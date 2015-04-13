@@ -15,3 +15,4 @@ struct obj {
 
 void parse(char* filename);
 void keyPressed (unsigned char key, int x, int y);
+void specialPressed (int key, int x, int y);

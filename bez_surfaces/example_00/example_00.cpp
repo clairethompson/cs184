@@ -88,12 +88,7 @@ void initScene(){
 // function that does the actual drawing
 //***************************************************
 void myDisplay() {
-
-
   glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
-
-  glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
-  glLoadIdentity();                            // make sure transformation is "zero'd"
 
   //----------------------- code to draw objects --------------------------
   Matrix<float, 1, 4> uVect;
@@ -118,8 +113,8 @@ void myDisplay() {
   M(3, 3) = 0;
 
   for (int i = 0; i < OBJECT.patches.size(); i++) {
-
     patch p = OBJECT.patches[i];
+
     MatrixXf xpoints((int)(floor(1/u) + 1), (int)(floor(1/v) + 1));
     MatrixXf ypoints((int)(floor(1/u) + 1), (int)(floor(1/v) + 1));
     MatrixXf zpoints((int)(floor(1/u) + 1), (int)(floor(1/v) + 1));
@@ -147,11 +142,17 @@ void myDisplay() {
       }
     }
 
+    // cout << xpoints << "\n";
+    // cout << ypoints << "\n";
+    // cout << zpoints << "\n";
+
+    // exit(0);
+
+    glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
     for (int j = 0; j < xpoints.rows() - 1; j++) {
       for (int k = 0; k < xpoints.cols() - 1; k++) {
-
-        glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
         glBegin(GL_POLYGON);                         // draw rectangle 
         glVertex3f(xpoints(j + 1, k), ypoints(j + 1, k), zpoints(j + 1, k));   // bottom left corner 
@@ -178,7 +179,7 @@ void myFrameMove() {
 #ifdef _WIN32
   Sleep(10);                                   //give ~10ms back to OS (so as not to waste the CPU)
 #endif
-  // glutPostRedisplay(); // forces glut to call the display function (myDisplay())
+  glutPostRedisplay(); // forces glut to call the display function (myDisplay())
 }
 
 
@@ -208,10 +209,16 @@ int main(int argc, char *argv[]) {
   glutInitWindowPosition(0, 0);
   glutCreateWindow("CS184!");
 
+
+  glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
+  glLoadIdentity();                            // make sure transformation is "zero'd"
+
+
   initScene();                   // quick function to set up scene
 
-  glutKeyboardFunc(keyPressed);
   glutDisplayFunc(myDisplay);    // function to run when its time to draw something
+  glutKeyboardFunc(keyPressed);
+  glutSpecialFunc(specialPressed);
   glutReshapeFunc(myReshape);    // function to run when the window gets resized
   glutIdleFunc(myFrameMove);     // function to run when not handling any other task
   glutMainLoop();                // infinite loop that will keep drawing and resizing and whatever else
@@ -265,15 +272,30 @@ void parse(char *filename) {
 void keyPressed (unsigned char key, int x, int y) {  
   if (key == 0x20) {  // space
     exit(0);
-  } else if (key == 0x25) { // left arrow
-    glTranslated(-0.01, 0.0, 0.0);
-  } else if (key == 72) { // up arrow
-    exit(0);
-    glTranslated(0.0, 0.1, 0.0);
-  } else if (key == 0x27) { // right arrow
-    
-  } else if (key == 0x28) { // down arrow
+  } 
+}
 
+void specialPressed(int key, int x, int y) {
+  if (glutGetModifiers() == GLUT_ACTIVE_SHIFT) {  // TRANSLATE THAT BAD BOY
+    if (key == GLUT_KEY_LEFT) {
+      glTranslatef(-0.01, 0.0, 0.0);
+    } else if (key == GLUT_KEY_RIGHT) {
+      glTranslatef(0.01, 0.0, 0.0);
+    } else if (key == GLUT_KEY_UP) {
+      glTranslatef(0.0, 0.01, 0.0);
+    } else if (key == GLUT_KEY_DOWN) {
+      glTranslatef(0.0, -0.01, 0.0);
+    }
+  }
+
+  if (key == GLUT_KEY_LEFT) {  // SPIN HIM AROUND
+    glRotated(1, 0.0, 1.0, 0.0);
+  } else if (key == GLUT_KEY_RIGHT) {
+    glRotated(-1, 0.0, 1.0, 0.0);
+  } else if (key == GLUT_KEY_UP) {
+    glRotated(-1, 0.0, 1.0, 0.0);
+  } else if (key == GLUT_KEY_DOWN) {
+    glRotated(1, 1.0, 0.0, 0.0);
   }
 }
 
