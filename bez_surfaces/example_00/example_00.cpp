@@ -276,9 +276,10 @@ void parse(char *filename) {
 }
 
 void keyPressed (unsigned char key, int x, int y) {  
-  if (key == 0x20) {  // space
-    exit(0);
-  } 
+  if (key == ' ') { exit(0); }
+  if (key == '+') { glScalef(1.1, 1.1, 1.1); }
+  if (key == '-') { glScalef(0.8, 0.8, 0.8); }
+
 }
 
 void specialPressed(int key, int x, int y) {
