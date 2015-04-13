@@ -22,6 +22,7 @@
 
 #include <time.h>
 #include <math.h>
+#include <float.h>
 
 #ifdef _WIN32
 static DWORD lastTime;
@@ -49,6 +50,7 @@ class Viewport {
 Viewport    viewport;
 obj OBJECT;
 float u, v;
+float X_MID, Y_MID;
 
 //****************************************************
 // reshape viewport if the window is resized
@@ -112,6 +114,10 @@ void myDisplay() {
   M(3, 2) = 0;
   M(3, 3) = 0;
 
+
+  float xMax = -FLT_MAX, yMax = -FLT_MAX;
+  float xMin = FLT_MAX, yMin = FLT_MAX;
+
   for (int i = 0; i < OBJECT.patches.size(); i++) {
     patch p = OBJECT.patches[i];
 
@@ -119,8 +125,7 @@ void myDisplay() {
     MatrixXf ypoints((int)(floor(1/u) + 1), (int)(floor(1/v) + 1));
     MatrixXf zpoints((int)(floor(1/u) + 1), (int)(floor(1/v) + 1));
 
-
-    // cout << xpoints.rows() << "\n";
+    /* compute u * v points */
     for (int ucount = 0; ucount < xpoints.rows(); ucount++) {
       uVect(0, 0) = pow(u * ucount, 3);
       uVect(0, 1) = pow(u * ucount, 2);
@@ -142,11 +147,10 @@ void myDisplay() {
       }
     }
 
-    // cout << xpoints << "\n";
-    // cout << ypoints << "\n";
-    // cout << zpoints << "\n";
-
-    // exit(0);
+    if (xpoints.maxCoeff() > xMax) { xMax = xpoints.maxCoeff(); }
+    if (xpoints.minCoeff() < xMin) { xMin = xpoints.minCoeff(); }
+    if (ypoints.maxCoeff() > yMax) { yMax = ypoints.maxCoeff(); }
+    if (ypoints.minCoeff() < yMin) { yMin = ypoints.minCoeff(); }
 
     glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -163,8 +167,10 @@ void myDisplay() {
 
       }
     }
-
   }
+
+  X_MID = (xMax + xMin) / 2.0;
+  Y_MID = (yMax + yMin) / 2.0;
 
   glFlush();
   glutSwapBuffers();                           // swap buffers (we earlier set double buffer)
@@ -276,7 +282,8 @@ void keyPressed (unsigned char key, int x, int y) {
 }
 
 void specialPressed(int key, int x, int y) {
-  if (glutGetModifiers() == GLUT_ACTIVE_SHIFT) {  // TRANSLATE THAT BAD BOY
+  /* OBJ TRANSLATE */
+  if (glutGetModifiers() == GLUT_ACTIVE_SHIFT) {
     if (key == GLUT_KEY_LEFT) {
       glTranslatef(-0.01, 0.0, 0.0);
     } else if (key == GLUT_KEY_RIGHT) {
@@ -286,16 +293,18 @@ void specialPressed(int key, int x, int y) {
     } else if (key == GLUT_KEY_DOWN) {
       glTranslatef(0.0, -0.01, 0.0);
     }
+  } else {
+    /* OBJ ROTATE */
+    if (key == GLUT_KEY_LEFT) {
+      glRotated(1, 0.0, X_MID, 0.0);
+    } else if (key == GLUT_KEY_RIGHT) {
+      glRotated(-1, 0.0, X_MID, 0.0);
+    } else if (key == GLUT_KEY_UP) {
+      glRotated(-1, Y_MID, 0.0, 0.0);
+    } else if (key == GLUT_KEY_DOWN) {
+      glRotated(1, Y_MID, 0.0, 0.0);
+    }
   }
-
-  if (key == GLUT_KEY_LEFT) {  // SPIN HIM AROUND
-    glRotated(1, 0.0, 1.0, 0.0);
-  } else if (key == GLUT_KEY_RIGHT) {
-    glRotated(-1, 0.0, 1.0, 0.0);
-  } else if (key == GLUT_KEY_UP) {
-    glRotated(-1, 0.0, 1.0, 0.0);
-  } else if (key == GLUT_KEY_DOWN) {
-    glRotated(1, 1.0, 0.0, 0.0);
-  }
+  
 }
 

@@ -2,3 +2,9 @@ Claire Thompson
 CS 184 Assignment 3
 
 Code runs on OSX. I have submitted all of the code myself.
+
+Using Eigen library for matrix computations.
+
+To run code: 
+* call make in /bez_surfaces
+* call <tt> ./as0 filename u </tt> where filename is the name of the file with the bezier surface and u is the number of times that you split the surface
