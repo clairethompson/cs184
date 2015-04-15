@@ -50,7 +50,8 @@ class Viewport {
 Viewport    viewport;
 obj OBJECT;
 float u, v;
-float X_MID, Y_MID;
+float X_MID, Y_MID, Z_MID;
+bool FILL = 0, FIRST_RENDER = 1;
 
 //****************************************************
 // reshape viewport if the window is resized
@@ -90,7 +91,7 @@ void initScene(){
 // function that does the actual drawing
 //***************************************************
 void myDisplay() {
-  glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                // clear the color buffer (sets everything to black)
 
   //----------------------- code to draw objects --------------------------
   Matrix<float, 1, 4> uVect;
@@ -115,15 +116,15 @@ void myDisplay() {
   M(3, 3) = 0;
 
 
-  float xMax = -FLT_MAX, yMax = -FLT_MAX;
-  float xMin = FLT_MAX, yMin = FLT_MAX;
+  float xMax = -FLT_MAX, yMax = -FLT_MAX, zMax = -FLT_MAX;
+  float xMin = FLT_MAX, yMin = FLT_MAX, zMin = FLT_MAX;
 
   for (int i = 0; i < OBJECT.patches.size(); i++) {
     patch p = OBJECT.patches[i];
 
-    MatrixXf xpoints((int)(floor(1/u) + 1), (int)(floor(1/v) + 1));
-    MatrixXf ypoints((int)(floor(1/u) + 1), (int)(floor(1/v) + 1));
-    MatrixXf zpoints((int)(floor(1/u) + 1), (int)(floor(1/v) + 1));
+    MatrixXf xpoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
+    MatrixXf ypoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
+    MatrixXf zpoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
 
     /* compute u * v points */
     for (int ucount = 0; ucount < xpoints.rows(); ucount++) {
@@ -147,13 +148,15 @@ void myDisplay() {
       }
     }
 
+
+    /* for finding center of the object to rotate about */
     if (xpoints.maxCoeff() > xMax) { xMax = xpoints.maxCoeff(); }
     if (xpoints.minCoeff() < xMin) { xMin = xpoints.minCoeff(); }
     if (ypoints.maxCoeff() > yMax) { yMax = ypoints.maxCoeff(); }
     if (ypoints.minCoeff() < yMin) { yMin = ypoints.minCoeff(); }
+    if (zpoints.maxCoeff() > zMax) { zMax = zpoints.maxCoeff(); }
+    if (zpoints.minCoeff() < zMin) { zMin = zpoints.minCoeff(); }
 
-    glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     for (int j = 0; j < xpoints.rows() - 1; j++) {
       for (int k = 0; k < xpoints.cols() - 1; k++) {
@@ -169,8 +172,15 @@ void myDisplay() {
     }
   }
 
+  /* for finding center of the object to rotate about */
   X_MID = (xMax + xMin) / 2.0;
   Y_MID = (yMax + yMin) / 2.0;
+  Z_MID = (zMax + zMin) / 2.0;
+
+  if (FIRST_RENDER) {
+    FIRST_RENDER = 0;
+    glTranslatef(-X_MID, -Y_MID, -Z_MID);
+  }
 
   glFlush();
   glutSwapBuffers();                           // swap buffers (we earlier set double buffer)
@@ -204,7 +214,7 @@ int main(int argc, char *argv[]) {
 
 
   //This tells glut to use a double-buffered window with red, green, and blue channels 
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
   // Initalize theviewport size
   viewport.w = 600;
@@ -219,8 +229,40 @@ int main(int argc, char *argv[]) {
   glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
   glLoadIdentity();                            // make sure transformation is "zero'd"
 
-
   initScene();                   // quick function to set up scene
+
+
+
+  glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
+  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+
+  // GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+  // GLfloat mat_shininess[] = { 50.0 };
+  // GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+
+  // glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+  // glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+  // glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  glEnable(GL_NORMALIZE);
+
+  GLfloat light_ambient[] = { 1.0, 0.0, 0.0, 1.0 };
+  GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+  GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+  GLfloat light_position[] = { 0.0, 0.0, -1.0, 0.0 };
+
+  glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+  glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+  glShadeModel(GL_FLAT);
+
 
   glutDisplayFunc(myDisplay);    // function to run when its time to draw something
   glutKeyboardFunc(keyPressed);
@@ -279,6 +321,14 @@ void keyPressed (unsigned char key, int x, int y) {
   if (key == ' ') { exit(0); }
   if (key == '+') { glScalef(1.1, 1.1, 1.1); }
   if (key == '-') { glScalef(0.8, 0.8, 0.8); }
+  if (key == 'w') { 
+    if (FILL) {
+      glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    } else {
+      glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    }
+    FILL = !FILL; 
+  }
 
 }
 
