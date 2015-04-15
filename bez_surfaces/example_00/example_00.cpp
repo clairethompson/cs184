@@ -51,7 +51,7 @@ Viewport    viewport;
 obj OBJECT;
 float u, v;
 float X_MID, Y_MID, Z_MID;
-bool FILL = 0, FIRST_RENDER = 1;
+bool FILL = 0, FIRST_RENDER = 1, SMOOTH = 0;
 
 //****************************************************
 // reshape viewport if the window is resized
@@ -94,8 +94,6 @@ void myDisplay() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                // clear the color buffer (sets everything to black)
 
   //----------------------- code to draw objects --------------------------
-  Matrix<float, 1, 4> uVect;
-  Matrix<float, 1, 4> vVect;
 
   Matrix4f M;
   M(0, 0) = -1;
@@ -119,12 +117,20 @@ void myDisplay() {
   float xMax = -FLT_MAX, yMax = -FLT_MAX, zMax = -FLT_MAX;
   float xMin = FLT_MAX, yMin = FLT_MAX, zMin = FLT_MAX;
 
+  Matrix<float, 1, 4> uVect;
+  Matrix<float, 1, 4> vVect;
+  Matrix<float, 1, 4> uDeriv;
+  Matrix<float, 1, 4> vDeriv;
+
   for (int i = 0; i < OBJECT.patches.size(); i++) {
     patch p = OBJECT.patches[i];
 
     MatrixXf xpoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
     MatrixXf ypoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
     MatrixXf zpoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
+    MatrixXf xnorm((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
+    MatrixXf ynorm((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
+    MatrixXf znorm((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
 
     /* compute u * v points */
     for (int ucount = 0; ucount < xpoints.rows(); ucount++) {
@@ -133,6 +139,11 @@ void myDisplay() {
       uVect(0, 2) = u * ucount;
       uVect(0, 3) = 1;
 
+      uDeriv(0, 0) = 3 * pow(u * ucount, 2);
+      uDeriv(0, 1) = 2 * u * ucount;
+      uDeriv(0, 2) = 1;
+      uDeriv(0, 3) = 0;
+
       for (int vcount = 0; vcount < xpoints.cols(); vcount++) {
       
         vVect(0, 0) = pow(v * vcount, 3);
@@ -140,10 +151,19 @@ void myDisplay() {
         vVect(0, 2) = v * vcount;
         vVect(0, 3) = 1;
 
+        vDeriv(0, 0) = 3 * pow(v * vcount, 2);
+        vDeriv(0, 1) = 2 * v * vcount;
+        vDeriv(0, 2) = 1;
+        vDeriv(0, 3) = 0;
+
         // x(u, v) = U · MB · GBx · MBT · VT
         xpoints(ucount, vcount) = uVect * M * p.mx * M.transpose() * vVect.transpose();
         ypoints(ucount, vcount) = uVect * M * p.my * M.transpose() * vVect.transpose();
         zpoints(ucount, vcount) = uVect * M * p.mz * M.transpose() * vVect.transpose();
+
+        xnorm(ucount, vcount) = uDeriv * M * p.mx * M.transpose() * vDeriv.transpose();
+        ynorm(ucount, vcount) = uDeriv * M * p.my * M.transpose() * vDeriv.transpose();
+        znorm(ucount, vcount) = uDeriv * M * p.mz * M.transpose() * vDeriv.transpose();
 
       }
     }
@@ -163,9 +183,17 @@ void myDisplay() {
 
         glBegin(GL_POLYGON);                         // draw rectangle 
         glVertex3f(xpoints(j + 1, k), ypoints(j + 1, k), zpoints(j + 1, k));   // bottom left corner 
+        glNormal3f(xnorm(j + 1, k), ynorm(j + 1, k), znorm(j + 1, k));         // bottom left normal
+
         glVertex3f(xpoints(j, k), ypoints(j, k), zpoints(j, k));               // top left corner 
+        glNormal3f(xnorm(j, k), ynorm(j, k), znorm(j, k));                     // top left normal 
+
         glVertex3f(xpoints(j, k + 1), ypoints(j,k + 1), zpoints(j,k + 1));     // top right corner
+        glNormal3f(xnorm(j, k + 1), ynorm(j,k + 1), znorm(j,k + 1));           // top right normal
+
         glVertex3f(xpoints(j+1,k+1), ypoints(j+1,k+1), zpoints(j+1,k+1));      // bottom right corner
+        glNormal3f(xnorm(j+1,k+1), ynorm(j+1,k+1), znorm(j+1,k+1));           // bottom right normal
+
         glEnd();
 
       }
@@ -254,14 +282,14 @@ int main(int argc, char *argv[]) {
   GLfloat light_ambient[] = { 1.0, 0.0, 0.0, 1.0 };
   GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
   GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-  GLfloat light_position[] = { 0.0, 0.0, -1.0, 0.0 };
+  GLfloat light_position[] = { 2.0, 2.0, 3.0, 0.0 };
 
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-  glShadeModel(GL_FLAT);
+  glShadeModel(GL_SMOOTH);
 
 
   glutDisplayFunc(myDisplay);    // function to run when its time to draw something
@@ -328,6 +356,14 @@ void keyPressed (unsigned char key, int x, int y) {
       glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     }
     FILL = !FILL; 
+  }
+  if (key == 's') { 
+    if (SMOOTH) {
+      glShadeModel(GL_FLAT);
+    } else {
+      glShadeModel(GL_SMOOTH);
+    }
+    SMOOTH = !SMOOTH; 
   }
 
 }
