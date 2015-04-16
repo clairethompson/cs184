@@ -51,7 +51,9 @@ Viewport    viewport;
 obj OBJECT;
 float u, v;
 float X_MID, Y_MID, Z_MID;
-bool FILL = 0, FIRST_RENDER = 1, SMOOTH = 0;
+bool FILL = 0, FIRST_RENDER = 1, SMOOTH = 0, ADAPTIVE = 0;
+Matrix4f M;
+
 
 //****************************************************
 // reshape viewport if the window is resized
@@ -91,27 +93,10 @@ void initScene(){
 // function that does the actual drawing
 //***************************************************
 void myDisplay() {
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                // clear the color buffer (sets everything to black)
 
   //----------------------- code to draw objects --------------------------
-
-  Matrix4f M;
-  M(0, 0) = -1;
-  M(0, 1) = 3;
-  M(0, 2) = -3;
-  M(0, 3) = 1;
-  M(1, 0) = 3;
-  M(1, 1) = -6;
-  M(1, 2) = 3;
-  M(1, 3) = 0;
-  M(2, 0) = -3;
-  M(2, 1) = 3;
-  M(2, 2) = 0;
-  M(2, 3) = 0;
-  M(3, 0) = 1;
-  M(3, 1) = 0;
-  M(3, 2) = 0;
-  M(3, 3) = 0;
 
 
   float xMax = -FLT_MAX, yMax = -FLT_MAX, zMax = -FLT_MAX;
@@ -146,6 +131,11 @@ void myDisplay() {
 
       for (int vcount = 0; vcount < xpoints.cols(); vcount++) {
       
+        // float tempXu = 0, tempYu = 0, tempZu = 0, total = 0;
+        // float tempXv = 0, tempYv = 0, tempZv = 0;
+        Matrix<float, 1, 3> tempVectu, tempVectv;
+
+
         vVect(0, 0) = pow(v * vcount, 3);
         vVect(0, 1) = pow(v * vcount, 2);
         vVect(0, 2) = v * vcount;
@@ -161,10 +151,19 @@ void myDisplay() {
         ypoints(ucount, vcount) = uVect * M * p.my * M.transpose() * vVect.transpose();
         zpoints(ucount, vcount) = uVect * M * p.mz * M.transpose() * vVect.transpose();
 
-        xnorm(ucount, vcount) = uDeriv * M * p.mx * M.transpose() * vDeriv.transpose();
-        ynorm(ucount, vcount) = uDeriv * M * p.my * M.transpose() * vDeriv.transpose();
-        znorm(ucount, vcount) = uDeriv * M * p.mz * M.transpose() * vDeriv.transpose();
+        tempVectu(0, 0) = uDeriv * M * p.mx * M.transpose() * vVect.transpose();
+        tempVectu(0, 1) = uDeriv * M * p.my * M.transpose() * vVect.transpose();
+        tempVectu(0, 2) = uDeriv * M * p.mz * M.transpose() * vVect.transpose();
+        tempVectv(0, 0) = uVect * M * p.mx * M.transpose() * vDeriv.transpose();
+        tempVectv(0, 1) = uVect * M * p.my * M.transpose() * vDeriv.transpose();
+        tempVectv(0, 2) = uVect * M * p.mz * M.transpose() * vDeriv.transpose();
 
+        tempVectu = tempVectu.cross(tempVectv);
+        tempVectu.normalize();
+
+        xnorm(ucount, vcount) = tempVectu(0, 0);
+        ynorm(ucount, vcount) = tempVectu(0, 1);
+        znorm(ucount, vcount) = tempVectu(0, 2);
       }
     }
 
@@ -214,6 +213,361 @@ void myDisplay() {
   glutSwapBuffers();                           // swap buffers (we earlier set double buffer)
 }
 
+void adaptiveDisplay() {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                // clear the color buffer (sets everything to black)
+
+  cout << "in adap disp \n";
+
+  for (int p = 0; p < OBJECT.patches.size(); p++) {
+
+    cout << "getting patch \n";
+    patch pat = OBJECT.patches[p];
+
+    cout << "making triangle \n";
+    
+    triangle tri1, tri2;
+    cout << "a\n";
+    tri1.pat = pat;
+    cout << "b\n";
+    tri1.points[0] << pat.mx(0, 0), pat.my(0, 0), pat.mz(0, 0);
+    tri1.points[1] << pat.mx(0, 3), pat.my(0, 3), pat.mz(0, 3);
+    tri1.points[2] << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
+
+    // Matrix<float, 2, 3> hi;
+    // cout << hi.size() << "\n";
+
+    // cout << tri1.steps.size() << " C\n";
+    // cout << tri1.steps.rows() << " C\n";
+    // cout << tri1.steps.cols() << " C\n";
+    tri1.steps << 0, 0, 
+                  0, 1, 
+                  1, 0;
+
+    cout << "making triangle2 \n";
+
+    tri2.points[0] << pat.mx(0, 3), pat.my(0, 3), pat.mz(0, 3);
+    tri2.points[1] << pat.mx(3, 3), pat.my(3, 3), pat.mz(3, 3);
+    tri2.points[2] << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
+    tri2.steps << 0, 1, 1, 1, 1, 0;
+
+    cout << "beginning first flat test \n";
+    flat_test(tri1, 50);
+    flat_test(tri2, 50);
+  }
+}
+
+
+/* if flat enough, draw, else divide triangle and recurse */
+void flat_test(triangle tri, int depth) {
+  float epsilon = 0.01;
+
+  bool mid0Pass = 1, mid1Pass = 1, mid2Pass = 2;
+
+  RowVector3f triMid0 = (tri.points[0] + tri.points[1]) / 2;
+  RowVector3f triMid1 = (tri.points[1] + tri.points[2]) / 2;
+  RowVector3f triMid2 = (tri.points[2] + tri.points[0]) / 2;
+
+  if (distToSurf(tri, triMid0, 0) > epsilon) {
+    mid0Pass = 0;
+  }
+  if (distToSurf(tri, triMid1, 1) > epsilon) {
+    mid1Pass = 0;
+  }
+  if (distToSurf(tri, triMid2, 2) > epsilon) {
+    mid2Pass = 0;
+  }
+
+  vector<triangle> triangles; 
+  if ((mid0Pass && mid1Pass && mid2Pass) || depth <= 0) {
+    drawTri(tri);
+  } else if (!mid0Pass && mid1Pass && mid2Pass) {
+    float tempU = (tri.steps(0, 0) + tri.steps(1, 0)) / 2;
+    float tempV = (tri.steps(0, 1) + tri.steps(1, 1)) / 2;
+
+    triangle tri1;
+    tri1.pat = tri.pat;
+    tri1.points[0] = tri.points[0];
+    tri1.points[1] = triMid0;
+    tri1.points[2] = tri.points[2];
+    tri1.steps << tri.steps(0, 0), tri.steps(0, 1),
+                  tempU, tempV,
+                  tri.steps(2, 0), tri.steps(2, 1);
+
+    triangle tri2;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid0;
+    tri2.points[1] = tri.points[1];
+    tri2.points[2] = tri.points[2];
+    tri1.steps << tempU, tempV,
+                  tri.steps(1, 0), tri.steps(1, 1), 
+                  tri.steps(2, 0), tri.steps(2, 1);
+
+    triangles.push_back(tri1);
+    triangles.push_back(tri2);
+  } else if (mid0Pass && !mid1Pass && mid2Pass) {
+    float tempU = (tri.steps(1, 0) + tri.steps(2, 0)) / 2;
+    float tempV = (tri.steps(1, 1) + tri.steps(2, 1)) / 2;
+
+    triangle tri1;
+    tri1.pat = tri.pat;
+    tri1.points[0] = tri.points[0];
+    tri1.points[1] = triMid1;
+    tri1.points[2] = tri.points[2];
+    tri1.steps << tri.steps(0, 0), tri.steps(0, 1),
+                  tempU, tempV,
+                  tri.steps(2, 0), tri.steps(2, 1);
+
+    triangle tri2;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid1;
+    tri2.points[1] = tri.points[0];
+    tri2.points[2] = tri.points[1];
+    tri1.steps << tempU, tempV,
+                  tri.steps(0, 0), tri.steps(0, 1), 
+                  tri.steps(1, 0), tri.steps(1, 1);
+
+    triangles.push_back(tri1);
+    triangles.push_back(tri2);
+  } else if (mid0Pass && mid1Pass && !mid2Pass) {
+    float tempU = (tri.steps(2, 0) + tri.steps(0, 0)) / 2;
+    float tempV = (tri.steps(2, 1) + tri.steps(0, 1)) / 2;
+
+    triangle tri1;
+    tri1.pat = tri.pat;
+    tri1.points[0] = tri.points[0];
+    tri1.points[1] = tri.points[1];
+    tri1.points[2] = triMid2;
+    tri1.steps << tri.steps(0, 0), tri.steps(0, 1),
+                  tri.steps(1, 0), tri.steps(1, 1),
+                  tempU, tempV;
+
+    triangle tri2;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid2;
+    tri2.points[1] = tri.points[1];
+    tri2.points[2] = tri.points[2];
+    tri1.steps << tempU, tempV,
+                  tri.steps(1, 0), tri.steps(1, 1), 
+                  tri.steps(2, 0), tri.steps(2, 1);
+
+    triangles.push_back(tri1);
+    triangles.push_back(tri2);
+  } else if (!mid0Pass && !mid1Pass && mid2Pass) {
+    float temp0U = (tri.steps(0, 0) + tri.steps(1, 0)) / 2;
+    float temp0V = (tri.steps(0, 1) + tri.steps(1, 1)) / 2;
+    float temp1U = (tri.steps(1, 0) + tri.steps(2, 0)) / 2;
+    float temp1V = (tri.steps(1, 1) + tri.steps(2, 1)) / 2;
+
+    triangle tri1;
+    tri1.pat = tri.pat;
+    tri1.points[0] = triMid0;
+    tri1.points[1] = tri.points[1];
+    tri1.points[2] = triMid1;
+    tri1.steps << temp0U, temp0V,
+                  tri.steps(1, 0), tri.steps(1, 1),
+                  temp1U, temp1V;
+
+    triangle tri2;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid0;
+    tri2.points[1] = triMid1;
+    tri2.points[2] = tri.points[2];
+    tri1.steps << temp0U, temp0V,
+                  temp1U, temp1V, 
+                  tri.steps(2, 0), tri.steps(2, 1);
+
+    triangle tri3;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid0;
+    tri2.points[1] = tri.points[2];
+    tri2.points[2] = tri.points[0];
+    tri1.steps << temp0U, temp0V,
+                  tri.steps(2, 0), tri.steps(2, 1), 
+                  tri.steps(0, 0), tri.steps(0, 1);
+
+    triangles.push_back(tri1);
+    triangles.push_back(tri2);
+    triangles.push_back(tri3);
+  } else if (!mid0Pass && mid1Pass && !mid2Pass) {
+    float temp0U = (tri.steps(0, 0) + tri.steps(1, 0)) / 2;
+    float temp0V = (tri.steps(0, 1) + tri.steps(1, 1)) / 2;
+    float temp2U = (tri.steps(2, 0) + tri.steps(0, 0)) / 2;
+    float temp2V = (tri.steps(2, 1) + tri.steps(0, 1)) / 2;
+
+    triangle tri1;
+    tri1.pat = tri.pat;
+    tri1.points[0] = triMid0;
+    tri1.points[1] = tri.points[1];
+    tri1.points[2] = triMid2;
+    tri1.steps << temp0U, temp0V,
+                  tri.steps(1, 0), tri.steps(1, 1),
+                  temp2U, temp2V;
+
+    triangle tri2;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid0;
+    tri2.points[1] = triMid2;
+    tri2.points[2] = tri.points[0];
+    tri1.steps << temp0U, temp0V,
+                  temp2U, temp2V, 
+                  tri.steps(0, 0), tri.steps(0, 1);
+
+    triangle tri3;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid2;
+    tri2.points[1] = tri.points[1];
+    tri2.points[2] = tri.points[2];
+    tri1.steps << temp2U, temp2V,
+                  tri.steps(1, 0), tri.steps(1, 1), 
+                  tri.steps(2, 0), tri.steps(2, 1);
+
+    triangles.push_back(tri1);
+    triangles.push_back(tri2);
+    triangles.push_back(tri3);
+  } else if (mid0Pass && !mid1Pass && !mid2Pass) {
+    float temp1U = (tri.steps(1, 0) + tri.steps(2, 0)) / 2;
+    float temp1V = (tri.steps(1, 1) + tri.steps(2, 1)) / 2;
+    float temp2U = (tri.steps(2, 0) + tri.steps(0, 0)) / 2;
+    float temp2V = (tri.steps(2, 1) + tri.steps(0, 1)) / 2;
+
+    triangle tri1;
+    tri1.pat = tri.pat;
+    tri1.points[0] = triMid2;
+    tri1.points[1] = tri.points[0];
+    tri1.points[2] = triMid1;
+    tri1.steps << temp2U, temp2V,
+                  tri.steps(0, 0), tri.steps(0, 1),
+                  temp1U, temp1V;
+
+    triangle tri2;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid2;
+    tri2.points[1] = triMid1;
+    tri2.points[2] = tri.points[2];
+    tri1.steps << temp2U, temp2V,
+                  temp1U, temp1V, 
+                  tri.steps(2, 0), tri.steps(2, 1);
+
+    triangle tri3;
+    tri2.pat = tri.pat;
+    tri2.points[0] = triMid1;
+    tri2.points[1] = tri.points[0];
+    tri2.points[2] = tri.points[1];
+    tri1.steps << temp1U, temp1V,
+                  tri.steps(0, 0), tri.steps(0, 1), 
+                  tri.steps(1, 0), tri.steps(1, 1);
+
+    triangles.push_back(tri1);
+    triangles.push_back(tri2);
+    triangles.push_back(tri3);
+  } else if (!mid0Pass && !mid1Pass && !mid2Pass) {
+    float temp0U = (tri.steps(0, 0) + tri.steps(1, 0)) / 2;
+    float temp0V = (tri.steps(0, 1) + tri.steps(1, 1)) / 2;
+    float temp1U = (tri.steps(1, 0) + tri.steps(2, 0)) / 2;
+    float temp1V = (tri.steps(1, 1) + tri.steps(2, 1)) / 2;
+    float temp2U = (tri.steps(2, 0) + tri.steps(0, 0)) / 2;
+    float temp2V = (tri.steps(2, 1) + tri.steps(0, 1)) / 2;
+
+
+    triangle tri1;
+    tri1.pat = tri.pat;
+    tri1.points[0] = tri.points[0];
+    tri1.points[1] = triMid0;
+    tri1.points[2] = triMid2;
+    tri1.steps<< tri.steps(0, 0), tri.steps(1, 0), 
+                temp0U, temp0V,
+                temp2U, temp2V;
+    
+    triangle tri2;
+    tri2.pat = tri.pat;
+    tri2.points[0] = tri.points[1];
+    tri2.points[1] = triMid1;
+    tri2.points[2] = triMid0;
+    tri2.steps<< tri.steps(1, 0), tri.steps(1, 0), 
+                temp1U, temp1V,
+                temp0U, temp0V;
+
+    triangle tri3;
+    tri3.pat = tri.pat;
+    tri3.points[0] = tri.points[2];
+    tri3.points[1] = triMid2;
+    tri3.points[2] = triMid1;
+    tri3.steps<< tri.steps(2, 0), tri.steps(2, 0), 
+                temp2U, temp2V,
+                temp1U, temp1V;
+
+    triangle tri4;
+    tri3.pat = tri.pat;
+    tri3.points[0] = triMid0;
+    tri3.points[1] = triMid1;
+    tri3.points[2] = triMid2;
+    tri3.steps<< temp0U, temp0V,
+                 temp1U, temp1V,
+                 temp2U, temp2V;
+
+    triangles.push_back(tri1);
+    triangles.push_back(tri2);
+    triangles.push_back(tri3);
+    triangles.push_back(tri4);
+  } else {
+    cout << "SOMETHING WENT VERY WRONG \n";
+    exit(1);
+  }
+  
+  for (int i = 0; i < triangles.size(); i++) {
+    flat_test(triangles[i], depth - 1);
+  }
+
+}
+
+float distToSurf(triangle tri, RowVector3f mid, int i){
+
+  float tempU = 0, tempV = 0;
+  tempU = (tri.steps(i, 0) + tri.steps((i+1) % 3, 0)) / 2;
+  tempV = (tri.steps(i, 1) + tri.steps((i+1) % 3, 1)) / 2;
+
+  RowVector4f uVect;
+  RowVector4f vVect;
+  uVect << pow(tempU, 3), pow(tempU, 2), tempU, 1;
+  vVect << pow(tempV, 3), pow(tempV, 2), tempV, 1;
+
+  float tempX, tempY, tempZ;
+  tempX = uVect * M * tri.pat.mx * M.transpose() * vVect.transpose();
+  tempY = uVect * M * tri.pat.my * M.transpose() * vVect.transpose();
+  tempZ = uVect * M * tri.pat.mz * M.transpose() * vVect.transpose();
+
+  RowVector3f onSurface;
+  onSurface << tempX, tempY, tempZ;
+
+  return (mid - onSurface).norm();
+}
+
+void drawTri(triangle tri) {
+  // uDeriv * M * p.mx * M.transpose() * vVect.transpose()
+  RowVector3f p0 = tri.points[0], p1 = tri.points[1], p2 = tri.points[2], tempUvect, tempVvect; 
+  RowVector4f uVect, vVect, uDeriv, vDeriv;
+
+  uVect << pow(tri.steps(0, 0), 3), pow(tri.steps(0, 0), 2), tri.steps(0, 0), 1;
+  vVect << pow(tri.steps(0, 1), 3), pow(tri.steps(0, 1), 2), tri.steps(0, 1), 1;
+  uDeriv << 3 * pow(tri.steps(0, 0), 2), 2 * tri.steps(0, 0), 1, 0;
+  vDeriv << 3 * pow(tri.steps(0, 1), 2), 2 * tri.steps(0, 1), 1, 0;
+
+
+  tempUvect << uDeriv * M * tri.pat.mx * M.transpose() * vVect.transpose(),
+               uDeriv * M * tri.pat.my * M.transpose() * vVect.transpose(),
+               uDeriv * M * tri.pat.mz * M.transpose() * vVect.transpose();
+  tempVvect << uVect * M * tri.pat.mx * M.transpose() * vDeriv.transpose(),
+               uVect * M * tri.pat.my * M.transpose() * vDeriv.transpose(),
+               uVect * M * tri.pat.mz * M.transpose() * vDeriv.transpose();
+
+  glBegin(GL_POLYGON);
+  glVertex3f(p0(0, 0), p0(0, 1), p0(0, 2));
+  glVertex3f(p1(0, 0), p1(0, 1), p1(0, 2));
+  glVertex3f(p2(0, 0), p2(0, 1), p2(0, 2));
+  glEnd();
+
+}
+
 
 //****************************************************
 // called by glut when there are no messages to handle
@@ -231,6 +585,12 @@ void myFrameMove() {
 // the usual stuff, nothing exciting here
 //****************************************************
 int main(int argc, char *argv[]) {
+
+  if (argc > 3 && strcmp(argv[3], "-a") == 0) { 
+    cout << "ADAPTIVE\n";
+    ADAPTIVE = 1; }
+
+
   //This initializes glut
   glutInit(&argc, argv);
 
@@ -239,7 +599,6 @@ int main(int argc, char *argv[]) {
 
   u = stof(argv[2]);
   v = u;
-
 
   //This tells glut to use a double-buffered window with red, green, and blue channels 
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -254,24 +613,11 @@ int main(int argc, char *argv[]) {
   glutCreateWindow("CS184!");
 
 
-  glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
-  glLoadIdentity();                            // make sure transformation is "zero'd"
+  M << -1,  3, -3, 1,
+        3, -6,  3, 0,
+       -3,  3,  0, 0, 
+        1,  0,  0, 0;
 
-  initScene();                   // quick function to set up scene
-
-
-
-  glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
-  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-
-
-  // GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-  // GLfloat mat_shininess[] = { 50.0 };
-  // GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
-
-  // glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-  // glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-  // glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
 
   glEnable(GL_DEPTH_TEST);
@@ -282,17 +628,31 @@ int main(int argc, char *argv[]) {
   GLfloat light_ambient[] = { 1.0, 0.0, 0.0, 1.0 };
   GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
   GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-  GLfloat light_position[] = { 2.0, 2.0, 3.0, 0.0 };
+  GLfloat light_position[] = { 0.0, 0.0, 3.0, 0.0 };
 
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
+
+  glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
+  glLoadIdentity();                            // make sure transformation is "zero'd"
+
+  initScene();                   // quick function to set up scene
+
+
+
+  glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
+  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
   glShadeModel(GL_SMOOTH);
 
-
-  glutDisplayFunc(myDisplay);    // function to run when its time to draw something
+  if (ADAPTIVE) {
+    glutDisplayFunc(adaptiveDisplay);
+  } else {
+    glutDisplayFunc(myDisplay);    // function to run when its time to draw something    
+  }
   glutKeyboardFunc(keyPressed);
   glutSpecialFunc(specialPressed);
   glutReshapeFunc(myReshape);    // function to run when the window gets resized
@@ -383,13 +743,13 @@ void specialPressed(int key, int x, int y) {
   } else {
     /* OBJ ROTATE */
     if (key == GLUT_KEY_LEFT) {
-      glRotated(1, 0.0, X_MID, 0.0);
+      glRotated(5, 0.0, X_MID, 0.0);
     } else if (key == GLUT_KEY_RIGHT) {
-      glRotated(-1, 0.0, X_MID, 0.0);
+      glRotated(-5, 0.0, X_MID, 0.0);
     } else if (key == GLUT_KEY_UP) {
-      glRotated(-1, Y_MID, 0.0, 0.0);
+      glRotated(-5, Y_MID, 0.0, 0.0);
     } else if (key == GLUT_KEY_DOWN) {
-      glRotated(1, Y_MID, 0.0, 0.0);
+      glRotated(5, Y_MID, 0.0, 0.0);
     }
   }
   
