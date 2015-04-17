@@ -24,6 +24,7 @@ struct triangle {
     u3  v3
   */
   RowVector2f steps0, steps1, steps2;
+  RowVector3f norm0, norm1, norm2;
 };
 
 void parse(char* filename);
@@ -35,3 +36,4 @@ float distToSurf(triangle tri, RowVector3f mid, RowVector3f surfaceMid);
 Matrix3f drawTri(triangle tri);
 void assignTriSteps(triangle* tri, float s0u, float s0v, float s1u, float s1v, float s2u, float s2v);
 RowVector4f toUvect(float u);
+RowVector4f toUderiv(float u);

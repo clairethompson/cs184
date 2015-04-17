@@ -245,6 +245,7 @@ void adaptiveDisplay() {
 
     assignTriSteps(&tri1, 0, 0, 0, 1, 1, 0);
 
+    tri2.pat = pat;
     tri2.p0 << pat.mx(0, 3), pat.my(0, 3), pat.mz(0, 3);
     tri2.p1 << pat.mx(3, 3), pat.my(3, 3), pat.mz(3, 3);
     tri2.p2 << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
@@ -265,13 +266,25 @@ void adaptiveDisplay() {
     zMax = max(blah1(1, 2), blah2(1, 2));
   }
 
-  X_MID = (xMax + xMin) / 2;
-  Y_MID = (yMax + yMin) / 2;
-  Z_MID = (zMax + zMin) / 2;
-
   if (FIRST_RENDER) {
+
+    X_MID = (xMax + xMin) / 2;
+    Y_MID = (yMax + yMin) / 2;
+    Z_MID = (zMax + zMin) / 2;
+
     FIRST_RENDER = 0;
+    float bigX, bigY, bigZ, biggest;
+
+    bigX = max(abs(xMax), abs(xMin));
+    bigY = max(abs(yMax), abs(yMin));
+    bigZ = max(abs(zMax), abs(zMin));
+    biggest = 1.0 - 1.0/max(bigX, max(bigY, bigZ));
+
+    // glScalef(min(biggest, 1.0), min(biggest, 1.0), min(biggest, 1.0));
+
     glTranslatef(-X_MID, -Y_MID, -Z_MID);
+
+
   }
 
   glFlush();
@@ -568,6 +581,12 @@ RowVector4f toUvect(float u) {
   return toReturn;
 }
 
+RowVector4f toUderiv(float u) {
+  RowVector4f toReturn;
+  toReturn << 3 * pow(u, 2), 2 * u, 1, 0;
+  return toReturn;
+}
+
 /*
   draws triangle and returns matrix of the form
     minx  miny  minz
@@ -575,11 +594,84 @@ RowVector4f toUvect(float u) {
     0     0     0
 */
 Matrix3f drawTri(triangle tri) {
-  // cout << "drawing \n";
+
 
   // uDeriv * M * p.mx * M.transpose() * vVect.transpose()
-  RowVector3f p0 = tri.p0, p1 = tri.p1, p2 = tri.p2, tempUvect, tempVvect; 
-  RowVector4f uVect, vVect, uDeriv, vDeriv;
+  RowVector3f p0 = tri.p0, p1 = tri.p1, p2 = tri.p2; 
+
+  if (FIRST_RENDER) {
+    
+    RowVector3f u0Temp, v0Temp;
+    RowVector3f u1Temp, v1Temp;
+    RowVector3f u2Temp, v2Temp;
+
+    RowVector4f u0Vect = toUvect(tri.steps0(0));
+    RowVector4f u0Deriv = toUderiv(tri.steps0(0));
+    RowVector4f v0Vect = toUvect(tri.steps0(1));
+    RowVector4f v0Deriv = toUderiv(tri.steps0(1));
+
+    RowVector4f u1Vect = toUvect(tri.steps1(0));
+    RowVector4f u1Deriv = toUderiv(tri.steps1(0));
+    RowVector4f v1Vect = toUvect(tri.steps1(1));
+    RowVector4f v1Deriv = toUderiv(tri.steps1(1));
+
+    RowVector4f u2Vect = toUvect(tri.steps2(0));
+    RowVector4f u2Deriv = toUderiv(tri.steps2(0));
+    RowVector4f v2Vect = toUvect(tri.steps2(1));
+    RowVector4f v2Deriv = toUderiv(tri.steps2(1));
+
+    u0Temp << u0Deriv * M * tri.pat.mx * M.transpose() * v0Vect.transpose(),
+              u0Deriv * M * tri.pat.my * M.transpose() * v0Vect.transpose(),
+              u0Deriv * M * tri.pat.mz * M.transpose() * v0Vect.transpose();
+    
+    u1Temp << u1Deriv * M * tri.pat.mx * M.transpose() * v1Vect.transpose(),
+              u1Deriv * M * tri.pat.my * M.transpose() * v1Vect.transpose(),
+              u1Deriv * M * tri.pat.mz * M.transpose() * v1Vect.transpose();
+    
+    u2Temp << u2Deriv * M * tri.pat.mx * M.transpose() * v2Vect.transpose(),
+              u2Deriv * M * tri.pat.my * M.transpose() * v2Vect.transpose(),
+              u2Deriv * M * tri.pat.mz * M.transpose() * v2Vect.transpose();
+    
+    v0Temp << u0Vect * M * tri.pat.mx * M.transpose() * v0Deriv.transpose(),
+              u0Vect * M * tri.pat.my * M.transpose() * v0Deriv.transpose(),
+              u0Vect * M * tri.pat.mz * M.transpose() * v0Deriv.transpose();
+    
+    v1Temp << u1Vect * M * tri.pat.mx * M.transpose() * v1Deriv.transpose(),
+              u1Vect * M * tri.pat.my * M.transpose() * v1Deriv.transpose(),
+              u1Vect * M * tri.pat.mz * M.transpose() * v1Deriv.transpose();
+    
+    v2Temp << u2Vect * M * tri.pat.mx * M.transpose() * v2Deriv.transpose(),
+              u2Vect * M * tri.pat.my * M.transpose() * v2Deriv.transpose(),
+              u2Vect * M * tri.pat.mz * M.transpose() * v2Deriv.transpose();
+
+    RowVector3f tempNorm0 = (v0Temp.cross(u0Temp));
+    RowVector3f tempNorm1 = (v1Temp.cross(u1Temp));
+    RowVector3f tempNorm2 = (v2Temp.cross(u2Temp));
+
+    tempNorm0.normalize();
+    tempNorm1.normalize();
+    tempNorm2.normalize();
+
+    tri.norm0 << tempNorm0(0, 0), tempNorm0(0, 1), tempNorm0(0, 2);
+    tri.norm1 << tempNorm1(0, 0), tempNorm1(0, 1), tempNorm1(0, 2);
+    tri.norm2 << tempNorm2(0, 0), tempNorm2(0, 1), tempNorm2(0, 2);
+  
+  }
+  
+  RowVector3f norm0 = tri.norm0;
+  RowVector3f norm1 = tri.norm1;
+  RowVector3f norm2 = tri.norm2;
+  
+
+  glBegin(GL_POLYGON);
+  glVertex3f(p0(0, 0), p0(0, 1), p0(0, 2));
+  glNormal3f(norm0(0), norm0(1), norm0(2));
+  glVertex3f(p1(0, 0), p1(0, 1), p1(0, 2));
+  glNormal3f(norm1(0), norm1(1), norm1(2));
+  glVertex3f(p2(0, 0), p2(0, 1), p2(0, 2));
+  glNormal3f(norm2(0), norm2(1), norm2(2));
+  glEnd();
+
   Matrix3f toReturn;
   toReturn(0, 0) = min(p0(0), min(p1(0), p2(0)));
   toReturn(0, 1) = min(p0(1), min(p1(1), p2(1)));
@@ -587,25 +679,6 @@ Matrix3f drawTri(triangle tri) {
   toReturn(1, 0) = max(p0(0), max(p1(0), p2(0)));
   toReturn(1, 1) = max(p0(1), max(p1(1), p2(1)));
   toReturn(1, 2) = max(p0(2), max(p1(2), p2(2)));
-
-  // uVect << pow(tri.steps0(0), 3), pow(tri.steps0(0), 2), tri.steps0(0), 1;
-  // vVect << pow(tri.steps0(1), 3), pow(tri.steps0(1), 2), tri.steps0(1), 1;
-  // uDeriv << 3 * pow(tri.steps0(0), 2), 2 * tri.steps0(0), 1, 0;
-  // vDeriv << 3 * pow(tri.steps0(1), 2), 2 * tri.steps0(1), 1, 0;
-
-
-  // tempUvect << uDeriv * M * tri.pat.mx * M.transpose() * vVect.transpose(),
-  //              uDeriv * M * tri.pat.my * M.transpose() * vVect.transpose(),
-  //              uDeriv * M * tri.pat.mz * M.transpose() * vVect.transpose();
-  // tempVvect << uVect * M * tri.pat.mx * M.transpose() * vDeriv.transpose(),
-  //              uVect * M * tri.pat.my * M.transpose() * vDeriv.transpose(),
-  //              uVect * M * tri.pat.mz * M.transpose() * vDeriv.transpose();
-
-  glBegin(GL_POLYGON);
-  glVertex3f(p0(0, 0), p0(0, 1), p0(0, 2));
-  glVertex3f(p1(0, 0), p1(0, 1), p1(0, 2));
-  glVertex3f(p2(0, 0), p2(0, 1), p2(0, 2));
-  glEnd();
 
   return toReturn;
 }
@@ -676,7 +749,7 @@ int main(int argc, char *argv[]) {
   GLfloat light_ambient[] = { 1.0, 0.0, 0.0, 1.0 };
   GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
   GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-  GLfloat light_position[] = { 0.0, 0.0, 3.0, 0.0 };
+  GLfloat light_position[] = { 3.0, 3.0, -3.0, 0.0 };
 
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
@@ -780,13 +853,13 @@ void specialPressed(int key, int x, int y) {
   /* OBJ TRANSLATE */
   if (glutGetModifiers() == GLUT_ACTIVE_SHIFT) {
     if (key == GLUT_KEY_LEFT) {
-      glTranslatef(-0.01, 0.0, 0.0);
+      glTranslatef(-0.05, 0.0, 0.0);
     } else if (key == GLUT_KEY_RIGHT) {
-      glTranslatef(0.01, 0.0, 0.0);
+      glTranslatef(0.05, 0.0, 0.0);
     } else if (key == GLUT_KEY_UP) {
-      glTranslatef(0.0, 0.01, 0.0);
+      glTranslatef(0.0, 0.05, 0.0);
     } else if (key == GLUT_KEY_DOWN) {
-      glTranslatef(0.0, -0.01, 0.0);
+      glTranslatef(0.0, -0.05, 0.0);
     }
   } else {
     /* OBJ ROTATE */
