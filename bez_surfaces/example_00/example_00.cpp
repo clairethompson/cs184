@@ -216,294 +216,290 @@ void myDisplay() {
 void adaptiveDisplay() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                // clear the color buffer (sets everything to black)
 
-  cout << "in adap disp \n";
+  // cout << "in adap disp \n";
+
+  float xMax = -FLT_MAX, xMin = FLT_MAX, yMax = -FLT_MAX, yMin = FLT_MAX, zMax = -FLT_MAX, zMin = FLT_MAX;
 
   for (int p = 0; p < OBJECT.patches.size(); p++) {
 
-    cout << "getting patch \n";
+    // cout << "getting patch \n";
     patch pat = OBJECT.patches[p];
 
-    cout << "making triangle \n";
+    // cout << "making triangle \n";
     
     triangle tri1, tri2;
-    cout << "a\n";
     tri1.pat = pat;
-    cout << "b\n";
-    tri1.points[0] << pat.mx(0, 0), pat.my(0, 0), pat.mz(0, 0);
-    tri1.points[1] << pat.mx(0, 3), pat.my(0, 3), pat.mz(0, 3);
-    tri1.points[2] << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
+    tri1.p0 << pat.mx(0, 0), pat.my(0, 0), pat.mz(0, 0);
+    tri1.p1 << pat.mx(0, 3), pat.my(0, 3), pat.mz(0, 3);
+    tri1.p2 << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
 
-    // Matrix<float, 2, 3> hi;
-    // cout << hi.size() << "\n";
+    assignTriSteps(&tri1, 0, 0, 0, 1, 1, 0);
 
-    // cout << tri1.steps.size() << " C\n";
-    // cout << tri1.steps.rows() << " C\n";
-    // cout << tri1.steps.cols() << " C\n";
-    tri1.steps << 0, 0, 
-                  0, 1, 
-                  1, 0;
+    tri2.p0 << pat.mx(0, 3), pat.my(0, 3), pat.mz(0, 3);
+    tri2.p1 << pat.mx(3, 3), pat.my(3, 3), pat.mz(3, 3);
+    tri2.p2 << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
+    assignTriSteps(&tri2, 0, 1, 1, 1, 1, 0);
+    
+    vector<triangle> temp;
+    temp.push_back(tri1);
+    temp.push_back(tri2);
 
-    cout << "making triangle2 \n";
-
-    tri2.points[0] << pat.mx(0, 3), pat.my(0, 3), pat.mz(0, 3);
-    tri2.points[1] << pat.mx(3, 3), pat.my(3, 3), pat.mz(3, 3);
-    tri2.points[2] << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
-    tri2.steps << 0, 1, 1, 1, 1, 0;
-
-    cout << "beginning first flat test \n";
-    flat_test(tri1, 50);
-    flat_test(tri2, 50);
+    Matrix3f blah;
+    for (int i = 0; i < temp.size(); i++) {
+      blah = flat_test(temp[i], 5);
+      xMin = min(xMin, blah(0, 0));
+      yMin = min(yMin, blah(0, 1));
+      zMin = min(zMin, blah(0, 2));
+      xMax = min(xMax, blah(1, 0));
+      yMax = min(yMax, blah(1, 1));
+      zMax = min(zMax, blah(1, 2));
+    }
   }
+
+  X_MID = (xMax + xMin) / 2;
+  Y_MID = (yMax + yMin) / 2;
+  Z_MID = (zMax + zMin) / 2;
+
+  // if (FIRST_RENDER) {
+  //   FIRST_RENDER = 0;
+  //   glTranslatef(-X_MID, -Y_MID, -Z_MID);
+  // }
+
+  glFlush();
+  glutSwapBuffers();  
 }
 
 
 /* if flat enough, draw, else divide triangle and recurse */
-void flat_test(triangle tri, int depth) {
-  float epsilon = 0.01;
+Matrix3f flat_test(triangle tri, int depth) {
+  float epsilon = u;
 
   bool mid0Pass = 1, mid1Pass = 1, mid2Pass = 2;
 
-  RowVector3f triMid0 = (tri.points[0] + tri.points[1]) / 2;
-  RowVector3f triMid1 = (tri.points[1] + tri.points[2]) / 2;
-  RowVector3f triMid2 = (tri.points[2] + tri.points[0]) / 2;
+  RowVector3f triMid0 = (tri.p0 + tri.p1) / 2;
+  RowVector3f triMid1 = (tri.p1 + tri.p2) / 2;
+  RowVector3f triMid2 = (tri.p2 + tri.p0) / 2;
 
-  if (distToSurf(tri, triMid0, 0) > epsilon) {
+  float temp0U = (tri.steps0(0) + tri.steps1(0)) / 2;
+  float temp0V = (tri.steps0(1) + tri.steps1(1)) / 2;
+  float temp1U = (tri.steps1(0) + tri.steps2(0)) / 2;
+  float temp1V = (tri.steps1(1) + tri.steps2(1)) / 2;
+  float temp2U = (tri.steps2(0) + tri.steps0(0)) / 2;
+  float temp2V = (tri.steps2(1) + tri.steps0(1)) / 2;
+
+  if (distToSurf(tri, triMid0, temp0U, temp0V) > epsilon) {
     mid0Pass = 0;
   }
-  if (distToSurf(tri, triMid1, 1) > epsilon) {
+  if (distToSurf(tri, triMid1, temp1U, temp1V) > epsilon) {
     mid1Pass = 0;
   }
-  if (distToSurf(tri, triMid2, 2) > epsilon) {
+  if (distToSurf(tri, triMid2, temp2U, temp2V) > epsilon) {
     mid2Pass = 0;
   }
 
   vector<triangle> triangles; 
+  
   if ((mid0Pass && mid1Pass && mid2Pass) || depth <= 0) {
-    drawTri(tri);
+    return drawTri(tri);
   } else if (!mid0Pass && mid1Pass && mid2Pass) {
-    float tempU = (tri.steps(0, 0) + tri.steps(1, 0)) / 2;
-    float tempV = (tri.steps(0, 1) + tri.steps(1, 1)) / 2;
 
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.points[0] = tri.points[0];
-    tri1.points[1] = triMid0;
-    tri1.points[2] = tri.points[2];
-    tri1.steps << tri.steps(0, 0), tri.steps(0, 1),
-                  tempU, tempV,
-                  tri.steps(2, 0), tri.steps(2, 1);
+    tri1.p0 = tri.p0;
+    tri1.p1 = triMid0;
+    tri1.p2 = tri.p2;
+    assignTriSteps(&tri1, tri.steps0(0), tri.steps0(1),
+                      temp0U, temp0V,
+                      tri.steps2(0), tri.steps2(1));
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.points[0] = triMid0;
-    tri2.points[1] = tri.points[1];
-    tri2.points[2] = tri.points[2];
-    tri1.steps << tempU, tempV,
-                  tri.steps(1, 0), tri.steps(1, 1), 
-                  tri.steps(2, 0), tri.steps(2, 1);
+    tri2.p0 = triMid0;
+    tri2.p1 = tri.p1;
+    tri2.p2 = tri.p2;
+    assignTriSteps(&tri2, temp0U, temp0V,
+                      tri.steps1(0), tri.steps1(1), 
+                      tri.steps2(0), tri.steps2(1));
 
     triangles.push_back(tri1);
     triangles.push_back(tri2);
   } else if (mid0Pass && !mid1Pass && mid2Pass) {
-    float tempU = (tri.steps(1, 0) + tri.steps(2, 0)) / 2;
-    float tempV = (tri.steps(1, 1) + tri.steps(2, 1)) / 2;
-
+    
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.points[0] = tri.points[0];
-    tri1.points[1] = triMid1;
-    tri1.points[2] = tri.points[2];
-    tri1.steps << tri.steps(0, 0), tri.steps(0, 1),
-                  tempU, tempV,
-                  tri.steps(2, 0), tri.steps(2, 1);
+    tri1.p0 = tri.p0;
+    tri1.p1 = triMid1;
+    tri1.p2 = tri.p2;
+    assignTriSteps(&tri1, tri.steps0(0), tri.steps0(1),
+                      temp1U, temp1V,
+                      tri.steps2(0), tri.steps2(1));
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.points[0] = triMid1;
-    tri2.points[1] = tri.points[0];
-    tri2.points[2] = tri.points[1];
-    tri1.steps << tempU, tempV,
-                  tri.steps(0, 0), tri.steps(0, 1), 
-                  tri.steps(1, 0), tri.steps(1, 1);
+    tri2.p0 = triMid1;
+    tri2.p1 = tri.p0;
+    tri2.p2 = tri.p1;
+    assignTriSteps(&tri2, temp1U, temp1V,
+                      tri.steps0(0), tri.steps0(1), 
+                      tri.steps1(0), tri.steps1(1));
 
     triangles.push_back(tri1);
     triangles.push_back(tri2);
   } else if (mid0Pass && mid1Pass && !mid2Pass) {
-    float tempU = (tri.steps(2, 0) + tri.steps(0, 0)) / 2;
-    float tempV = (tri.steps(2, 1) + tri.steps(0, 1)) / 2;
-
+    
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.points[0] = tri.points[0];
-    tri1.points[1] = tri.points[1];
-    tri1.points[2] = triMid2;
-    tri1.steps << tri.steps(0, 0), tri.steps(0, 1),
-                  tri.steps(1, 0), tri.steps(1, 1),
-                  tempU, tempV;
+    tri1.p0 = tri.p0;
+    tri1.p1 = tri.p1;
+    tri1.p2 = triMid2;
+    assignTriSteps(&tri1, tri.steps0(0), tri.steps0(1),
+                      tri.steps1(0), tri.steps1(1),
+                      temp2U, temp2V);
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.points[0] = triMid2;
-    tri2.points[1] = tri.points[1];
-    tri2.points[2] = tri.points[2];
-    tri1.steps << tempU, tempV,
-                  tri.steps(1, 0), tri.steps(1, 1), 
-                  tri.steps(2, 0), tri.steps(2, 1);
+    tri2.p0 = triMid2;
+    tri2.p1 = tri.p1;
+    tri2.p2 = tri.p2;
+    assignTriSteps(&tri2, temp2U, temp2V,
+                      tri.steps1(0), tri.steps1(1), 
+                      tri.steps2(0), tri.steps2(1));
 
     triangles.push_back(tri1);
     triangles.push_back(tri2);
   } else if (!mid0Pass && !mid1Pass && mid2Pass) {
-    float temp0U = (tri.steps(0, 0) + tri.steps(1, 0)) / 2;
-    float temp0V = (tri.steps(0, 1) + tri.steps(1, 1)) / 2;
-    float temp1U = (tri.steps(1, 0) + tri.steps(2, 0)) / 2;
-    float temp1V = (tri.steps(1, 1) + tri.steps(2, 1)) / 2;
-
+    
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.points[0] = triMid0;
-    tri1.points[1] = tri.points[1];
-    tri1.points[2] = triMid1;
-    tri1.steps << temp0U, temp0V,
-                  tri.steps(1, 0), tri.steps(1, 1),
-                  temp1U, temp1V;
+    tri1.p0 = triMid0;
+    tri1.p1 = tri.p1;
+    tri1.p2 = triMid1;
+    assignTriSteps(&tri1, temp0U, temp0V,
+                      tri.steps1(0), tri.steps1(1),
+                      temp1U, temp1V);
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.points[0] = triMid0;
-    tri2.points[1] = triMid1;
-    tri2.points[2] = tri.points[2];
-    tri1.steps << temp0U, temp0V,
-                  temp1U, temp1V, 
-                  tri.steps(2, 0), tri.steps(2, 1);
+    tri2.p0 = triMid0;
+    tri2.p1 = tri.p1;
+    tri2.p2 = triMid2;
+    assignTriSteps(&tri2, temp0U, temp0V,
+                      tri.steps1(0), tri.steps1(1),
+                      temp2U, temp2V);
 
     triangle tri3;
-    tri2.pat = tri.pat;
-    tri2.points[0] = triMid0;
-    tri2.points[1] = tri.points[2];
-    tri2.points[2] = tri.points[0];
-    tri1.steps << temp0U, temp0V,
-                  tri.steps(2, 0), tri.steps(2, 1), 
-                  tri.steps(0, 0), tri.steps(0, 1);
+    tri3.pat = tri.pat;
+    tri3.p0 = tri.p0;
+    tri3.p1 = triMid1;
+    tri3.p2 = tri.p2;
+    assignTriSteps(&tri3, tri.steps0(0), tri.steps0(1),
+                      temp1U, temp1V, 
+                      tri.steps2(0), tri.steps2(1));
 
     triangles.push_back(tri1);
     triangles.push_back(tri2);
     triangles.push_back(tri3);
   } else if (!mid0Pass && mid1Pass && !mid2Pass) {
-    float temp0U = (tri.steps(0, 0) + tri.steps(1, 0)) / 2;
-    float temp0V = (tri.steps(0, 1) + tri.steps(1, 1)) / 2;
-    float temp2U = (tri.steps(2, 0) + tri.steps(0, 0)) / 2;
-    float temp2V = (tri.steps(2, 1) + tri.steps(0, 1)) / 2;
-
+    
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.points[0] = triMid0;
-    tri1.points[1] = tri.points[1];
-    tri1.points[2] = triMid2;
-    tri1.steps << temp0U, temp0V,
-                  tri.steps(1, 0), tri.steps(1, 1),
-                  temp2U, temp2V;
+    tri1.p0 = triMid0;
+    tri1.p1 = tri.p1;
+    tri1.p2 = triMid2;
+    assignTriSteps(&tri1, temp0U, temp0V,
+                       tri.steps1(0), tri.steps1(1),
+                       temp2U, temp2V);
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.points[0] = triMid0;
-    tri2.points[1] = triMid2;
-    tri2.points[2] = tri.points[0];
-    tri1.steps << temp0U, temp0V,
-                  temp2U, temp2V, 
-                  tri.steps(0, 0), tri.steps(0, 1);
+    tri2.p0 = triMid0;
+    tri2.p1 = triMid2;
+    tri2.p2 = tri.p0;
+    assignTriSteps(&tri2, temp0U, temp0V,
+                      temp2U, temp2V, 
+                      tri.steps0(0), tri.steps0(1));
 
     triangle tri3;
-    tri2.pat = tri.pat;
-    tri2.points[0] = triMid2;
-    tri2.points[1] = tri.points[1];
-    tri2.points[2] = tri.points[2];
-    tri1.steps << temp2U, temp2V,
-                  tri.steps(1, 0), tri.steps(1, 1), 
-                  tri.steps(2, 0), tri.steps(2, 1);
+    tri3.pat = tri.pat;
+    tri3.p0 = triMid2;
+    tri3.p1 = tri.p1;
+    tri3.p2 = tri.p2;
+    assignTriSteps(&tri3, temp2U, temp2V,
+                      tri.steps1(0), tri.steps1(1), 
+                      tri.steps2(0), tri.steps2(1));
 
     triangles.push_back(tri1);
     triangles.push_back(tri2);
     triangles.push_back(tri3);
   } else if (mid0Pass && !mid1Pass && !mid2Pass) {
-    float temp1U = (tri.steps(1, 0) + tri.steps(2, 0)) / 2;
-    float temp1V = (tri.steps(1, 1) + tri.steps(2, 1)) / 2;
-    float temp2U = (tri.steps(2, 0) + tri.steps(0, 0)) / 2;
-    float temp2V = (tri.steps(2, 1) + tri.steps(0, 1)) / 2;
-
+    
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.points[0] = triMid2;
-    tri1.points[1] = tri.points[0];
-    tri1.points[2] = triMid1;
-    tri1.steps << temp2U, temp2V,
-                  tri.steps(0, 0), tri.steps(0, 1),
-                  temp1U, temp1V;
+    tri1.p0 = triMid2;
+    tri1.p1 = tri.p0;
+    tri1.p2 = triMid1;
+    assignTriSteps(&tri1, temp2U, temp2V,
+                      tri.steps0(0), tri.steps0(1),
+                      temp1U, temp1V);
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.points[0] = triMid2;
-    tri2.points[1] = triMid1;
-    tri2.points[2] = tri.points[2];
-    tri1.steps << temp2U, temp2V,
-                  temp1U, temp1V, 
-                  tri.steps(2, 0), tri.steps(2, 1);
+    tri2.p0 = triMid2;
+    tri2.p1 = triMid1;
+    tri2.p2 = tri.p2;
+    assignTriSteps(&tri2, temp2U, temp2V,
+                      temp1U, temp1V, 
+                      tri.steps2(0), tri.steps2(1));
 
     triangle tri3;
-    tri2.pat = tri.pat;
-    tri2.points[0] = triMid1;
-    tri2.points[1] = tri.points[0];
-    tri2.points[2] = tri.points[1];
-    tri1.steps << temp1U, temp1V,
-                  tri.steps(0, 0), tri.steps(0, 1), 
-                  tri.steps(1, 0), tri.steps(1, 1);
+    tri3.pat = tri.pat;
+    tri3.p0 = triMid1;
+    tri3.p1 = tri.p0;
+    tri3.p2 = tri.p1;
+    assignTriSteps(&tri3, temp1U, temp1V,
+                      tri.steps0(0), tri.steps0(1), 
+                      tri.steps1(0), tri.steps1(1));
 
     triangles.push_back(tri1);
     triangles.push_back(tri2);
     triangles.push_back(tri3);
   } else if (!mid0Pass && !mid1Pass && !mid2Pass) {
-    float temp0U = (tri.steps(0, 0) + tri.steps(1, 0)) / 2;
-    float temp0V = (tri.steps(0, 1) + tri.steps(1, 1)) / 2;
-    float temp1U = (tri.steps(1, 0) + tri.steps(2, 0)) / 2;
-    float temp1V = (tri.steps(1, 1) + tri.steps(2, 1)) / 2;
-    float temp2U = (tri.steps(2, 0) + tri.steps(0, 0)) / 2;
-    float temp2V = (tri.steps(2, 1) + tri.steps(0, 1)) / 2;
-
-
+   
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.points[0] = tri.points[0];
-    tri1.points[1] = triMid0;
-    tri1.points[2] = triMid2;
-    tri1.steps<< tri.steps(0, 0), tri.steps(1, 0), 
-                temp0U, temp0V,
-                temp2U, temp2V;
+    tri1.p0 = tri.p0;
+    tri1.p1 = triMid0;
+    tri1.p2 = triMid2;
+    assignTriSteps(&tri1, tri.steps0(0), tri.steps1(0), 
+                      temp0U, temp0V,
+                      temp2U, temp2V);
     
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.points[0] = tri.points[1];
-    tri2.points[1] = triMid1;
-    tri2.points[2] = triMid0;
-    tri2.steps<< tri.steps(1, 0), tri.steps(1, 0), 
+    tri2.p0 = tri.p1;
+    tri2.p1 = triMid1;
+    tri2.p2 = triMid0;
+    assignTriSteps(&tri2, tri.steps1(0), tri.steps1(0), 
                 temp1U, temp1V,
-                temp0U, temp0V;
+                temp0U, temp0V);
 
     triangle tri3;
     tri3.pat = tri.pat;
-    tri3.points[0] = tri.points[2];
-    tri3.points[1] = triMid2;
-    tri3.points[2] = triMid1;
-    tri3.steps<< tri.steps(2, 0), tri.steps(2, 0), 
+    tri3.p0 = tri.p2;
+    tri3.p1 = triMid2;
+    tri3.p2 = triMid1;
+    assignTriSteps(&tri3, tri.steps2(0), tri.steps2(0), 
                 temp2U, temp2V,
-                temp1U, temp1V;
+                temp1U, temp1V);
 
     triangle tri4;
-    tri3.pat = tri.pat;
-    tri3.points[0] = triMid0;
-    tri3.points[1] = triMid1;
-    tri3.points[2] = triMid2;
-    tri3.steps<< temp0U, temp0V,
-                 temp1U, temp1V,
-                 temp2U, temp2V;
+    tri4.pat = tri.pat;
+    tri4.p0 = triMid0;
+    tri4.p1 = triMid1;
+    tri4.p2 = triMid2;
+    assignTriSteps(&tri4, temp0U, temp0V,
+                          temp1U, temp1V,
+                          temp2U, temp2V);
 
     triangles.push_back(tri1);
     triangles.push_back(tri2);
@@ -514,17 +510,32 @@ void flat_test(triangle tri, int depth) {
     exit(1);
   }
   
+  vector<Matrix3f> temp;
   for (int i = 0; i < triangles.size(); i++) {
-    flat_test(triangles[i], depth - 1);
+    temp.push_back(flat_test(triangles[i], depth - 1));
   }
+
+  Matrix3f toReturn;
+  toReturn(0, 0) = FLT_MAX;
+  toReturn(0, 1) = FLT_MAX;
+  toReturn(0, 2) = FLT_MAX;
+  toReturn(1, 0) = -FLT_MAX;
+  toReturn(1, 1) = -FLT_MAX;
+  toReturn(1, 2) = -FLT_MAX;
+  for (int i = 0; i < temp.size(); i++) {
+    toReturn(0, 0) = min(toReturn(0, 0), temp[i](0, 0));
+    toReturn(0, 1) = min(toReturn(0, 1), temp[i](0, 1));
+    toReturn(0, 2) = min(toReturn(0, 2), temp[i](0, 2));
+    toReturn(1, 0) = max(toReturn(1, 0), temp[i](1, 0));
+    toReturn(1, 1) = max(toReturn(1, 1), temp[i](1, 1));
+    toReturn(1, 2) = max(toReturn(1, 2), temp[i](1, 2));
+  }
+
+  return toReturn;
 
 }
 
-float distToSurf(triangle tri, RowVector3f mid, int i){
-
-  float tempU = 0, tempV = 0;
-  tempU = (tri.steps(i, 0) + tri.steps((i+1) % 3, 0)) / 2;
-  tempV = (tri.steps(i, 1) + tri.steps((i+1) % 3, 1)) / 2;
+float distToSurf(triangle tri, RowVector3f mid, float tempU, float tempV){
 
   RowVector4f uVect;
   RowVector4f vVect;
@@ -542,23 +553,38 @@ float distToSurf(triangle tri, RowVector3f mid, int i){
   return (mid - onSurface).norm();
 }
 
-void drawTri(triangle tri) {
+/*
+  draws triangle and returns matrix of the form
+    minx  miny  minz
+    maxx  maxy  maxz
+    0     0     0
+*/
+Matrix3f drawTri(triangle tri) {
+  // cout << "drawing \n";
+
   // uDeriv * M * p.mx * M.transpose() * vVect.transpose()
-  RowVector3f p0 = tri.points[0], p1 = tri.points[1], p2 = tri.points[2], tempUvect, tempVvect; 
+  RowVector3f p0 = tri.p0, p1 = tri.p1, p2 = tri.p2, tempUvect, tempVvect; 
   RowVector4f uVect, vVect, uDeriv, vDeriv;
+  Matrix3f toReturn;
+  toReturn(0, 0) = min(p0(0), min(p1(0), p2(0)));
+  toReturn(0, 1) = min(p0(1), min(p1(1), p2(1)));
+  toReturn(0, 2) = min(p0(2), min(p1(2), p2(2)));
+  toReturn(1, 0) = max(p0(0), max(p1(0), p2(0)));
+  toReturn(1, 1) = max(p0(1), max(p1(1), p2(1)));
+  toReturn(1, 2) = max(p0(2), max(p1(2), p2(2)));
 
-  uVect << pow(tri.steps(0, 0), 3), pow(tri.steps(0, 0), 2), tri.steps(0, 0), 1;
-  vVect << pow(tri.steps(0, 1), 3), pow(tri.steps(0, 1), 2), tri.steps(0, 1), 1;
-  uDeriv << 3 * pow(tri.steps(0, 0), 2), 2 * tri.steps(0, 0), 1, 0;
-  vDeriv << 3 * pow(tri.steps(0, 1), 2), 2 * tri.steps(0, 1), 1, 0;
+  // uVect << pow(tri.steps0(0), 3), pow(tri.steps0(0), 2), tri.steps0(0), 1;
+  // vVect << pow(tri.steps0(1), 3), pow(tri.steps0(1), 2), tri.steps0(1), 1;
+  // uDeriv << 3 * pow(tri.steps0(0), 2), 2 * tri.steps0(0), 1, 0;
+  // vDeriv << 3 * pow(tri.steps0(1), 2), 2 * tri.steps0(1), 1, 0;
 
 
-  tempUvect << uDeriv * M * tri.pat.mx * M.transpose() * vVect.transpose(),
-               uDeriv * M * tri.pat.my * M.transpose() * vVect.transpose(),
-               uDeriv * M * tri.pat.mz * M.transpose() * vVect.transpose();
-  tempVvect << uVect * M * tri.pat.mx * M.transpose() * vDeriv.transpose(),
-               uVect * M * tri.pat.my * M.transpose() * vDeriv.transpose(),
-               uVect * M * tri.pat.mz * M.transpose() * vDeriv.transpose();
+  // tempUvect << uDeriv * M * tri.pat.mx * M.transpose() * vVect.transpose(),
+  //              uDeriv * M * tri.pat.my * M.transpose() * vVect.transpose(),
+  //              uDeriv * M * tri.pat.mz * M.transpose() * vVect.transpose();
+  // tempVvect << uVect * M * tri.pat.mx * M.transpose() * vDeriv.transpose(),
+  //              uVect * M * tri.pat.my * M.transpose() * vDeriv.transpose(),
+  //              uVect * M * tri.pat.mz * M.transpose() * vDeriv.transpose();
 
   glBegin(GL_POLYGON);
   glVertex3f(p0(0, 0), p0(0, 1), p0(0, 2));
@@ -566,6 +592,13 @@ void drawTri(triangle tri) {
   glVertex3f(p2(0, 0), p2(0, 1), p2(0, 2));
   glEnd();
 
+  return toReturn;
+}
+
+void assignTriSteps(triangle* tri, float s0u, float s0v, float s1u, float s1v, float s2u, float s2v){
+  tri->steps0 << s0u, s0v;
+  tri->steps1 << s1u, s1v;
+  tri->steps2 << s2u, s2v;
 }
 
 

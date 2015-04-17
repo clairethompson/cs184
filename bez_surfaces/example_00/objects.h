@@ -14,6 +14,7 @@ struct obj {
 };
 
 struct triangle {
+  RowVector3f p0,p1,p2;
   vector<RowVector3f> points;
   patch pat; // the patch that the triangle lays on
 
@@ -22,14 +23,14 @@ struct triangle {
     u2  v2
     u3  v3
   */
-  typedef Matrix<float, 2, 3> stepMat;
-  stepMat steps;
+  RowVector2f steps0, steps1, steps2;
 };
 
 void parse(char* filename);
 void keyPressed (unsigned char key, int x, int y);
 void specialPressed (int key, int x, int y);
-void flat_test(triangle tri, int depth);
+Matrix3f flat_test(triangle tri, int depth);
 void adaptiveDisplay();
-float distToSurf(triangle tri, RowVector3f mid, int i);
-void drawTri(triangle tri);
+float distToSurf(triangle tri, RowVector3f mid, float tempU, float tempV);
+Matrix3f drawTri(triangle tri);
+void assignTriSteps(triangle* tri, float s0u, float s0v, float s1u, float s1v, float s2u, float s2v);
