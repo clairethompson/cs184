@@ -53,6 +53,7 @@ float u, v;
 float X_MID, Y_MID, Z_MID;
 bool FILL = 0, FIRST_RENDER = 1, SMOOTH = 0, ADAPTIVE = 0;
 Matrix4f M;
+vector<triangle> FINAL_MESH;
 
 
 //****************************************************
@@ -218,6 +219,15 @@ void adaptiveDisplay() {
 
   // cout << "in adap disp \n";
 
+
+  // doesn't do transformations this way?
+  // if(!FIRST_RENDER) {
+  //   for (int i = 0; i < FINAL_MESH.size(); i++) {
+  //     drawTri(FINAL_MESH[i]);
+  //   }
+  //   return;
+  // }
+
   float xMax = -FLT_MAX, xMin = FLT_MAX, yMax = -FLT_MAX, yMin = FLT_MAX, zMax = -FLT_MAX, zMin = FLT_MAX;
 
   for (int p = 0; p < OBJECT.patches.size(); p++) {
@@ -244,26 +254,25 @@ void adaptiveDisplay() {
     temp.push_back(tri1);
     temp.push_back(tri2);
 
-    Matrix3f blah;
-    for (int i = 0; i < temp.size(); i++) {
-      blah = flat_test(temp[i], 5);
-      xMin = min(xMin, blah(0, 0));
-      yMin = min(yMin, blah(0, 1));
-      zMin = min(zMin, blah(0, 2));
-      xMax = min(xMax, blah(1, 0));
-      yMax = min(yMax, blah(1, 1));
-      zMax = min(zMax, blah(1, 2));
-    }
+    Matrix3f blah1, blah2;
+    blah1 = flat_test(tri1, 50);
+    blah2 = flat_test(tri2, 50);
+    xMin = min(blah1(0, 0), blah2(0, 0));
+    yMin = min(blah1(0, 1), blah2(0, 1));
+    zMin = min(blah1(0, 2), blah2(0, 2));
+    xMax = max(blah1(1, 0), blah2(1, 0));
+    yMax = max(blah1(1, 1), blah2(1, 1));
+    zMax = max(blah1(1, 2), blah2(1, 2));
   }
 
   X_MID = (xMax + xMin) / 2;
   Y_MID = (yMax + yMin) / 2;
   Z_MID = (zMax + zMin) / 2;
 
-  // if (FIRST_RENDER) {
-  //   FIRST_RENDER = 0;
-  //   glTranslatef(-X_MID, -Y_MID, -Z_MID);
-  // }
+  if (FIRST_RENDER) {
+    FIRST_RENDER = 0;
+    glTranslatef(-X_MID, -Y_MID, -Z_MID);
+  }
 
   glFlush();
   glutSwapBuffers();  
@@ -287,26 +296,39 @@ Matrix3f flat_test(triangle tri, int depth) {
   float temp2U = (tri.steps2(0) + tri.steps0(0)) / 2;
   float temp2V = (tri.steps2(1) + tri.steps0(1)) / 2;
 
-  if (distToSurf(tri, triMid0, temp0U, temp0V) > epsilon) {
+  RowVector3f surfaceMid0, surfaceMid1, surfaceMid2;
+
+  surfaceMid0 << toUvect(temp0U) * M * tri.pat.mx * M.transpose() * toUvect(temp0V).transpose(),
+                 toUvect(temp0U) * M * tri.pat.my * M.transpose() * toUvect(temp0V).transpose(),
+                 toUvect(temp0U) * M * tri.pat.mz * M.transpose() * toUvect(temp0V).transpose();
+  surfaceMid1 << toUvect(temp1U) * M * tri.pat.mx * M.transpose() * toUvect(temp1V).transpose(),
+                 toUvect(temp1U) * M * tri.pat.my * M.transpose() * toUvect(temp1V).transpose(),
+                 toUvect(temp1U) * M * tri.pat.mz * M.transpose() * toUvect(temp1V).transpose();
+  surfaceMid2 << toUvect(temp2U) * M * tri.pat.mx * M.transpose() * toUvect(temp2V).transpose(),
+                 toUvect(temp2U) * M * tri.pat.my * M.transpose() * toUvect(temp2V).transpose(),
+                 toUvect(temp2U) * M * tri.pat.mz * M.transpose() * toUvect(temp2V).transpose();
+
+  if (distToSurf(tri, triMid0, surfaceMid0) > epsilon) {
     mid0Pass = 0;
   }
-  if (distToSurf(tri, triMid1, temp1U, temp1V) > epsilon) {
+  if (distToSurf(tri, triMid1, surfaceMid1) > epsilon) {
     mid1Pass = 0;
   }
-  if (distToSurf(tri, triMid2, temp2U, temp2V) > epsilon) {
+  if (distToSurf(tri, triMid2, surfaceMid2) > epsilon) {
     mid2Pass = 0;
   }
 
   vector<triangle> triangles; 
   
   if ((mid0Pass && mid1Pass && mid2Pass) || depth <= 0) {
+    FINAL_MESH.push_back(tri);
     return drawTri(tri);
   } else if (!mid0Pass && mid1Pass && mid2Pass) {
 
     triangle tri1;
     tri1.pat = tri.pat;
     tri1.p0 = tri.p0;
-    tri1.p1 = triMid0;
+    tri1.p1 = surfaceMid0;
     tri1.p2 = tri.p2;
     assignTriSteps(&tri1, tri.steps0(0), tri.steps0(1),
                       temp0U, temp0V,
@@ -314,7 +336,7 @@ Matrix3f flat_test(triangle tri, int depth) {
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.p0 = triMid0;
+    tri2.p0 = surfaceMid0;
     tri2.p1 = tri.p1;
     tri2.p2 = tri.p2;
     assignTriSteps(&tri2, temp0U, temp0V,
@@ -328,7 +350,7 @@ Matrix3f flat_test(triangle tri, int depth) {
     triangle tri1;
     tri1.pat = tri.pat;
     tri1.p0 = tri.p0;
-    tri1.p1 = triMid1;
+    tri1.p1 = surfaceMid1;
     tri1.p2 = tri.p2;
     assignTriSteps(&tri1, tri.steps0(0), tri.steps0(1),
                       temp1U, temp1V,
@@ -336,7 +358,7 @@ Matrix3f flat_test(triangle tri, int depth) {
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.p0 = triMid1;
+    tri2.p0 = surfaceMid1;
     tri2.p1 = tri.p0;
     tri2.p2 = tri.p1;
     assignTriSteps(&tri2, temp1U, temp1V,
@@ -351,14 +373,14 @@ Matrix3f flat_test(triangle tri, int depth) {
     tri1.pat = tri.pat;
     tri1.p0 = tri.p0;
     tri1.p1 = tri.p1;
-    tri1.p2 = triMid2;
+    tri1.p2 = surfaceMid2;
     assignTriSteps(&tri1, tri.steps0(0), tri.steps0(1),
                       tri.steps1(0), tri.steps1(1),
                       temp2U, temp2V);
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.p0 = triMid2;
+    tri2.p0 = surfaceMid2;
     tri2.p1 = tri.p1;
     tri2.p2 = tri.p2;
     assignTriSteps(&tri2, temp2U, temp2V,
@@ -371,26 +393,26 @@ Matrix3f flat_test(triangle tri, int depth) {
     
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.p0 = triMid0;
+    tri1.p0 = surfaceMid0;
     tri1.p1 = tri.p1;
-    tri1.p2 = triMid1;
+    tri1.p2 = surfaceMid1;
     assignTriSteps(&tri1, temp0U, temp0V,
                       tri.steps1(0), tri.steps1(1),
                       temp1U, temp1V);
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.p0 = triMid0;
-    tri2.p1 = tri.p1;
-    tri2.p2 = triMid2;
-    assignTriSteps(&tri2, temp0U, temp0V,
-                      tri.steps1(0), tri.steps1(1),
-                      temp2U, temp2V);
+    tri2.p0 = tri.p0;
+    tri2.p1 = surfaceMid0;
+    tri2.p2 = surfaceMid1;
+    assignTriSteps(&tri2, tri.steps0(0), tri.steps0(1),
+                      temp0U, temp0V,
+                      temp1U, temp1V);
 
     triangle tri3;
     tri3.pat = tri.pat;
     tri3.p0 = tri.p0;
-    tri3.p1 = triMid1;
+    tri3.p1 = surfaceMid1;
     tri3.p2 = tri.p2;
     assignTriSteps(&tri3, tri.steps0(0), tri.steps0(1),
                       temp1U, temp1V, 
@@ -403,17 +425,17 @@ Matrix3f flat_test(triangle tri, int depth) {
     
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.p0 = triMid0;
+    tri1.p0 = surfaceMid0;
     tri1.p1 = tri.p1;
-    tri1.p2 = triMid2;
+    tri1.p2 = surfaceMid2;
     assignTriSteps(&tri1, temp0U, temp0V,
                        tri.steps1(0), tri.steps1(1),
                        temp2U, temp2V);
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.p0 = triMid0;
-    tri2.p1 = triMid2;
+    tri2.p0 = surfaceMid0;
+    tri2.p1 = surfaceMid2;
     tri2.p2 = tri.p0;
     assignTriSteps(&tri2, temp0U, temp0V,
                       temp2U, temp2V, 
@@ -421,7 +443,7 @@ Matrix3f flat_test(triangle tri, int depth) {
 
     triangle tri3;
     tri3.pat = tri.pat;
-    tri3.p0 = triMid2;
+    tri3.p0 = surfaceMid2;
     tri3.p1 = tri.p1;
     tri3.p2 = tri.p2;
     assignTriSteps(&tri3, temp2U, temp2V,
@@ -435,17 +457,17 @@ Matrix3f flat_test(triangle tri, int depth) {
     
     triangle tri1;
     tri1.pat = tri.pat;
-    tri1.p0 = triMid2;
+    tri1.p0 = surfaceMid2;
     tri1.p1 = tri.p0;
-    tri1.p2 = triMid1;
+    tri1.p2 = surfaceMid1;
     assignTriSteps(&tri1, temp2U, temp2V,
                       tri.steps0(0), tri.steps0(1),
                       temp1U, temp1V);
 
     triangle tri2;
     tri2.pat = tri.pat;
-    tri2.p0 = triMid2;
-    tri2.p1 = triMid1;
+    tri2.p0 = surfaceMid2;
+    tri2.p1 = surfaceMid1;
     tri2.p2 = tri.p2;
     assignTriSteps(&tri2, temp2U, temp2V,
                       temp1U, temp1V, 
@@ -453,7 +475,7 @@ Matrix3f flat_test(triangle tri, int depth) {
 
     triangle tri3;
     tri3.pat = tri.pat;
-    tri3.p0 = triMid1;
+    tri3.p0 = surfaceMid1;
     tri3.p1 = tri.p0;
     tri3.p2 = tri.p1;
     assignTriSteps(&tri3, temp1U, temp1V,
@@ -468,8 +490,8 @@ Matrix3f flat_test(triangle tri, int depth) {
     triangle tri1;
     tri1.pat = tri.pat;
     tri1.p0 = tri.p0;
-    tri1.p1 = triMid0;
-    tri1.p2 = triMid2;
+    tri1.p1 = surfaceMid0;
+    tri1.p2 = surfaceMid2;
     assignTriSteps(&tri1, tri.steps0(0), tri.steps1(0), 
                       temp0U, temp0V,
                       temp2U, temp2V);
@@ -477,8 +499,8 @@ Matrix3f flat_test(triangle tri, int depth) {
     triangle tri2;
     tri2.pat = tri.pat;
     tri2.p0 = tri.p1;
-    tri2.p1 = triMid1;
-    tri2.p2 = triMid0;
+    tri2.p1 = surfaceMid1;
+    tri2.p2 = surfaceMid0;
     assignTriSteps(&tri2, tri.steps1(0), tri.steps1(0), 
                 temp1U, temp1V,
                 temp0U, temp0V);
@@ -486,17 +508,17 @@ Matrix3f flat_test(triangle tri, int depth) {
     triangle tri3;
     tri3.pat = tri.pat;
     tri3.p0 = tri.p2;
-    tri3.p1 = triMid2;
-    tri3.p2 = triMid1;
+    tri3.p1 = surfaceMid2;
+    tri3.p2 = surfaceMid1;
     assignTriSteps(&tri3, tri.steps2(0), tri.steps2(0), 
                 temp2U, temp2V,
                 temp1U, temp1V);
 
     triangle tri4;
     tri4.pat = tri.pat;
-    tri4.p0 = triMid0;
-    tri4.p1 = triMid1;
-    tri4.p2 = triMid2;
+    tri4.p0 = surfaceMid0;
+    tri4.p1 = surfaceMid1;
+    tri4.p2 = surfaceMid2;
     assignTriSteps(&tri4, temp0U, temp0V,
                           temp1U, temp1V,
                           temp2U, temp2V);
@@ -535,22 +557,15 @@ Matrix3f flat_test(triangle tri, int depth) {
 
 }
 
-float distToSurf(triangle tri, RowVector3f mid, float tempU, float tempV){
-
-  RowVector4f uVect;
-  RowVector4f vVect;
-  uVect << pow(tempU, 3), pow(tempU, 2), tempU, 1;
-  vVect << pow(tempV, 3), pow(tempV, 2), tempV, 1;
-
-  float tempX, tempY, tempZ;
-  tempX = uVect * M * tri.pat.mx * M.transpose() * vVect.transpose();
-  tempY = uVect * M * tri.pat.my * M.transpose() * vVect.transpose();
-  tempZ = uVect * M * tri.pat.mz * M.transpose() * vVect.transpose();
-
-  RowVector3f onSurface;
-  onSurface << tempX, tempY, tempZ;
+float distToSurf(triangle tri, RowVector3f mid, RowVector3f onSurface){
 
   return (mid - onSurface).norm();
+}
+
+RowVector4f toUvect(float u) {
+  RowVector4f toReturn;
+  toReturn << pow(u, 3), pow(u, 2), u, 1;
+  return toReturn;
 }
 
 /*
