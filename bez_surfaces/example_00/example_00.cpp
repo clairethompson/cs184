@@ -49,7 +49,7 @@ class Viewport {
 //****************************************************
 Viewport    viewport;
 obj OBJECT;
-float u, v;
+float INPUT_U, INPUT_V;
 float X_MID, Y_MID, Z_MID;
 bool FILL = 0, FIRST_RENDER = 1, SMOOTH = 0, ADAPTIVE = 0;
 Matrix4f M;
@@ -111,60 +111,51 @@ void myDisplay() {
   for (int i = 0; i < OBJECT.patches.size(); i++) {
     patch p = OBJECT.patches[i];
 
-    MatrixXf xpoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
-    MatrixXf ypoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
-    MatrixXf zpoints((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
-    MatrixXf xnorm((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
-    MatrixXf ynorm((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
-    MatrixXf znorm((int)(ceil(1/u) + 1), (int)(ceil(1/v) + 1));
+    MatrixXf xpoints((int)(ceil(1/INPUT_U) + 1), (int)(ceil(1/INPUT_V) + 1));
+    MatrixXf ypoints((int)(ceil(1/INPUT_U) + 1), (int)(ceil(1/INPUT_V) + 1));
+    MatrixXf zpoints((int)(ceil(1/INPUT_U) + 1), (int)(ceil(1/INPUT_V) + 1));
+    MatrixXf xnorm((int)(ceil(1/INPUT_U) + 1), (int)(ceil(1/INPUT_V) + 1));
+    MatrixXf ynorm((int)(ceil(1/INPUT_U) + 1), (int)(ceil(1/INPUT_V) + 1));
+    MatrixXf znorm((int)(ceil(1/INPUT_U) + 1), (int)(ceil(1/INPUT_V) + 1));
 
     /* compute u * v points */
     for (int ucount = 0; ucount < xpoints.rows(); ucount++) {
-      uVect(0, 0) = pow(u * ucount, 3);
-      uVect(0, 1) = pow(u * ucount, 2);
-      uVect(0, 2) = u * ucount;
+      uVect(0, 0) = pow(INPUT_U * ucount, 3);
+      uVect(0, 1) = pow(INPUT_U * ucount, 2);
+      uVect(0, 2) = INPUT_U * ucount;
       uVect(0, 3) = 1;
 
-      uDeriv(0, 0) = 3 * pow(u * ucount, 2);
-      uDeriv(0, 1) = 2 * u * ucount;
+      uDeriv(0, 0) = 3 * pow(INPUT_U * ucount, 2);
+      uDeriv(0, 1) = 2 * INPUT_U * ucount;
       uDeriv(0, 2) = 1;
       uDeriv(0, 3) = 0;
 
       for (int vcount = 0; vcount < xpoints.cols(); vcount++) {
-      
-        // float tempXu = 0, tempYu = 0, tempZu = 0, total = 0;
-        // float tempXv = 0, tempYv = 0, tempZv = 0;
-        Matrix<float, 1, 3> tempVectu, tempVectv;
+        RowVector3f onSurface;
 
-
-        vVect(0, 0) = pow(v * vcount, 3);
-        vVect(0, 1) = pow(v * vcount, 2);
-        vVect(0, 2) = v * vcount;
+        vVect(0, 0) = pow(INPUT_V * vcount, 3);
+        vVect(0, 1) = pow(INPUT_V * vcount, 2);
+        vVect(0, 2) = INPUT_V * vcount;
         vVect(0, 3) = 1;
 
-        vDeriv(0, 0) = 3 * pow(v * vcount, 2);
-        vDeriv(0, 1) = 2 * v * vcount;
+        vDeriv(0, 0) = 3 * pow(INPUT_V * vcount, 2);
+        vDeriv(0, 1) = 2 * INPUT_V * vcount;
         vDeriv(0, 2) = 1;
         vDeriv(0, 3) = 0;
 
+        onSurface = getPointOnPatch(p, ucount * INPUT_U, vcount * INPUT_V);
+
         // x(u, v) = U · MB · GBx · MBT · VT
-        xpoints(ucount, vcount) = uVect * M * p.mx * M.transpose() * vVect.transpose();
-        ypoints(ucount, vcount) = uVect * M * p.my * M.transpose() * vVect.transpose();
-        zpoints(ucount, vcount) = uVect * M * p.mz * M.transpose() * vVect.transpose();
+        xpoints(ucount, vcount) = onSurface(0, 0);
+        ypoints(ucount, vcount) = onSurface(0, 1);
+        zpoints(ucount, vcount) = onSurface(0, 2);
 
-        tempVectu(0, 0) = uDeriv * M * p.mx * M.transpose() * vVect.transpose();
-        tempVectu(0, 1) = uDeriv * M * p.my * M.transpose() * vVect.transpose();
-        tempVectu(0, 2) = uDeriv * M * p.mz * M.transpose() * vVect.transpose();
-        tempVectv(0, 0) = uVect * M * p.mx * M.transpose() * vDeriv.transpose();
-        tempVectv(0, 1) = uVect * M * p.my * M.transpose() * vDeriv.transpose();
-        tempVectv(0, 2) = uVect * M * p.mz * M.transpose() * vDeriv.transpose();
+        RowVector3f norm;
+        norm = findNorm(p, INPUT_U * ucount, INPUT_V * vcount);
 
-        tempVectu = tempVectu.cross(tempVectv);
-        tempVectu.normalize();
-
-        xnorm(ucount, vcount) = tempVectu(0, 0);
-        ynorm(ucount, vcount) = tempVectu(0, 1);
-        znorm(ucount, vcount) = tempVectu(0, 2);
+        xnorm(ucount, vcount) = norm(0, 0);
+        ynorm(ucount, vcount) = norm(0, 1);
+        znorm(ucount, vcount) = norm(0, 2);
       }
     }
 
@@ -192,7 +183,7 @@ void myDisplay() {
         glNormal3f(xnorm(j, k + 1), ynorm(j,k + 1), znorm(j,k + 1));           // top right normal
 
         glVertex3f(xpoints(j+1,k+1), ypoints(j+1,k+1), zpoints(j+1,k+1));      // bottom right corner
-        glNormal3f(xnorm(j+1,k+1), ynorm(j+1,k+1), znorm(j+1,k+1));           // bottom right normal
+        glNormal3f(xnorm(j+1,k+1), ynorm(j+1,k+1), znorm(j+1,k+1));            // bottom right normal
 
         glEnd();
 
@@ -242,7 +233,6 @@ void adaptiveDisplay() {
     tri1.p0 << pat.mx(0, 0), pat.my(0, 0), pat.mz(0, 0);
     tri1.p1 << pat.mx(0, 3), pat.my(0, 3), pat.mz(0, 3);
     tri1.p2 << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
-
     assignTriSteps(&tri1, 0, 0, 0, 1, 1, 0);
 
     tri2.pat = pat;
@@ -251,13 +241,13 @@ void adaptiveDisplay() {
     tri2.p2 << pat.mx(3, 0), pat.my(3, 0), pat.mz(3, 0);
     assignTriSteps(&tri2, 0, 1, 1, 1, 1, 0);
     
-    vector<triangle> temp;
-    temp.push_back(tri1);
-    temp.push_back(tri2);
+    // vector<triangle> temp;
+    // temp.push_back(tri1);
+    // temp.push_back(tri2);
 
     Matrix3f blah1, blah2;
-    blah1 = flat_test(tri1, 50);
-    blah2 = flat_test(tri2, 50);
+    blah1 = flat_test(tri1, 20);
+    blah2 = flat_test(tri2, 20);
     xMin = min(blah1(0, 0), blah2(0, 0));
     yMin = min(blah1(0, 1), blah2(0, 1));
     zMin = min(blah1(0, 2), blah2(0, 2));
@@ -294,40 +284,36 @@ void adaptiveDisplay() {
 
 /* if flat enough, draw, else divide triangle and recurse */
 Matrix3f flat_test(triangle tri, int depth) {
-  float epsilon = u;
+  float epsilon = INPUT_U;
 
-  bool mid0Pass = 1, mid1Pass = 1, mid2Pass = 2;
+  bool mid0Pass = 1, mid1Pass = 1, mid2Pass = 1;
 
-  RowVector3f triMid0 = (tri.p0 + tri.p1) / 2;
-  RowVector3f triMid1 = (tri.p1 + tri.p2) / 2;
-  RowVector3f triMid2 = (tri.p2 + tri.p0) / 2;
+  RowVector3f triMid0 = (tri.p0 + tri.p1) / 2.0;
+  RowVector3f triMid1 = (tri.p1 + tri.p2) / 2.0;
+  RowVector3f triMid2 = (tri.p2 + tri.p0) / 2.0;
 
-  float temp0U = (tri.steps0(0) + tri.steps1(0)) / 2;
-  float temp0V = (tri.steps0(1) + tri.steps1(1)) / 2;
-  float temp1U = (tri.steps1(0) + tri.steps2(0)) / 2;
-  float temp1V = (tri.steps1(1) + tri.steps2(1)) / 2;
-  float temp2U = (tri.steps2(0) + tri.steps0(0)) / 2;
-  float temp2V = (tri.steps2(1) + tri.steps0(1)) / 2;
+  float temp0U = (tri.steps0(0) + tri.steps1(0)) / 2.0;
+  float temp0V = (tri.steps0(1) + tri.steps1(1)) / 2.0;
+
+  float temp1U = (tri.steps1(0) + tri.steps2(0)) / 2.0;
+  float temp1V = (tri.steps1(1) + tri.steps2(1)) / 2.0;
+  
+  float temp2U = (tri.steps2(0) + tri.steps0(0)) / 2.0;
+  float temp2V = (tri.steps2(1) + tri.steps0(1)) / 2.0;
 
   RowVector3f surfaceMid0, surfaceMid1, surfaceMid2;
 
-  surfaceMid0 << toUvect(temp0U) * M * tri.pat.mx * M.transpose() * toUvect(temp0V).transpose(),
-                 toUvect(temp0U) * M * tri.pat.my * M.transpose() * toUvect(temp0V).transpose(),
-                 toUvect(temp0U) * M * tri.pat.mz * M.transpose() * toUvect(temp0V).transpose();
-  surfaceMid1 << toUvect(temp1U) * M * tri.pat.mx * M.transpose() * toUvect(temp1V).transpose(),
-                 toUvect(temp1U) * M * tri.pat.my * M.transpose() * toUvect(temp1V).transpose(),
-                 toUvect(temp1U) * M * tri.pat.mz * M.transpose() * toUvect(temp1V).transpose();
-  surfaceMid2 << toUvect(temp2U) * M * tri.pat.mx * M.transpose() * toUvect(temp2V).transpose(),
-                 toUvect(temp2U) * M * tri.pat.my * M.transpose() * toUvect(temp2V).transpose(),
-                 toUvect(temp2U) * M * tri.pat.mz * M.transpose() * toUvect(temp2V).transpose();
-
-  if (distToSurf(tri, triMid0, surfaceMid0) > epsilon) {
+  surfaceMid0 = getPointOnPatch(tri.pat, temp0U, temp0V);
+  surfaceMid1 = getPointOnPatch(tri.pat, temp1U, temp1V);
+  surfaceMid2 = getPointOnPatch(tri.pat, temp2U, temp2V);
+  
+  if (distToSurf(triMid0, surfaceMid0) > epsilon) {
     mid0Pass = 0;
   }
-  if (distToSurf(tri, triMid1, surfaceMid1) > epsilon) {
+  if (distToSurf(triMid1, surfaceMid1) > epsilon) {
     mid1Pass = 0;
   }
-  if (distToSurf(tri, triMid2, surfaceMid2) > epsilon) {
+  if (distToSurf(triMid2, surfaceMid2) > epsilon) {
     mid2Pass = 0;
   }
 
@@ -505,7 +491,7 @@ Matrix3f flat_test(triangle tri, int depth) {
     tri1.p0 = tri.p0;
     tri1.p1 = surfaceMid0;
     tri1.p2 = surfaceMid2;
-    assignTriSteps(&tri1, tri.steps0(0), tri.steps1(0), 
+    assignTriSteps(&tri1, tri.steps0(0), tri.steps0(1), 
                       temp0U, temp0V,
                       temp2U, temp2V);
     
@@ -514,7 +500,7 @@ Matrix3f flat_test(triangle tri, int depth) {
     tri2.p0 = tri.p1;
     tri2.p1 = surfaceMid1;
     tri2.p2 = surfaceMid0;
-    assignTriSteps(&tri2, tri.steps1(0), tri.steps1(0), 
+    assignTriSteps(&tri2, tri.steps1(0), tri.steps1(1), 
                 temp1U, temp1V,
                 temp0U, temp0V);
 
@@ -523,7 +509,7 @@ Matrix3f flat_test(triangle tri, int depth) {
     tri3.p0 = tri.p2;
     tri3.p1 = surfaceMid2;
     tri3.p2 = surfaceMid1;
-    assignTriSteps(&tri3, tri.steps2(0), tri.steps2(0), 
+    assignTriSteps(&tri3, tri.steps2(0), tri.steps2(1), 
                 temp2U, temp2V,
                 temp1U, temp1V);
 
@@ -570,7 +556,7 @@ Matrix3f flat_test(triangle tri, int depth) {
 
 }
 
-float distToSurf(triangle tri, RowVector3f mid, RowVector3f onSurface){
+float distToSurf(RowVector3f mid, RowVector3f onSurface){
 
   return (mid - onSurface).norm();
 }
@@ -601,60 +587,9 @@ Matrix3f drawTri(triangle tri) {
 
   if (FIRST_RENDER) {
     
-    RowVector3f u0Temp, v0Temp;
-    RowVector3f u1Temp, v1Temp;
-    RowVector3f u2Temp, v2Temp;
-
-    RowVector4f u0Vect = toUvect(tri.steps0(0));
-    RowVector4f u0Deriv = toUderiv(tri.steps0(0));
-    RowVector4f v0Vect = toUvect(tri.steps0(1));
-    RowVector4f v0Deriv = toUderiv(tri.steps0(1));
-
-    RowVector4f u1Vect = toUvect(tri.steps1(0));
-    RowVector4f u1Deriv = toUderiv(tri.steps1(0));
-    RowVector4f v1Vect = toUvect(tri.steps1(1));
-    RowVector4f v1Deriv = toUderiv(tri.steps1(1));
-
-    RowVector4f u2Vect = toUvect(tri.steps2(0));
-    RowVector4f u2Deriv = toUderiv(tri.steps2(0));
-    RowVector4f v2Vect = toUvect(tri.steps2(1));
-    RowVector4f v2Deriv = toUderiv(tri.steps2(1));
-
-    u0Temp << u0Deriv * M * tri.pat.mx * M.transpose() * v0Vect.transpose(),
-              u0Deriv * M * tri.pat.my * M.transpose() * v0Vect.transpose(),
-              u0Deriv * M * tri.pat.mz * M.transpose() * v0Vect.transpose();
-    
-    u1Temp << u1Deriv * M * tri.pat.mx * M.transpose() * v1Vect.transpose(),
-              u1Deriv * M * tri.pat.my * M.transpose() * v1Vect.transpose(),
-              u1Deriv * M * tri.pat.mz * M.transpose() * v1Vect.transpose();
-    
-    u2Temp << u2Deriv * M * tri.pat.mx * M.transpose() * v2Vect.transpose(),
-              u2Deriv * M * tri.pat.my * M.transpose() * v2Vect.transpose(),
-              u2Deriv * M * tri.pat.mz * M.transpose() * v2Vect.transpose();
-    
-    v0Temp << u0Vect * M * tri.pat.mx * M.transpose() * v0Deriv.transpose(),
-              u0Vect * M * tri.pat.my * M.transpose() * v0Deriv.transpose(),
-              u0Vect * M * tri.pat.mz * M.transpose() * v0Deriv.transpose();
-    
-    v1Temp << u1Vect * M * tri.pat.mx * M.transpose() * v1Deriv.transpose(),
-              u1Vect * M * tri.pat.my * M.transpose() * v1Deriv.transpose(),
-              u1Vect * M * tri.pat.mz * M.transpose() * v1Deriv.transpose();
-    
-    v2Temp << u2Vect * M * tri.pat.mx * M.transpose() * v2Deriv.transpose(),
-              u2Vect * M * tri.pat.my * M.transpose() * v2Deriv.transpose(),
-              u2Vect * M * tri.pat.mz * M.transpose() * v2Deriv.transpose();
-
-    RowVector3f tempNorm0 = (v0Temp.cross(u0Temp));
-    RowVector3f tempNorm1 = (v1Temp.cross(u1Temp));
-    RowVector3f tempNorm2 = (v2Temp.cross(u2Temp));
-
-    tempNorm0.normalize();
-    tempNorm1.normalize();
-    tempNorm2.normalize();
-
-    tri.norm0 << tempNorm0(0, 0), tempNorm0(0, 1), tempNorm0(0, 2);
-    tri.norm1 << tempNorm1(0, 0), tempNorm1(0, 1), tempNorm1(0, 2);
-    tri.norm2 << tempNorm2(0, 0), tempNorm2(0, 1), tempNorm2(0, 2);
+    tri.norm0  = findNorm(tri.pat, tri.steps0(0), tri.steps0(1));
+    tri.norm1  = findNorm(tri.pat, tri.steps1(0), tri.steps1(1));
+    tri.norm2  = findNorm(tri.pat, tri.steps2(0), tri.steps2(1));
   
   }
   
@@ -664,12 +599,12 @@ Matrix3f drawTri(triangle tri) {
   
 
   glBegin(GL_POLYGON);
-  glVertex3f(p0(0, 0), p0(0, 1), p0(0, 2));
-  glNormal3f(norm0(0), norm0(1), norm0(2));
-  glVertex3f(p1(0, 0), p1(0, 1), p1(0, 2));
-  glNormal3f(norm1(0), norm1(1), norm1(2));
   glVertex3f(p2(0, 0), p2(0, 1), p2(0, 2));
   glNormal3f(norm2(0), norm2(1), norm2(2));
+  glVertex3f(p1(0, 0), p1(0, 1), p1(0, 2));
+  glNormal3f(norm1(0), norm1(1), norm1(2));
+  glVertex3f(p0(0, 0), p0(0, 1), p0(0, 2));
+  glNormal3f(norm0(0), norm0(1), norm0(2));
   glEnd();
 
   Matrix3f toReturn;
@@ -679,6 +614,45 @@ Matrix3f drawTri(triangle tri) {
   toReturn(1, 0) = max(p0(0), max(p1(0), p2(0)));
   toReturn(1, 1) = max(p0(1), max(p1(1), p2(1)));
   toReturn(1, 2) = max(p0(2), max(p1(2), p2(2)));
+
+  return toReturn;
+}
+
+RowVector3f findNorm(patch p, float u, float v){
+  RowVector4f uTemp, vTemp, uDeriv, vDeriv;
+  RowVector3f du, dv, toReturn;
+
+  uTemp << pow(u, 3), pow(u, 2), u, 1;
+  vTemp << pow(v, 3), pow(v, 2), v, 1;
+  uDeriv << 3 * pow(u, 2), 2 * u, 1, 0;
+  vDeriv << 3 * pow(v, 2), 2 * v, 1, 0;
+
+  du << uDeriv * M * p.mx * M.transpose() * vTemp.transpose(),
+        uDeriv * M * p.my * M.transpose() * vTemp.transpose(),
+        uDeriv * M * p.mz * M.transpose() * vTemp.transpose();
+
+  dv << uTemp * M * p.mx * M.transpose() * vDeriv.transpose(),
+        uTemp * M * p.my * M.transpose() * vDeriv.transpose(),
+        uTemp * M * p.mz * M.transpose() * vDeriv.transpose();
+
+  du.normalize();
+  dv.normalize(); 
+
+  toReturn = dv.cross(du);
+  toReturn /= toReturn.norm();
+
+  return toReturn;
+}
+
+RowVector3f getPointOnPatch(patch p, float u, float v) {
+  RowVector4f uTemp, vTemp;
+  uTemp << pow(u, 3), pow(u, 2), u, 1;
+  vTemp << pow(v, 3), pow(v, 2), v, 1;
+
+  RowVector3f toReturn;
+  toReturn << uTemp * M * p.mx * M.transpose() * vTemp.transpose(),
+              uTemp * M * p.my * M.transpose() * vTemp.transpose(),
+              uTemp * M * p.mz * M.transpose() * vTemp.transpose();
 
   return toReturn;
 }
@@ -718,8 +692,8 @@ int main(int argc, char *argv[]) {
   parse(argv[1]);
   cout << OBJECT.numPatches << "\n";
 
-  u = stof(argv[2]);
-  v = u;
+  INPUT_U = stof(argv[2]);
+  INPUT_V = INPUT_U;
 
   //This tells glut to use a double-buffered window with red, green, and blue channels 
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -749,7 +723,7 @@ int main(int argc, char *argv[]) {
   GLfloat light_ambient[] = { 1.0, 0.0, 0.0, 1.0 };
   GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
   GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-  GLfloat light_position[] = { 3.0, 3.0, -3.0, 0.0 };
+  GLfloat light_position[] = { 3.0, 0.0, 0.0, 0.0 };
 
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
